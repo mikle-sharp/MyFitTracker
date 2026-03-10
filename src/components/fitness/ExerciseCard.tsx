@@ -324,7 +324,7 @@ export function ExerciseCard({
                   <div className={cn(
                     'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0',
                     set.isWarmup
-                      ? 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                      ? 'bg-zinc-900 text-zinc-500 border border-zinc-800'
                       : 'bg-zinc-700 text-zinc-300'
                   )}>
                     {set.isWarmup ? 'Р' : workingSetNumber}
@@ -496,7 +496,7 @@ export function ExerciseCard({
                     <div className={cn(
                       'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0',
                       isWarmup
-                        ? 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                        ? 'bg-zinc-900 text-zinc-500 border border-zinc-800'
                         : 'bg-zinc-700 text-zinc-300'
                     )}>
                       {isWarmup ? 'Р' : exercise.sets.filter(s => !s.isWarmup).length + 1}
