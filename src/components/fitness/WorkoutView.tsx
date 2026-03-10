@@ -167,16 +167,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
               <Trash2 className="w-5 h-5" />
             </Button>
           </div>
-          <div className="flex items-center gap-3 text-sm text-zinc-400 mt-1 ml-10">
-            <div className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>{format(parseISO(workout.date), 'd MMMM yyyy', { locale: ru })}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
-              <span>{format(parseISO(workout.updatedAt), 'HH:mm')}</span>
-            </div>
-          </div>
+
         </div>
 
         {/* Notes display */}
@@ -187,7 +178,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
         )}
 
         {/* Stats */}
-        <div className="flex gap-6 mt-4 pt-4 border-t border-zinc-700/50 justify-end">
+        <div className="flex gap-6 mt-4 justify-end">
           <div className="text-center">
             <div className="text-2xl font-bold text-white">{workout.exercises.length}</div>
             <div className="text-xs text-zinc-500">Упражнений</div>

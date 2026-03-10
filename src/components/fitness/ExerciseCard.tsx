@@ -179,6 +179,7 @@ export function ExerciseCard({
   const renderSetDisplay = (set: WorkoutSet) => {
     const isBodyweight = set.weight === 0;
     const hasTime = set.time && set.time > 0;
+    const isPR = isCurrentPR(set.weight);
     
     return (
       <div className="flex items-center gap-2 flex-wrap">
@@ -187,21 +188,23 @@ export function ExerciseCard({
         )}
         
         {!isBodyweight && set.weight > 0 && (
-          <span className={cn(
-            'font-medium',
-            isCurrentPR(set.weight) ? 'text-amber-400' : 'text-white'
-          )}>
-            {set.weight} кг
-          </span>
+          <div className="flex items-baseline gap-1">
+            <span className={cn(
+              'font-medium w-14 text-right',
+              isPR ? 'text-amber-400' : 'text-white'
+            )}>
+              {set.weight}
+            </span>
+            <span className={cn('w-4 text-center text-xs', isPR ? 'text-amber-400/70' : 'text-zinc-500')}>кг</span>
+          </div>
         )}
         
         {set.reps > 0 && (
           <>
             {!isBodyweight && set.weight > 0 && (
-              <span className="text-zinc-500">×</span>
+              <span className={cn('w-3 text-center', isPR ? 'text-amber-400/70' : 'text-zinc-500')}>×</span>
             )}
-            <span className="text-emerald-400 font-medium">{set.reps}</span>
-            <span className="text-zinc-500 text-xs">повт.</span>
+            <span className={cn('font-medium w-6 text-left', isPR ? 'text-amber-400' : 'text-emerald-400')}>{set.reps}</span>
           </>
         )}
         
@@ -222,15 +225,14 @@ export function ExerciseCard({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className="rounded-xl border overflow-hidden bg-zinc-800/50 border-zinc-700"
+        className={cn(
+          "rounded-xl overflow-hidden bg-zinc-800/50",
+          "border-t border-r border-b border-zinc-700",
+          "border-l-4",
+          exerciseColors.border
+        )}
       >
         <div className="flex">
-          {/* Цветная полоса слева */}
-          <div className={cn(
-            "w-3 shrink-0 self-stretch",
-            exerciseColors.bg.replace('/20', '/60')
-          )} />
-          
           <div className="flex-1 min-w-0">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-zinc-700">
@@ -407,9 +409,6 @@ export function ExerciseCard({
                         className="flex-1 cursor-pointer hover:bg-zinc-700/30 py-1 px-2 -ml-2 rounded-lg transition-colors"
                       >
                         {renderSetDisplay(set)}
-                        {isCurrentPR(set.weight) && (
-                          <Trophy className="inline w-3 h-3 text-amber-400 ml-1" />
-                        )}
                         {isNewPR(set.weight) && !isCurrentPR(set.weight) && (
                           <span className="text-[10px] text-emerald-400 font-medium ml-1">NEW!</span>
                         )}
