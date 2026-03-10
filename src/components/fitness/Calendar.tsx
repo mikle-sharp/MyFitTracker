@@ -3,8 +3,7 @@
 import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ChevronDown, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFitnessStore } from '@/lib/store';
 import { WORKOUT_TYPE_COLORS, WorkoutType } from '@/lib/types';
@@ -37,9 +36,9 @@ export function Calendar() {
   const { selectedDate, setSelectedDate, loadWorkoutForDate, workouts } = useFitnessStore();
 
   const workoutDates = useMemo(() => {
-    const dateMap = new Map<string, WorkoutType>();
+    const dateMap = new Map<string, { type: WorkoutType; hasNotes: boolean }>();
     workouts.forEach(w => {
-      dateMap.set(w.date, w.type);
+      dateMap.set(w.date, { type: w.type, hasNotes: !!w.notes });
     });
     return dateMap;
   }, [workouts]);
@@ -63,12 +62,6 @@ export function Calendar() {
     loadWorkoutForDate(dateStr);
   };
 
-  const goToToday = () => {
-    const today = new Date();
-    setCurrentMonth(today);
-    handleDateClick(today);
-  };
-
   const goToMonth = (monthIndex: number) => {
     const newDate = new Date(currentMonth);
     newDate.setMonth(monthIndex);
@@ -88,8 +81,8 @@ export function Calendar() {
 
   return (
     <div className="w-full bg-zinc-900/50 rounded-xl p-4 border border-zinc-800">
-      {/* Month/Year selectors */}
-      <div className="flex items-center justify-center gap-2 mb-4">
+      {/* Month/Year selectors - справа */}
+      <div className="flex justify-end items-center gap-2 mb-4">
         {/* Month selector */}
         <div className="relative">
           <button
@@ -98,14 +91,14 @@ export function Calendar() {
               setShowYearPicker(false);
             }}
             className={cn(
-              'flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors',
-              'text-white font-medium',
-              showMonthPicker ? 'bg-zinc-700' : 'hover:bg-zinc-800'
+              'flex items-center gap-1 px-2 py-1 rounded transition-colors',
+              'text-xs text-zinc-400',
+              showMonthPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 hover:text-zinc-300'
             )}
           >
-            {MONTHS[currentMonthIndex]}
+            {MONTHS[currentMonthIndex].slice(0, 3)}
             <ChevronDown className={cn(
-              'w-4 h-4 text-zinc-400 transition-transform',
+              'w-3 h-3 transition-transform',
               showMonthPicker && 'rotate-180'
             )} />
           </button>
@@ -116,7 +109,7 @@ export function Calendar() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute top-full left-0 mt-2 bg-zinc-800 rounded-xl border border-zinc-700 shadow-xl z-50 overflow-hidden"
+                className="absolute top-full right-0 mt-2 bg-zinc-800 rounded-xl border border-zinc-700 shadow-xl z-50 overflow-hidden"
               >
                 <div className="grid grid-cols-3 gap-1 p-2 min-w-[200px]">
                   {MONTHS.map((month, index) => (
@@ -147,14 +140,14 @@ export function Calendar() {
               setShowMonthPicker(false);
             }}
             className={cn(
-              'flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors',
-              'text-white font-medium',
-              showYearPicker ? 'bg-zinc-700' : 'hover:bg-zinc-800'
+              'flex items-center gap-1 px-2 py-1 rounded transition-colors',
+              'text-xs text-zinc-400',
+              showYearPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 hover:text-zinc-300'
             )}
           >
             {currentYear}
             <ChevronDown className={cn(
-              'w-4 h-4 text-zinc-400 transition-transform',
+              'w-3 h-3 transition-transform',
               showYearPicker && 'rotate-180'
             )} />
           </button>
@@ -165,7 +158,7 @@ export function Calendar() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-zinc-800 rounded-xl border border-zinc-700 shadow-xl z-50 overflow-hidden max-h-[200px] overflow-y-auto"
+                className="absolute top-full right-0 mt-2 bg-zinc-800 rounded-xl border border-zinc-700 shadow-xl z-50 overflow-hidden max-h-[200px] overflow-y-auto"
               >
                 <div className="flex flex-col gap-1 p-2">
                   {YEARS().map(year => (
@@ -189,31 +182,6 @@ export function Calendar() {
         </div>
       </div>
 
-      {/* Navigation arrows + Current date */}
-      <div className="flex items-center justify-between mb-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        
-        <div className="text-center text-zinc-500 text-sm">
-          <span className="capitalize">{format(new Date(), "EEEE, d MMMM", { locale: ru })}</span>
-        </div>
-        
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </Button>
-      </div>
-
       {/* Week days header */}
       <div className="grid grid-cols-7 gap-1 mb-2">
         {weekDays.map(day => (
@@ -234,7 +202,9 @@ export function Calendar() {
           }
 
           const dateStr = format(day, 'yyyy-MM-dd');
-          const workoutType = workoutDates.get(dateStr);
+          const workoutInfo = workoutDates.get(dateStr);
+          const workoutType = workoutInfo?.type;
+          const hasNotes = workoutInfo?.hasNotes;
           const isSelected = selectedDate === dateStr;
           const isTodayDate = isToday(day);
           const colors = workoutType ? WORKOUT_TYPE_COLORS[workoutType] : null;
@@ -271,6 +241,15 @@ export function Calendar() {
                 >
                   {marker}
                 </span>
+              )}
+              {/* Индикатор заметки */}
+              {hasNotes && (
+                <Circle 
+                  className={cn(
+                    'absolute top-1 right-1 w-1.5 h-1.5 fill-current',
+                    isSelected ? 'text-emerald-400' : 'text-zinc-400'
+                  )}
+                />
               )}
             </button>
           );

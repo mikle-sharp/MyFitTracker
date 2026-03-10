@@ -22,6 +22,7 @@ export interface WorkoutSet {
   weight: number; // в кг, может быть десятичным (0 для собственного веса)
   time?: number; // время в секундах
   inputType?: ExerciseInputType; // тип ввода для этого подхода
+  isWarmup?: boolean; // разминочный подход
 }
 
 // Упражнение
