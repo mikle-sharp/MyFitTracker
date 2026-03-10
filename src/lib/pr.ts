@@ -52,7 +52,7 @@ export const isNewPersonalRecord = (
 
 // Форматирование рекорда для отображения
 export const formatPersonalRecord = (record: PersonalRecord): string => {
-  return `${record.reps} × ${record.maxWeight} кг`;
+  return `${record.maxWeight} кг × ${record.reps}`;
 };
 
 // Форматирование времени

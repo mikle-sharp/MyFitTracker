@@ -50,6 +50,7 @@ export interface PersonalRecord {
   exerciseName: string;
   maxWeight: number;
   reps: number; // количество повторений с максимальным весом
+  time?: number; // время в секундах (для рекордов по времени)
   date: string;
   workoutId: string;
   workoutType: WorkoutType; // тип тренировки для цветовой индикации
