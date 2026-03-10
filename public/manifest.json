@@ -1,0 +1,37 @@
+{
+  "name": "Мой журнал тренировок",
+  "short_name": "Журнал",
+  "description": "Персональный журнал тренировок с отслеживанием прогресса и личных рекордов",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#18181b",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["fitness", "health", "lifestyle"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Новая тренировка",
+      "short_name": "Тренировка",
+      "description": "Начать новую тренировку",
+      "url": "/?action=new",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
