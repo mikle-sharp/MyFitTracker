@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2, Plus, Trophy, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap } from 'lucide-react';
+import { Trash2, Plus, Trophy, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap, Repeat2 } from 'lucide-react';
 import { Exercise, WorkoutSet, isAbsExercise, getExerciseType, EXERCISE_TYPE_COLORS, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getPersonalRecord, isNewPersonalRecord } from '@/lib/pr';
 import { useFitnessStore } from '@/lib/store';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { getPreviousSetData } from '@/lib/storage';
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -57,6 +58,7 @@ export function ExerciseCard({
   // State for input type
   const [useBodyweight, setUseBodyweight] = useState(false);
   const [useReps, setUseReps] = useState(true);
+  const [useTime, setUseTime] = useState(false);
   
   // State for delete confirmation
   const [showDeleteExerciseConfirm, setShowDeleteExerciseConfirm] = useState(false);
@@ -83,6 +85,14 @@ export function ExerciseCard({
   const workoutTypeForColor = exerciseTypeToWorkoutType[exerciseType];
   const exerciseColors = WORKOUT_TYPE_COLORS[workoutTypeForColor];
   
+  // Вычисляем номер следующего подхода и получаем предыдущие значения
+  const nextWorkingSetNumber = exercise.sets.filter(s => !s.isWarmup).length + 1;
+  const nextWarmupSetNumber = exercise.sets.filter(s => s.isWarmup).length + 1;
+  
+  // Получаем предыдущие значения для следующего подхода
+  const prevWorkingSetData = getPreviousSetData(exercise.name, nextWorkingSetNumber, false);
+  const prevWarmupSetData = getPreviousSetData(exercise.name, nextWarmupSetNumber, true);
+  
   // При активации повторений - время отключается автоматически
   const handleRepsToggle = (checked: boolean) => {
     setUseReps(checked);
@@ -91,12 +101,13 @@ export function ExerciseCard({
   const handleAddSet = () => {
     const reps = parseInt(newReps) || 0;
     const weight = useBodyweight ? 0 : (parseFloat(newWeight) || 0);
-    const time = !useReps ? ((parseInt(newTimeMinutes) || 0) * 60 + (parseInt(newTimeSeconds) || 0)) : 0;
+    const time = useTime ? ((parseInt(newTimeMinutes) || 0) * 60 + (parseInt(newTimeSeconds) || 0)) : 0;
 
-    // Validate
-    if (useReps && reps <= 0) return;
-    if (!useBodyweight && useReps && weight <= 0) return;
-    if (!useReps && time <= 0) return;
+    // Validate - нужен хотя бы один показатель
+    if (!useReps && !useTime) return;
+    if (useReps && reps <= 0 && !useBodyweight) return;
+    if (!useBodyweight && useReps && weight <= 0 && !useTime) return;
+    if (useTime && time <= 0 && !useReps) return;
 
     addSet(workoutId, exercise.id, reps, weight, time > 0 ? time : undefined, isWarmup);
     
@@ -216,7 +227,7 @@ export function ExerciseCard({
         <div className="flex">
           {/* Цветная полоса слева */}
           <div className={cn(
-            "w-3 shrink-0",
+            "w-3 shrink-0 self-stretch",
             exerciseColors.bg.replace('/20', '/60')
           )} />
           
@@ -313,7 +324,7 @@ export function ExerciseCard({
                   <div className={cn(
                     'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0',
                     set.isWarmup
-                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                      ? 'bg-zinc-800 text-zinc-400 border border-zinc-700'
                       : 'bg-zinc-700 text-zinc-300'
                   )}>
                     {set.isWarmup ? 'Р' : workingSetNumber}
@@ -453,25 +464,31 @@ export function ExerciseCard({
                     
                     <label className={cn(
                       'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
-                      useReps ? 'bg-emerald-600/20 border border-emerald-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                      useReps ? 'bg-red-600/20 border border-red-500/50' : 'bg-zinc-700/50 border border-zinc-600'
                     )}>
                       <input
                         type="checkbox"
                         checked={useReps}
-                        onChange={(e) => handleRepsToggle(e.target.checked)}
-                        className="w-3.5 h-3.5 rounded border-zinc-600 bg-zinc-700 text-emerald-600"
+                        onChange={(e) => setUseReps(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded border-zinc-600 bg-zinc-700 text-red-600"
                       />
+                      <Repeat2 className="w-3 h-3 text-red-400" />
                       <span className="text-[10px] text-zinc-300">Повторения</span>
                     </label>
                     
-                    {!useReps && (
-                      <label className={cn(
-                        'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors bg-blue-600/20 border border-blue-500/50'
-                      )}>
-                        <Clock className="w-3 h-3 text-blue-400" />
-                        <span className="text-[10px] text-zinc-300">Время</span>
-                      </label>
-                    )}
+                    <label className={cn(
+                      'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
+                      useTime ? 'bg-purple-600/20 border border-purple-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                    )}>
+                      <input
+                        type="checkbox"
+                        checked={useTime}
+                        onChange={(e) => setUseTime(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded border-zinc-600 bg-zinc-700 text-purple-600"
+                      />
+                      <Clock className="w-3 h-3 text-purple-400" />
+                      <span className="text-[10px] text-zinc-300">Время</span>
+                    </label>
                   </div>
 
                   {/* Input fields */}
@@ -479,8 +496,8 @@ export function ExerciseCard({
                     <div className={cn(
                       'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0',
                       isWarmup
-                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                        : 'bg-emerald-600/20 text-emerald-400'
+                        ? 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                        : 'bg-zinc-700 text-zinc-300'
                     )}>
                       {isWarmup ? 'Р' : exercise.sets.filter(s => !s.isWarmup).length + 1}
                     </div>
@@ -511,9 +528,9 @@ export function ExerciseCard({
                       />
                     )}
 
-                    {!useReps && (
+                    {useTime && (
                       <div className="flex items-center gap-0.5">
-                        <Clock className="w-3 h-3 text-zinc-500" />
+                        <Clock className="w-3 h-3 text-purple-400" />
                         <Input
                           type="number"
                           min={"0"}
@@ -535,6 +552,29 @@ export function ExerciseCard({
                       </div>
                     )}
                   </div>
+                  
+                  {/* Previous values hint */}
+                  {(() => {
+                    const prevData = isWarmup ? prevWarmupSetData : prevWorkingSetData;
+                    if (!prevData) return null;
+                    
+                    return (
+                      <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-1 ml-9">
+                        <span>Прошлый раз:</span>
+                        {prevData.isBodyweight ? (
+                          <span className="text-emerald-400">собственный вес</span>
+                        ) : prevData.weight > 0 ? (
+                          <span>{prevData.weight} кг</span>
+                        ) : null}
+                        {prevData.reps > 0 && (
+                          <span>× {prevData.reps} повт.</span>
+                        )}
+                        {prevData.time > 0 && (
+                          <span className="text-purple-400">{formatTime(prevData.time)}</span>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Buttons in bottom-right corner */}
                   <div className="flex justify-end items-center gap-2 mt-3">
@@ -571,7 +611,7 @@ export function ExerciseCard({
                 <Button
                   variant="ghost"
                   onClick={() => setIsAddingSet(true)}
-                  className="w-full mt-3 text-zinc-400 hover:text-white hover:bg-zinc-700/50"
+                  className="w-full mt-3 bg-zinc-700/30 text-zinc-400 hover:text-white hover:bg-zinc-700/50"
                 >
                   Добавить подход
                 </Button>

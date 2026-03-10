@@ -96,7 +96,7 @@ export function Calendar() {
               showMonthPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 hover:text-zinc-300'
             )}
           >
-            {MONTHS[currentMonthIndex].slice(0, 3)}
+            {MONTHS[currentMonthIndex]}
             <ChevronDown className={cn(
               'w-3 h-3 transition-transform',
               showMonthPicker && 'rotate-180'
@@ -123,7 +123,7 @@ export function Calendar() {
                           : 'text-zinc-300 hover:bg-zinc-700'
                       )}
                     >
-                      {month.slice(0, 3)}
+                      {month}
                     </button>
                   ))}
                 </div>
@@ -242,12 +242,12 @@ export function Calendar() {
                   {marker}
                 </span>
               )}
-              {/* Индикатор заметки */}
+              {/* Индикатор заметки - слева вверху, цветом типа тренировки */}
               {hasNotes && (
                 <Circle 
                   className={cn(
-                    'absolute top-1 right-1 w-1.5 h-1.5 fill-current',
-                    isSelected ? 'text-emerald-400' : 'text-zinc-400'
+                    'absolute top-1 left-1 w-1.5 h-1.5 fill-current',
+                    colors?.text || 'text-zinc-400'
                   )}
                 />
               )}

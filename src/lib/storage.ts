@@ -99,13 +99,26 @@ export const getAllExercisesForType = (type: WorkoutType): string[] => {
 // Создание новой тренировки
 export const createWorkout = (date: string, type: WorkoutType): Workout => {
   const now = new Date().toISOString();
-  const allExercises = getAllExercisesForType(type);
   
-  const exercises: Exercise[] = allExercises.map(name => ({
+  let exerciseNames: string[];
+  
+  if (type === 'fullbody') {
+    // Для фулбоди: по 2 упражнения из каждого типа + 1 на пресс
+    exerciseNames = [
+      ...DEFAULT_EXERCISES.chest.slice(0, 2),
+      ...DEFAULT_EXERCISES.back.slice(0, 2),
+      ...DEFAULT_EXERCISES.legs.slice(0, 2),
+      'Планка', // пресс
+    ];
+  } else {
+    exerciseNames = [...DEFAULT_EXERCISES[type]];
+  }
+  
+  const exercises: Exercise[] = exerciseNames.map(name => ({
     id: generateId(),
     name,
     sets: [],
-    isCustom: !DEFAULT_EXERCISES[type].includes(name),
+    isCustom: false,
   }));
 
   const workout: Workout = {
@@ -268,7 +281,12 @@ export const addSetToExercise = (
     isWarmup,
   };
 
-  exercise.sets.push(newSet);
+  // Разминочные подходы добавляем в начало списка
+  if (isWarmup) {
+    exercise.sets.unshift(newSet);
+  } else {
+    exercise.sets.push(newSet);
+  }
   workout.updatedAt = new Date().toISOString();
   saveWorkouts(workouts);
 
@@ -473,4 +491,47 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
   } catch (error) {
     return { success: false, message: 'Ошибка при обработке CSV файла' };
   }
+};
+
+// Получение предыдущих значений для упражнения по номеру подхода
+export interface PreviousSetData {
+  weight: number;
+  reps: number;
+  time: number;
+  isBodyweight: boolean;
+}
+
+export const getPreviousSetData = (
+  exerciseName: string,
+  setNumber: number, // 0 = разминка, 1 = первый рабочий, 2 = второй рабочий и т.д.
+  isWarmup: boolean
+): PreviousSetData | null => {
+  const workouts = getWorkouts();
+  
+  // Сортируем по дате (новые сначала)
+  const sortedWorkouts = [...workouts].sort((a, b) => b.date.localeCompare(a.date));
+  
+  for (const workout of sortedWorkouts) {
+    const exercise = workout.exercises.find(e => e.name === exerciseName);
+    if (!exercise) continue;
+    
+    // Фильтруем подходы по типу (разминочные или рабочие)
+    const relevantSets = exercise.sets.filter(s => 
+      isWarmup ? s.isWarmup : !s.isWarmup
+    );
+    
+    // Ищем подход с нужным номером (индекс setNumber - 1 или setNumber для разминки)
+    const targetSet = relevantSets[setNumber - 1];
+    
+    if (targetSet) {
+      return {
+        weight: targetSet.weight,
+        reps: targetSet.reps,
+        time: targetSet.time || 0,
+        isBodyweight: targetSet.weight === 0,
+      };
+    }
+  }
+  
+  return null;
 };

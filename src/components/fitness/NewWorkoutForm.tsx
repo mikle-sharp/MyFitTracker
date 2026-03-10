@@ -51,7 +51,7 @@ export function NewWorkoutForm({ date, onCreated }: NewWorkoutFormProps) {
           disabled={!selectedType}
           className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-white font-medium"
         >
-          Добавить
+          Начать
         </Button>
       </div>
     </motion.div>
