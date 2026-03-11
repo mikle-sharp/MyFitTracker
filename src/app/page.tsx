@@ -66,16 +66,16 @@ export default function Home() {
           <TabsList className="grid w-full grid-cols-2 bg-zinc-900 border border-zinc-800 relative">
             <TabsTrigger
               value="workout"
-              className="relative z-10 data-[state=active]:text-white transition-colors"
-              style={{ color: '#19a655' }}
+              className="relative z-10 transition-colors"
+              style={{ color: activeTab === 'workout' ? '#fff' : '#19a655' }}
             >
               <CalendarIcon className="w-4 h-4 mr-2" />
               Тренировки
             </TabsTrigger>
             <TabsTrigger
               value="records"
-              className="relative z-10 data-[state=active]:text-white transition-colors"
-              style={{ color: '#ffb900' }}
+              className="relative z-10 transition-colors"
+              style={{ color: activeTab === 'records' ? '#fff' : '#ffb900' }}
             >
               <Trophy className="w-4 h-4 mr-2" />
               Рекорды

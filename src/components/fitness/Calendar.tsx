@@ -220,17 +220,17 @@ export function Calendar() {
                 workoutType && !isSelected && 'border'
               )}
               style={isSelected ? {
-                ringColor: '#037b34',
-                backgroundColor: '#072f18'
+                ringColor: '#037b34'
               } : workoutType && colors ? {
                 backgroundColor: colors.bg,
                 borderColor: colors.border
               } : undefined}
             >
               <span
-                className="text-sm font-medium"
+                className="text-sm"
                 style={{
-                  color: isSelected ? '#19a655' : isTodayDate ? '#fff' : '#d4d4d8'
+                  color: isSelected ? '#fff' : isTodayDate ? '#fff' : '#d4d4d8',
+                  fontWeight: isSelected ? 700 : 500
                 }}
               >
                 {format(day, 'd')}

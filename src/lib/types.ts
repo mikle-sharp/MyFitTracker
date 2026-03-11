@@ -129,7 +129,7 @@ export const WORKOUT_TYPE_COLORS: Record<WorkoutType, { bg: string; text: string
     border: '#037b34',
   },
   fullbody: {
-    bg: '#3871d4',
+    bg: '#1a0a2e',
     text: '#944ad4',
     border: '#6b2da1',
   },
@@ -169,7 +169,7 @@ export const EXERCISE_TYPE_COLORS: Record<ExerciseType, { bg: string; text: stri
     border: '#037b34',
   },
   common: {
-    bg: '#3871d4',
+    bg: '#1a0a2e',
     text: '#944ad4',
     border: '#6b2da1',
   },
