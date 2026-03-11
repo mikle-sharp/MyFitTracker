@@ -44,25 +44,31 @@ export function WorkoutTypeSelector({ selectedType, onSelect }: WorkoutTypeSelec
               'flex flex-col items-center gap-2',
               'min-h-[100px]',
               isSelected
-                ? `${colors.bg} ${colors.border} ${colors.text}`
+                ? ''
                 : 'bg-zinc-800/50 border-zinc-700 text-zinc-300 hover:border-zinc-500'
             )}
+            style={isSelected ? {
+              backgroundColor: colors.bg,
+              borderColor: colors.border,
+              color: colors.text
+            } : undefined}
           >
-            <div className={cn(
-              'p-2 rounded-lg',
-              isSelected ? colors.bg : 'bg-zinc-700/50'
-            )}>
+            <div
+              className="p-2 rounded-lg"
+              style={isSelected ? { backgroundColor: colors.bg } : { backgroundColor: 'rgba(63, 63, 70, 0.5)' }}
+            >
               {typeIcons[type]}
             </div>
             <div className="text-center">
               <div className="font-semibold text-sm">{WORKOUT_TYPE_NAMES[type]}</div>
               <div className="text-xs opacity-70 mt-0.5">{typeDescriptions[type]}</div>
             </div>
-            
+
             {isSelected && (
               <motion.div
                 layoutId="selected-indicator"
-                className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center"
+                className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: '#037b34' }}
               >
                 <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />

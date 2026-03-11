@@ -116,12 +116,11 @@ export function Calendar() {
                     <button
                       key={month}
                       onClick={() => goToMonth(index)}
-                      className={cn(
-                        'px-2 py-1.5 text-xs rounded-lg transition-colors',
-                        currentMonthIndex === index
-                          ? 'bg-emerald-600 text-white'
-                          : 'text-zinc-300 hover:bg-zinc-700'
-                      )}
+                      className="px-2 py-1.5 text-xs rounded-lg transition-colors text-zinc-300 hover:bg-zinc-700"
+                      style={currentMonthIndex === index ? {
+                        backgroundColor: '#072f18',
+                        color: '#fff'
+                      } : undefined}
                     >
                       {month}
                     </button>
@@ -165,12 +164,11 @@ export function Calendar() {
                     <button
                       key={year}
                       onClick={() => goToYear(year)}
-                      className={cn(
-                        'px-4 py-1.5 text-xs rounded-lg transition-colors whitespace-nowrap',
-                        currentYear === year
-                          ? 'bg-emerald-600 text-white'
-                          : 'text-zinc-300 hover:bg-zinc-700'
-                      )}
+                      className="px-4 py-1.5 text-xs rounded-lg transition-colors whitespace-nowrap text-zinc-300 hover:bg-zinc-700"
+                      style={currentYear === year ? {
+                        backgroundColor: '#072f18',
+                        color: '#fff'
+                      } : undefined}
                     >
                       {year}
                     </button>
@@ -217,38 +215,39 @@ export function Calendar() {
               className={cn(
                 'aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all duration-200',
                 'hover:bg-zinc-700/50 active:scale-95',
-                isSelected && 'ring-2 ring-emerald-500 bg-emerald-500/20',
+                isSelected && 'ring-2',
                 isTodayDate && !isSelected && 'bg-zinc-700/30',
-                workoutType && !isSelected && colors && `${colors.bg} ${colors.border} border`
+                workoutType && !isSelected && 'border'
               )}
+              style={isSelected ? {
+                ringColor: '#037b34',
+                backgroundColor: '#072f18'
+              } : workoutType && colors ? {
+                backgroundColor: colors.bg,
+                borderColor: colors.border
+              } : undefined}
             >
               <span
-                className={cn(
-                  'text-sm font-medium',
-                  isSelected ? 'text-emerald-400' :
-                  isTodayDate ? 'text-white' :
-                  'text-zinc-300'
-                )}
+                className="text-sm font-medium"
+                style={{
+                  color: isSelected ? '#19a655' : isTodayDate ? '#fff' : '#d4d4d8'
+                }}
               >
                 {format(day, 'd')}
               </span>
               {workoutType && marker && (
-                <span 
-                  className={cn(
-                    'text-sm font-bold absolute bottom-1 right-1 leading-none',
-                    colors?.text || 'text-zinc-400'
-                  )}
+                <span
+                  className="text-sm font-bold absolute bottom-1 right-1 leading-none"
+                  style={{ color: colors?.text || '#a1a1aa' }}
                 >
                   {marker}
                 </span>
               )}
               {/* Индикатор заметки - слева вверху, цветом типа тренировки */}
               {hasNotes && (
-                <Circle 
-                  className={cn(
-                    'absolute top-1 left-1 w-1.5 h-1.5 fill-current',
-                    colors?.text || 'text-zinc-400'
-                  )}
+                <Circle
+                  className="absolute top-1 left-1 w-1.5 h-1.5 fill-current"
+                  style={{ color: colors?.text || '#a1a1aa' }}
                 />
               )}
             </button>

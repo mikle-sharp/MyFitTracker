@@ -17,35 +17,35 @@ function RecordValue({ record }: { record: PersonalRecord }) {
     const mins = Math.floor(record.time / 60);
     const secs = record.time % 60;
     return (
-      <div className="flex items-center gap-1 font-bold text-amber-400">
-        <Clock className="w-4 h-4 text-purple-400" />
+      <div className="flex items-center gap-1 font-bold" style={{ color: '#ffb900' }}>
+        <Clock className="w-4 h-4" style={{ color: '#944ad4' }} />
         <span>{mins}:{secs.toString().padStart(2, '0')}</span>
       </div>
     );
   }
-  
+
   // Рекорд собственного веса - иконка + повторения
   if (record.maxWeight === 0 && record.reps > 0) {
     return (
-      <div className="flex items-center gap-1 font-bold text-amber-400">
-        <User className="w-4 h-4 text-emerald-400" />
+      <div className="flex items-center gap-1 font-bold" style={{ color: '#ffb900' }}>
+        <User className="w-4 h-4" style={{ color: '#19a655' }} />
         <span>{record.reps}</span>
       </div>
     );
   }
-  
+
   // Рекорд с весом - формат "Вес × Повторения" с выравниванием колонок
   if (record.maxWeight > 0) {
     return (
-      <div className="flex items-baseline gap-1 font-bold text-amber-400">
+      <div className="flex items-baseline gap-1 font-bold" style={{ color: '#ffb900' }}>
         <span className="w-14 text-right">{record.maxWeight}</span>
-        <span className="w-4 text-center text-amber-400/70">кг</span>
-        <span className="w-3 text-center text-amber-400/70">×</span>
+        <span className="w-4 text-center" style={{ color: '#ffb900', opacity: 0.7 }}>кг</span>
+        <span className="w-3 text-center" style={{ color: '#ffb900', opacity: 0.7 }}>×</span>
         <span className="w-6 text-left">{record.reps}</span>
       </div>
     );
   }
-  
+
   return null;
 }
 
@@ -77,15 +77,14 @@ export function PersonalRecords() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={cn(
-                  "flex items-center justify-between p-3 rounded-lg transition-colors border-l-2",
-                  colors.bg,
-                  colors.border,
-                  "hover:bg-zinc-800/50"
-                )}
+                className="flex items-center justify-between p-3 rounded-lg transition-colors border-l-2 hover:bg-zinc-800/50"
+                style={{
+                  backgroundColor: colors.bg,
+                  borderLeftColor: colors.border
+                }}
               >
                 <div className="flex items-center gap-3">
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", colors.bg)}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: colors.bg }}>
                     <span className="text-base">{icon}</span>
                   </div>
                   <div>

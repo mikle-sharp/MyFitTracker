@@ -194,11 +194,11 @@ export function ExerciseCard({
         {/* Столбец 1: Вес / Иконка User / Иконка Clock */}
         <span className="inline-block w-8 text-left font-medium text-sm">
           {isBodyweight ? (
-            <User className="w-4 h-4 inline text-emerald-400" />
+            <User className="w-4 h-4 inline" style={{ color: '#19a655' }} />
           ) : hasTime && !hasReps ? (
-            <Clock className="w-4 h-4 inline text-purple-400" />
+            <Clock className="w-4 h-4 inline" style={{ color: '#944ad4' }} />
           ) : (
-            <span className={isPRSet ? 'text-amber-400' : 'text-white'}>{set.weight}</span>
+            <span style={isPRSet ? { color: '#ffb900' } : { color: '#fff' }}>{set.weight}</span>
           )}
         </span>
 
@@ -208,18 +208,20 @@ export function ExerciseCard({
         </span>
 
         {/* Столбец 3: "×" / Время */}
-        <span className={cn(
-          'inline-block w-4 text-center text-sm',
-          hasTime && !hasReps ? 'text-purple-400 font-medium' : 'text-zinc-500'
-        )}>
+        <span
+          className="inline-block w-4 text-center text-sm"
+          style={hasTime && !hasReps ? { color: '#944ad4', fontWeight: 500 } : { color: '#71717a' }}
+        >
           {hasTime && !hasReps ? formatTime(set.time!) : hasReps ? '×' : ''}
         </span>
 
         {/* Столбец 4: Повторения */}
         <span className={cn(
           'inline-block w-6 text-left font-medium text-sm',
-          isPRSet ? 'text-amber-400' : 'text-red-400'
-        )}>
+          isPRSet ? '' : 'text-red-400'
+        )}
+        style={isPRSet ? { color: '#ffb900' } : undefined}
+        >
           {hasReps ? set.reps : ''}
         </span>
       </div>
@@ -232,17 +234,13 @@ export function ExerciseCard({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className={cn(
-          "rounded-xl overflow-hidden bg-zinc-800/50",
-          "border-t border-r border-b border-zinc-700",
-          "border-l-8",
-          exerciseColors.border
-        )}
+        className="rounded-xl overflow-hidden bg-zinc-800/50 border-t border-r border-b border-zinc-700"
+        style={{ borderLeftWidth: '8px', borderLeftColor: exerciseColors.border }}
       >
         <div className="flex">
           <div className="flex-1 min-w-0">
             {/* Header */}
-            <div className={cn("flex items-center justify-between p-4 border-b", exerciseColors.border.replace('/50', '/30'))}>
+            <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: exerciseColors.border }}>
               <div className="flex items-center gap-3">
                 {/* Move buttons */}
                 {currentWorkout && (
@@ -272,12 +270,12 @@ export function ExerciseCard({
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-white">{exercise.name}</h3>
                     {isAbs && (
-                      <span className="hidden text-[10px] px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded">пресс</span>
+                      <span className="hidden text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#10203c', color: '#3871d4' }}>пресс</span>
                     )}
                   </div>
                 </div>
               </div>
-              
+
               {currentWorkout && (
                 <div className="flex items-center gap-1">
                   {onReplace && !exercise.isCustom && (
@@ -285,7 +283,8 @@ export function ExerciseCard({
                       variant="ghost"
                       size="icon"
                       onClick={() => onReplace(exercise.id, exercise.name)}
-                      className="text-zinc-500 hover:text-blue-400 hover:bg-blue-500/10 h-8 w-8"
+                      className="text-zinc-500 hover:bg-blue-500/10 h-8 w-8"
+                      style={{ '--tw-hover-color': '#3871d4' } as React.CSSProperties}
                       title="Заменить упражнение"
                     >
                       <RefreshCw className="w-4 h-4" />

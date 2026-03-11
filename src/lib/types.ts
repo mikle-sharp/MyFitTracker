@@ -111,27 +111,27 @@ export const isAbsExercise = (name: string): boolean => {
          lowerName.includes('планк');
 };
 
-// Цвета для типов тренировок
+// Цвета для типов тренировок (hex без прозрачности)
 export const WORKOUT_TYPE_COLORS: Record<WorkoutType, { bg: string; text: string; border: string }> = {
   chest: {
-    bg: 'bg-red-500/20',
-    text: 'text-red-400',
-    border: 'border-red-500/50',
+    bg: '#391013',
+    text: '#c93843',
+    border: '#9a1d24',
   },
   back: {
-    bg: 'bg-blue-500/20',
-    text: 'text-blue-400',
-    border: 'border-blue-500/50',
+    bg: '#10203c',
+    text: '#3871d4',
+    border: '#1d4fa0',
   },
   legs: {
-    bg: 'bg-green-500/20',
-    text: 'text-green-400',
-    border: 'border-green-500/50',
+    bg: '#072f18',
+    text: '#19a655',
+    border: '#037b34',
   },
   fullbody: {
-    bg: 'bg-purple-500/20',
-    text: 'text-purple-400',
-    border: 'border-purple-500/50',
+    bg: '#3871d4',
+    text: '#944ad4',
+    border: '#6b2da1',
   },
 };
 
@@ -151,27 +151,27 @@ export const WORKOUT_TYPE_ICONS: Record<WorkoutType, string> = {
   fullbody: '🏋️',
 };
 
-// Цвета для типов упражнений (для цветовой маркировки внутри карточек)
+// Цвета для типов упражнений (для цветовой маркировки внутри карточек, hex без прозрачности)
 export const EXERCISE_TYPE_COLORS: Record<ExerciseType, { bg: string; text: string; border: string }> = {
   chest: {
-    bg: 'bg-red-950/40',
-    text: 'text-red-300',
-    border: 'border-red-800/60',
+    bg: '#391013',
+    text: '#c93843',
+    border: '#9a1d24',
   },
   back: {
-    bg: 'bg-blue-950/40',
-    text: 'text-blue-300',
-    border: 'border-blue-800/60',
+    bg: '#10203c',
+    text: '#3871d4',
+    border: '#1d4fa0',
   },
   legs: {
-    bg: 'bg-green-950/40',
-    text: 'text-green-300',
-    border: 'border-green-800/60',
+    bg: '#072f18',
+    text: '#19a655',
+    border: '#037b34',
   },
   common: {
-    bg: 'bg-purple-950/40',
-    text: 'text-purple-300',
-    border: 'border-purple-800/60',
+    bg: '#3871d4',
+    text: '#944ad4',
+    border: '#6b2da1',
   },
 };
 

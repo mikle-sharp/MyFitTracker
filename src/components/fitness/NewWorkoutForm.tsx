@@ -49,7 +49,8 @@ export function NewWorkoutForm({ date, onCreated }: NewWorkoutFormProps) {
         <Button
           onClick={handleCreate}
           disabled={!selectedType}
-          className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-white font-medium"
+          className="w-full h-12 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-white font-medium"
+          style={{ backgroundColor: '#037b34' }}
         >
           Начать
         </Button>

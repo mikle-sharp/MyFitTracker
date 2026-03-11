@@ -50,7 +50,7 @@ export default function Home() {
         <div className="max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center">
             <div className="flex-1 flex justify-start">
-              <Dumbbell className="w-6 h-6 text-emerald-400" />
+              <Dumbbell className="w-6 h-6" style={{ color: '#19a655' }} />
             </div>
             <h1 className="text-lg font-bold text-white">Мой журнал тренировок</h1>
             <div className="flex-1 flex justify-end">
@@ -66,25 +66,27 @@ export default function Home() {
           <TabsList className="grid w-full grid-cols-2 bg-zinc-900 border border-zinc-800 relative">
             <TabsTrigger
               value="workout"
-              className="relative z-10 text-emerald-400 data-[state=active]:text-white transition-colors"
+              className="relative z-10 data-[state=active]:text-white transition-colors"
+              style={{ color: '#19a655' }}
             >
               <CalendarIcon className="w-4 h-4 mr-2" />
               Тренировки
             </TabsTrigger>
             <TabsTrigger
               value="records"
-              className="relative z-10 text-amber-400 data-[state=active]:text-white transition-colors"
+              className="relative z-10 data-[state=active]:text-white transition-colors"
+              style={{ color: '#ffb900' }}
             >
               <Trophy className="w-4 h-4 mr-2" />
               Рекорды
             </TabsTrigger>
-            
+
             {/* Animated background */}
             <div
               className="absolute top-0 bottom-0 w-1/2 rounded-md transition-all duration-300 ease-out"
               style={{
                 left: activeTab === 'workout' ? '0%' : '50%',
-                backgroundColor: activeTab === 'workout' ? '#059669' : '#f59e0b'
+                backgroundColor: activeTab === 'workout' ? '#072f18' : '#3d2e00'
               }}
             />
           </TabsList>

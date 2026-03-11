@@ -129,17 +129,17 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={cn(
-          'p-4 rounded-xl border',
-          colors.bg,
-          colors.border
-        )}
+        className="p-4 rounded-xl border"
+        style={{
+          backgroundColor: colors.bg,
+          borderColor: colors.border
+        }}
       >
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-2xl">{WORKOUT_TYPE_ICONS[workout.type]}</span>
-              <h2 className={cn('text-xl font-bold', colors.text)}>
+              <h2 className="text-xl font-bold" style={{ color: colors.text }}>
                 {WORKOUT_TYPE_NAMES[workout.type]}
               </h2>
               <Button
@@ -149,13 +149,10 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                   setNotesValue(workout.notes || '');
                   setIsNotesOpen(true);
                 }}
-                className={cn(
-                  'h-7 w-7 rounded-md',
-                  'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50'
-                )}
+                className="h-7 w-7 rounded-md text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50"
                 title="Добавить заметку"
               >
-                <Pencil className={cn('w-4 h-4', workout.notes && colors.text)} />
+                <Pencil className="w-4 h-4" style={workout.notes ? { color: colors.text } : undefined} />
               </Button>
             </div>
             <Button
@@ -218,7 +215,8 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
         <DialogTrigger asChild>
           <Button
             variant="outline"
-            className="w-full border-dashed border-zinc-600 text-zinc-400 hover:text-white hover:border-emerald-500 hover:bg-emerald-500/10 py-6 justify-center"
+            className="w-full border-dashed border-zinc-600 text-zinc-400 hover:text-white py-6 justify-center"
+            style={{ '--hover-border': '#037b34', '--hover-bg': '#072f18' } as React.CSSProperties}
           >
             Добавить упражнение
           </Button>
@@ -254,17 +252,12 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                       <button
                         key={exerciseName}
                         onClick={() => handleAddExercise(exerciseName)}
-                        className={cn(
-                          'w-full text-left px-3 py-2 rounded-lg transition-colors',
-                          'hover:bg-zinc-800 text-zinc-300 hover:text-white',
-                          'flex items-center gap-2'
-                        )}
+                        className="w-full text-left px-3 py-2 rounded-lg transition-colors hover:bg-zinc-800 text-zinc-300 hover:text-white flex items-center gap-2"
                       >
-                        <span className={cn(
-                          "w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0",
-                          exerciseColors.bg,
-                          exerciseColors.text
-                        )}>
+                        <span
+                          className="w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: exerciseColors.bg, color: exerciseColors.text }}
+                        >
                           {exerciseMarker}
                         </span>
                         <span className="flex-1">{exerciseName}</span>
@@ -304,18 +297,21 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                         key={type}
                         type="button"
                         onClick={() => setNewExerciseType(type)}
-                        className={cn(
-                          "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
-                          isSelected 
-                            ? [typeColors.bg, typeColors.text, "border-2", typeColors.border.replace('/50', '')]
-                            : "bg-zinc-800 text-zinc-400 border-2 border-transparent hover:bg-zinc-700"
-                        )}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all border-2"
+                        style={isSelected ? {
+                          backgroundColor: typeColors.bg,
+                          color: typeColors.text,
+                          borderColor: typeColors.border
+                        } : {
+                          backgroundColor: '#27272a',
+                          color: '#a1a1aa',
+                          borderColor: 'transparent'
+                        }}
                       >
-                        <span className={cn(
-                          "w-4 h-4 rounded text-[10px] font-bold flex items-center justify-center",
-                          isSelected ? typeColors.bg : "bg-zinc-700",
-                          typeColors.text
-                        )}>
+                        <span
+                          className="w-4 h-4 rounded text-[10px] font-bold flex items-center justify-center"
+                          style={{ backgroundColor: isSelected ? typeColors.bg : '#3f3f46', color: typeColors.text }}
+                        >
                           {typeMarker}
                         </span>
                         {EXERCISE_TYPE_NAMES[type]}
@@ -323,11 +319,12 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                     );
                   })}
                 </div>
-                
+
                 <button
                   onClick={handleAddCustomExercise}
                   disabled={!newExerciseName.trim()}
-                  className="w-full h-9 px-4 rounded-md text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-500 transition-colors disabled:opacity-50 disabled:pointer-events-none justify-center"
+                  className="w-full h-9 px-4 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:pointer-events-none justify-center"
+                  style={{ backgroundColor: '#037b34' }}
                 >
                   Добавить
                 </button>
@@ -391,7 +388,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                       >
                         <span>{exerciseName}</span>
                         {isAbs && (
-                          <Clock className="w-4 h-4 text-blue-400" />
+                          <Clock className="w-4 h-4" style={{ color: '#3871d4' }} />
                         )}
                       </button>
                     );
@@ -420,7 +417,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 <Button
                   onClick={() => handleConfirmReplace(newExerciseName.trim())}
                   disabled={!newExerciseName.trim()}
-                  className="bg-blue-600 hover:bg-blue-500"
+                  style={{ backgroundColor: '#1d4fa0' }}
                 >
                   <RefreshCw className="w-4 h-4 mr-1" />
                   Заменить
@@ -442,7 +439,10 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
               value={notesValue}
               onChange={(e) => setNotesValue(e.target.value)}
               placeholder="Добавьте заметки к этой тренировке..."
-              className="w-full h-32 bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white placeholder-zinc-500 resize-none focus:outline-none focus:border-emerald-500"
+              className="w-full h-32 bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white placeholder-zinc-500 resize-none focus:outline-none"
+              style={{ '--tw-ring-color': '#037b34' } as React.CSSProperties}
+              onFocus={(e) => e.target.style.borderColor = '#037b34'}
+              onBlur={(e) => e.target.style.borderColor = '#3f3f46'}
             />
             <div className="flex justify-end gap-2">
               <Button
@@ -454,7 +454,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
               </Button>
               <Button
                 onClick={handleSaveNotes}
-                className="bg-emerald-600 hover:bg-emerald-500"
+                style={{ backgroundColor: '#037b34' }}
               >
                 Сохранить
               </Button>
