@@ -149,7 +149,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                   setNotesValue(workout.notes || '');
                   setIsNotesOpen(true);
                 }}
-                className="h-7 w-7 rounded-md text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50"
+                className="h-9 w-9 rounded-md text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50"
                 title="Добавить заметку"
               >
                 <Pencil className="w-4 h-4" style={workout.notes ? { color: colors.text } : undefined} />
