@@ -13,6 +13,7 @@ interface FitnessStore {
   init: () => void;
   setSelectedDate: (date: string) => void;
   loadWorkoutForDate: (date: string) => void;
+  clearSelection: () => void;
   createWorkout: (date: string, type: WorkoutType) => Workout;
   updateWorkout: (workout: Workout) => void;
   updateWorkoutNotes: (workoutId: string, notes: string) => void;
@@ -64,6 +65,11 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   loadWorkoutForDate: (date: string) => {
     const currentWorkout = storage.getWorkoutByDate(date);
     set({ currentWorkout, selectedDate: date });
+  },
+
+  // Очистка выделения
+  clearSelection: () => {
+    set({ selectedDate: '', currentWorkout: null });
   },
 
   // Создание тренировки

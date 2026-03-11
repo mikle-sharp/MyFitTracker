@@ -97,28 +97,30 @@ export default function Home() {
 
             {/* Workout content */}
             <AnimatePresence mode="wait">
-              {currentWorkout ? (
-                <motion.div
-                  key="workout"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  <WorkoutView workout={currentWorkout} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="new-workout"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  <NewWorkoutForm
-                    date={selectedDate}
-                    onCreated={() => loadWorkoutForDate(selectedDate)}
-                  />
-                </motion.div>
-              )}
+              {selectedDate ? (
+                currentWorkout ? (
+                  <motion.div
+                    key="workout"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <WorkoutView workout={currentWorkout} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="new-workout"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <NewWorkoutForm
+                      date={selectedDate}
+                      onCreated={() => loadWorkoutForDate(selectedDate)}
+                    />
+                  </motion.div>
+                )
+              ) : null}
             </AnimatePresence>
           </TabsContent>
 

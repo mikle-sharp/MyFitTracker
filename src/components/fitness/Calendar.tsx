@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay } from 'date-fns';
+import { useState, useMemo, useEffect } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, isSameMonth } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronDown, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -33,7 +33,7 @@ export function Calendar() {
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
   
-  const { selectedDate, setSelectedDate, loadWorkoutForDate, workouts } = useFitnessStore();
+  const { selectedDate, setSelectedDate, loadWorkoutForDate, clearSelection, workouts } = useFitnessStore();
 
   const workoutDates = useMemo(() => {
     const dateMap = new Map<string, { type: WorkoutType; hasNotes: boolean }>();
@@ -47,12 +47,24 @@ export function Calendar() {
     const start = startOfMonth(currentMonth);
     const end = endOfMonth(currentMonth);
     const allDays = eachDayOfInterval({ start, end });
-    
+
     const startDay = getDay(start);
     const prefixDays = Array(startDay).fill(null);
-    
+
     return [...prefixDays, ...allDays];
   }, [currentMonth]);
+
+  // Автоматически выделять сегодняшнюю дату при отображении текущего месяца
+  useEffect(() => {
+    const today = new Date();
+    const todayStr = format(today, 'yyyy-MM-dd');
+
+    // Если отображается текущий месяц и выбранная дата пустая
+    if (isSameMonth(currentMonth, today) && !selectedDate) {
+      setSelectedDate(todayStr);
+      loadWorkoutForDate(todayStr);
+    }
+  }, [currentMonth, selectedDate, setSelectedDate, loadWorkoutForDate]);
 
   const weekDays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
@@ -67,6 +79,15 @@ export function Calendar() {
     newDate.setMonth(monthIndex);
     setCurrentMonth(newDate);
     setShowMonthPicker(false);
+
+    // Проверяем, входит ли selectedDate в новый месяц
+    if (selectedDate) {
+      const selectedMonth = new Date(selectedDate).getMonth();
+      const selectedYear = new Date(selectedDate).getFullYear();
+      if (selectedMonth !== monthIndex || selectedYear !== currentMonth.getFullYear()) {
+        clearSelection();
+      }
+    }
   };
 
   const goToYear = (year: number) => {
@@ -74,6 +95,14 @@ export function Calendar() {
     newDate.setFullYear(year);
     setCurrentMonth(newDate);
     setShowYearPicker(false);
+
+    // Проверяем, входит ли selectedDate в новый год
+    if (selectedDate) {
+      const selectedYear = new Date(selectedDate).getFullYear();
+      if (selectedYear !== year) {
+        clearSelection();
+      }
+    }
   };
 
   const currentMonthIndex = currentMonth.getMonth();
