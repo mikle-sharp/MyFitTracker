@@ -216,21 +216,22 @@ export function Calendar() {
                 'aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all duration-200',
                 'hover:bg-zinc-700/50 active:scale-95',
                 isSelected && 'ring-2',
-                isTodayDate && !isSelected && 'bg-zinc-700/30',
-                workoutType && !isSelected && 'border'
+                isTodayDate && !isSelected && !workoutType && 'bg-zinc-700/30',
+                workoutType && 'border'
               )}
               style={isSelected ? {
-                ringColor: '#037b34'
+                ringColor: '#037b34',
+                backgroundColor: workoutType && colors ? colors.bg : undefined,
+                borderColor: workoutType && colors ? colors.border : undefined
               } : workoutType && colors ? {
                 backgroundColor: colors.bg,
                 borderColor: colors.border
               } : undefined}
             >
               <span
-                className="text-sm"
                 style={{
                   color: isSelected ? '#fff' : isTodayDate ? '#fff' : '#d4d4d8',
-                  fontWeight: isSelected ? 700 : 500
+                  fontSize: isSelected ? '22px' : '14px'
                 }}
               >
                 {format(day, 'd')}

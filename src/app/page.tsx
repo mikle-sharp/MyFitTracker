@@ -86,7 +86,7 @@ export default function Home() {
               className="absolute top-0 bottom-0 w-1/2 rounded-md transition-all duration-300 ease-out"
               style={{
                 left: activeTab === 'workout' ? '0%' : '50%',
-                backgroundColor: activeTab === 'workout' ? '#072f18' : '#3d2e00'
+                backgroundColor: activeTab === 'workout' ? '#072f18' : '#ffb900'
               }}
             />
           </TabsList>
