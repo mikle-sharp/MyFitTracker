@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2, Plus, Trophy, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap, Repeat2 } from 'lucide-react';
-import { Exercise, WorkoutSet, isAbsExercise, getExerciseType, EXERCISE_TYPE_COLORS, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType } from '@/lib/types';
+import { Trash2, Plus, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap, Repeat2 } from 'lucide-react';
+import { Exercise, WorkoutSet, isAbsExercise, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getPersonalRecord, isNewPersonalRecord } from '@/lib/pr';
+import { getPersonalRecord } from '@/lib/pr';
 import { useFitnessStore } from '@/lib/store';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { getPreviousSetData } from '@/lib/storage';
@@ -93,9 +93,24 @@ export function ExerciseCard({
   const prevWorkingSetData = getPreviousSetData(exercise.name, nextWorkingSetNumber, false);
   const prevWarmupSetData = getPreviousSetData(exercise.name, nextWarmupSetNumber, true);
   
-  // При активации повторений - время отключается автоматически
-  const handleRepsToggle = (checked: boolean) => {
-    setUseReps(checked);
+  // Проверка, является ли подход рекордным (равен текущему рекорду)
+  // И является ли он ПЕРВЫМ таким подходом в текущей тренировке
+  const isPR = (weight: number, reps: number, currentSetIndex: number) => {
+    if (weight <= 0) return false;
+    if (!pr) return false;
+    // Рекорд - если вес равен рекордному весу И повторения равны рекордным
+    if (weight !== pr.maxWeight || reps !== pr.reps) return false;
+
+    // Проверяем, есть ли более ранний подход с теми же рекордными параметрами
+    for (let i = 0; i < currentSetIndex; i++) {
+      const prevSet = exercise.sets[i];
+      if (prevSet.weight === weight && prevSet.reps === reps) {
+        // Нашли более ранний подход с таким же рекордом - текущий не золотой
+        return false;
+      }
+    }
+
+    return true;
   };
 
   const handleAddSet = () => {
@@ -167,54 +182,46 @@ export function ExerciseCard({
     setShowDeleteExerciseConfirm(false);
   };
 
-  const isCurrentPR = (weight: number) => {
-    return pr && weight > 0 && weight >= pr.maxWeight;
-  };
-
-  const isNewPR = (weight: number) => {
-    return weight > 0 && isNewPersonalRecord(exercise.name, weight);
-  };
-
   // Render set display
-  const renderSetDisplay = (set: WorkoutSet) => {
+  const renderSetDisplay = (set: WorkoutSet, setIndex: number) => {
     const isBodyweight = set.weight === 0;
+    const hasReps = set.reps > 0;
     const hasTime = set.time && set.time > 0;
-    const isPR = isCurrentPR(set.weight);
-    
+    const isPRSet = isPR(set.weight, set.reps, setIndex);
+
     return (
-      <div className="flex items-center gap-2 flex-wrap">
-        {isBodyweight && (
-          <User className="w-4 h-4 text-emerald-400" />
-        )}
-        
-        {!isBodyweight && set.weight > 0 && (
-          <div className="flex items-baseline gap-1">
-            <span className={cn(
-              'font-medium w-14 text-right',
-              isPR ? 'text-amber-400' : 'text-white'
-            )}>
-              {set.weight}
-            </span>
-            <span className={cn('w-4 text-center text-xs', isPR ? 'text-amber-400/70' : 'text-zinc-500')}>кг</span>
-          </div>
-        )}
-        
-        {set.reps > 0 && (
-          <>
-            {!isBodyweight && set.weight > 0 && (
-              <span className={cn('w-3 text-center', isPR ? 'text-amber-400/70' : 'text-zinc-500')}>×</span>
-            )}
-            <span className={cn('font-medium w-6 text-left', isPR ? 'text-amber-400' : 'text-emerald-400')}>{set.reps}</span>
-          </>
-        )}
-        
-        {hasTime && (
-          <>
-            <span className="text-zinc-600">|</span>
-            <Clock className="w-3.5 h-3.5 text-blue-400" />
-            <span className="text-blue-400 font-medium">{formatTime(set.time!)}</span>
-          </>
-        )}
+      <div className="flex items-center">
+        {/* Столбец 1: Вес / Иконка User / Иконка Clock */}
+        <span className="inline-block w-8 text-left font-medium text-sm">
+          {isBodyweight ? (
+            <User className="w-4 h-4 inline text-emerald-400" />
+          ) : hasTime && !hasReps ? (
+            <Clock className="w-4 h-4 inline text-purple-400" />
+          ) : (
+            <span className={isPRSet ? 'text-amber-400' : 'text-white'}>{set.weight}</span>
+          )}
+        </span>
+
+        {/* Столбец 2: "кг" */}
+        <span className="inline-block w-5 text-center text-xs text-zinc-500">
+          {!isBodyweight && set.weight > 0 && 'кг'}
+        </span>
+
+        {/* Столбец 3: "×" / Время */}
+        <span className={cn(
+          'inline-block w-4 text-center text-sm',
+          hasTime && !hasReps ? 'text-purple-400 font-medium' : 'text-zinc-500'
+        )}>
+          {hasTime && !hasReps ? formatTime(set.time!) : hasReps ? '×' : ''}
+        </span>
+
+        {/* Столбец 4: Повторения */}
+        <span className={cn(
+          'inline-block w-6 text-left font-medium text-sm',
+          isPRSet ? 'text-amber-400' : 'text-red-400'
+        )}>
+          {hasReps ? set.reps : ''}
+        </span>
       </div>
     );
   };
@@ -228,14 +235,14 @@ export function ExerciseCard({
         className={cn(
           "rounded-xl overflow-hidden bg-zinc-800/50",
           "border-t border-r border-b border-zinc-700",
-          "border-l-4",
+          "border-l-8",
           exerciseColors.border
         )}
       >
         <div className="flex">
           <div className="flex-1 min-w-0">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-zinc-700">
+            <div className={cn("flex items-center justify-between p-4 border-b", exerciseColors.border.replace('/50', '/30'))}>
               <div className="flex items-center gap-3">
                 {/* Move buttons */}
                 {currentWorkout && (
@@ -268,12 +275,6 @@ export function ExerciseCard({
                       <span className="hidden text-[10px] px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded">пресс</span>
                     )}
                   </div>
-                  {pr && (
-                    <div className="flex items-center gap-1 text-amber-400 text-xs mt-0.5">
-                      <Trophy className="w-3 h-3" />
-                      <span>{pr.reps} × {pr.maxWeight} кг</span>
-                    </div>
-                  )}
                 </div>
               </div>
               
@@ -307,7 +308,7 @@ export function ExerciseCard({
             </div>
 
             {/* Sets */}
-            <div className="p-4">
+            <div className="p-4 pl-12">
               {exercise.sets.map((set, setIndex) => {
                 // Вычисляем номер рабочего подхода (не учитывая разминочные)
                 let workingSetNumber = 0;
@@ -315,11 +316,14 @@ export function ExerciseCard({
                   if (!exercise.sets[i].isWarmup) workingSetNumber++;
                 }
                 
+                const isLastSet = setIndex === exercise.sets.length - 1;
+
                 return (
                 <div
                   key={set.id}
                   className={cn(
-                    'flex items-center gap-3 py-2 border-b border-zinc-700/50 last:border-0',
+                    'flex items-center gap-3 py-2',
+                    !isLastSet && 'border-b border-dashed border-zinc-700',
                     editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg' : ''
                   )}
                 >
@@ -408,10 +412,7 @@ export function ExerciseCard({
                         onClick={() => startEditingSet(set)}
                         className="flex-1 cursor-pointer hover:bg-zinc-700/30 py-1 px-2 -ml-2 rounded-lg transition-colors"
                       >
-                        {renderSetDisplay(set)}
-                        {isNewPR(set.weight) && !isCurrentPR(set.weight) && (
-                          <span className="text-[10px] text-emerald-400 font-medium ml-1">NEW!</span>
-                        )}
+                        {renderSetDisplay(set, setIndex)}
                       </div>
                       
                       <Button
@@ -442,10 +443,10 @@ export function ExerciseCard({
                         checked={isWarmup}
                         onChange={(e) => setIsWarmup(e.target.checked)}
                         className="w-3.5 h-3.5 rounded border-zinc-600 bg-zinc-700 text-amber-600"
-                        />
-                        <Zap className="w-3 h-3 text-amber-400" />
-                        <span className="text-[10px] text-zinc-300">Разминка</span>
-                      </label>
+                      />
+                      <Zap className="w-3 h-3 text-amber-400" />
+                      <span className="text-[10px] text-zinc-300">Разминка</span>
+                    </label>
                     
                     <label className={cn(
                       'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',

@@ -155,7 +155,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 )}
                 title="Добавить заметку"
               >
-                <Pencil className={cn('w-4 h-4', workout.notes && 'text-emerald-400')} />
+                <Pencil className={cn('w-4 h-4', workout.notes && colors.text)} />
               </Button>
             </div>
             <Button
