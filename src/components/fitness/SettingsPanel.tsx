@@ -339,7 +339,7 @@ export function SettingsPanel() {
           size="icon"
           className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
         >
-          <Settings className="w-5 h-5" />
+          <Settings className="w-6 h-6" />
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-zinc-900 border-zinc-700 max-h-[90vh] overflow-y-auto">

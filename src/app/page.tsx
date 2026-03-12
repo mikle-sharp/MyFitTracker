@@ -50,7 +50,9 @@ export default function Home() {
         <div className="max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center">
             <div className="flex-1 flex justify-start">
-              <Dumbbell className="w-6 h-6" style={{ color: '#19a655' }} />
+              <div className="w-9 h-9 flex items-center justify-center">
+                <Dumbbell className="w-6 h-6" style={{ color: '#19a655' }} />
+              </div>
             </div>
             <h1 className="text-lg font-bold text-white">Мой журнал тренировок</h1>
             <div className="flex-1 flex justify-end">
