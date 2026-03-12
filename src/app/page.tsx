@@ -63,8 +63,8 @@ export default function Home() {
       </header>
 
       {/* Main content */}
-      <main className="max-w-lg mx-auto px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <main className="max-w-lg mx-auto px-4 py-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 bg-zinc-900 border border-zinc-800 relative">
             <TabsTrigger
               value="workout"
