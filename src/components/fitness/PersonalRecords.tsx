@@ -17,7 +17,7 @@ function RecordValue({ record }: { record: PersonalRecord }) {
     const mins = Math.floor(record.time / 60);
     const secs = record.time % 60;
     return (
-      <div className="flex items-center gap-1 font-bold" style={{ color: '#ffb900' }}>
+      <div className="flex items-center gap-1 font-bold" style={{ color: '#ffae00' }}>
         <Clock className="w-4 h-4" style={{ color: '#944ad4' }} />
         <span>{mins}:{secs.toString().padStart(2, '0')}</span>
       </div>
@@ -27,7 +27,7 @@ function RecordValue({ record }: { record: PersonalRecord }) {
   // Рекорд собственного веса - иконка + повторения
   if (record.maxWeight === 0 && record.reps > 0) {
     return (
-      <div className="flex items-center gap-1 font-bold" style={{ color: '#ffb900' }}>
+      <div className="flex items-center gap-1 font-bold" style={{ color: '#ffae00' }}>
         <User className="w-4 h-4" style={{ color: '#19a655' }} />
         <span>{record.reps}</span>
       </div>
@@ -37,10 +37,10 @@ function RecordValue({ record }: { record: PersonalRecord }) {
   // Рекорд с весом - формат "Вес × Повторения" с выравниванием колонок
   if (record.maxWeight > 0) {
     return (
-      <div className="flex items-baseline gap-1 font-bold" style={{ color: '#ffb900' }}>
+      <div className="flex items-baseline gap-1 font-bold" style={{ color: '#ffae00' }}>
         <span className="w-14 text-right">{record.maxWeight}</span>
-        <span className="w-4 text-center" style={{ color: '#ffb900', opacity: 0.7 }}>кг</span>
-        <span className="w-3 text-center" style={{ color: '#ffb900', opacity: 0.7 }}>×</span>
+        <span className="w-4 text-center" style={{ color: '#ffae00', opacity: 0.7 }}>кг</span>
+        <span className="w-3 text-center" style={{ color: '#ffae00', opacity: 0.7 }}>×</span>
         <span className="w-6 text-left">{record.reps}</span>
       </div>
     );

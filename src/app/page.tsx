@@ -68,19 +68,23 @@ export default function Home() {
           <TabsList className="grid w-full grid-cols-2 bg-zinc-900 border border-zinc-800 relative">
             <TabsTrigger
               value="workout"
-              className="relative z-10 transition-colors"
+              className="relative z-10 transition-colors py-0"
               style={{ color: activeTab === 'workout' ? '#fff' : '#19a655' }}
             >
-              <CalendarIcon className="w-4 h-4 mr-2" />
-              Тренировки
+              <span className="flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4" />
+                Тренировки
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="records"
-              className="relative z-10 transition-colors"
-              style={{ color: activeTab === 'records' ? '#fff' : '#ffb900' }}
+              className="relative z-10 transition-colors py-0"
+              style={{ color: activeTab === 'records' ? '#fff' : '#ffae00' }}
             >
-              <Trophy className="w-4 h-4 mr-2" />
-              Рекорды
+              <span className="flex items-center gap-2">
+                <Trophy className="w-4 h-4" />
+                Рекорды
+              </span>
             </TabsTrigger>
 
             {/* Animated background */}
@@ -88,7 +92,7 @@ export default function Home() {
               className="absolute top-0 bottom-0 w-1/2 rounded-md transition-all duration-300 ease-out"
               style={{
                 left: activeTab === 'workout' ? '0%' : '50%',
-                backgroundColor: activeTab === 'workout' ? '#072f18' : '#ffb900'
+                backgroundColor: activeTab === 'workout' ? '#072f18' : '#ffae00'
               }}
             />
           </TabsList>

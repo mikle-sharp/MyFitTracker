@@ -29,8 +29,8 @@ export function NewWorkoutForm({ date, onCreated }: NewWorkoutFormProps) {
       animate={{ opacity: 1, scale: 1 }}
       className="bg-zinc-900/50 rounded-xl border border-zinc-800 relative"
     >
-      <div className="p-6 pb-20">
-        <div className="text-center mb-6">
+      <div className="p-4 pb-20">
+        <div className="text-center mb-4">
           <p className="text-zinc-400 text-sm">
             Выберите тип тренировки
           </p>

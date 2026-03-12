@@ -198,7 +198,7 @@ export function ExerciseCard({
           ) : hasTime && !hasReps ? (
             <Clock className="w-4 h-4 inline" style={{ color: '#944ad4' }} />
           ) : (
-            <span style={isPRSet ? { color: '#ffb900' } : { color: '#fff' }}>{set.weight}</span>
+            <span style={isPRSet ? { color: '#ffae00' } : { color: '#fff' }}>{set.weight}</span>
           )}
         </span>
 
@@ -220,7 +220,7 @@ export function ExerciseCard({
           'inline-block w-6 text-left font-medium text-sm',
           isPRSet ? '' : 'text-red-400'
         )}
-        style={isPRSet ? { color: '#ffb900' } : undefined}
+        style={isPRSet ? { color: '#ffae00' } : undefined}
         >
           {hasReps ? set.reps : ''}
         </span>
