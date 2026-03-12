@@ -4,10 +4,10 @@ import { useState, useRef, useCallback } from 'react';
 import { 
   FileJson, FileSpreadsheet, Settings, Download, Upload, 
   LogIn, LogOut, Check, AlertCircle, RefreshCw, ExternalLink,
-  Sheet
+  Sheet, XIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
 import { exportToCSV, exportToJSON, getWorkouts } from '@/lib/storage';
 import { calculatePersonalRecords } from '@/lib/pr';
 import { useFitnessStore } from '@/lib/store';
@@ -342,16 +342,20 @@ export function SettingsPanel() {
           <Settings className="w-6 h-6" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-zinc-900 border-zinc-700 max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-white text-center">Настройки</DialogTitle>
-        </DialogHeader>
+      <DialogContent className="bg-zinc-900 border-zinc-700 max-h-[90vh] overflow-y-auto p-0 gap-0" showCloseButton={false}>
+        {/* Header with title and close button */}
+        <div className="flex items-center justify-center px-4 pt-4 pb-0 relative">
+          <DialogTitle className="text-lg font-semibold text-white m-0">Инструменты</DialogTitle>
+          <DialogClose className="absolute right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none text-zinc-400 hover:text-white">
+            <XIcon className="w-4 h-4" />
+          </DialogClose>
+        </div>
 
-        <div className="space-y-4 mt-4">
+        <div className="p-4 space-y-4">
           {/* Google Account Section */}
           <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700">
-            <div className="flex items-center gap-2 mb-3">
-              <Sheet className="w-4 h-4 text-emerald-400" />
+            <div className="flex items-center gap-2 mb-4">
+              <Sheet className="w-4 h-4" style={{ color: '#037b34' }} />
               <h4 className="text-sm font-medium text-white">Google Sheets</h4>
             </div>
             
@@ -383,7 +387,7 @@ export function SettingsPanel() {
 
                 {/* Spreadsheet info */}
                 {spreadsheetId && spreadsheetUrl ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex items-center gap-2 p-2 bg-zinc-700/50 rounded-lg">
                       <Sheet className="w-4 h-4 text-emerald-400" />
                       <span className="text-sm text-zinc-300 flex-1 truncate">
@@ -399,7 +403,7 @@ export function SettingsPanel() {
                       </a>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-4">
                       <Button
                         onClick={handleSync}
                         disabled={syncStatus?.type === 'loading'}
@@ -454,7 +458,7 @@ export function SettingsPanel() {
                 )}
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Button
                   onClick={handleGoogleLogin}
                   variant="outline"
@@ -463,7 +467,7 @@ export function SettingsPanel() {
                   <LogIn className="w-4 h-4 mr-2" />
                   Войти через Google
                 </Button>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-zinc-500 text-center">
                   Для синхронизации с Google Sheets необходимо войти в аккаунт Google
                 </p>
               </div>
@@ -472,8 +476,8 @@ export function SettingsPanel() {
 
           {/* Import/Export section */}
           <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700">
-            <div className="flex items-center gap-2 mb-3">
-              <FileSpreadsheet className="w-4 h-4 text-blue-400" />
+            <div className="flex items-center gap-2 mb-4">
+              <FileSpreadsheet className="w-4 h-4" style={{ color: '#1d4fa0' }} />
               <h4 className="text-sm font-medium text-white">Восстановление / Резервное копирование</h4>
             </div>
             
@@ -499,7 +503,7 @@ export function SettingsPanel() {
               </div>
 
               {/* Export with animated dropdown */}
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col">
                 <Button
                   id="export-main-btn"
                   onClick={() => {
@@ -520,25 +524,25 @@ export function SettingsPanel() {
                 {/* Animated format buttons */}
                 <div
                   id="export-format-btns"
-                  className="grid grid-cols-2 gap-4 grid-rows-[0fr] transition-all duration-300 ease-in-out"
+                  className="grid grid-rows-[0fr] transition-all duration-300 ease-in-out"
                 >
                   <div className="overflow-hidden">
-                    <Button
-                      onClick={handleExportCSV}
-                      variant="outline"
-                      className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col items-center justify-center"
-                    >
-                      <span className="text-sm font-medium">CSV</span>
-                    </Button>
-                  </div>
-                  <div className="overflow-hidden">
-                    <Button
-                      onClick={handleExportJSON}
-                      variant="outline"
-                      className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col items-center justify-center"
-                    >
-                      <span className="text-sm font-medium">JSON</span>
-                    </Button>
+                    <div className="grid grid-cols-2 gap-4 pt-4">
+                      <Button
+                        onClick={handleExportCSV}
+                        variant="outline"
+                        className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col items-center justify-center"
+                      >
+                        <span className="text-sm font-medium">CSV</span>
+                      </Button>
+                      <Button
+                        onClick={handleExportJSON}
+                        variant="outline"
+                        className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col items-center justify-center"
+                      >
+                        <span className="text-sm font-medium">JSON</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -547,7 +551,7 @@ export function SettingsPanel() {
             {/* Import status */}
             {importStatus && (
               <div className={cn(
-                'mt-3 p-3 rounded-lg flex items-center gap-2',
+                'mt-4 p-3 rounded-lg flex items-center gap-2',
                 importStatus.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-red-500/10 border border-red-500/30'
               )}>
                 {importStatus.type === 'success' ? (
