@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Trash2, Plus, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap, Repeat2 } from 'lucide-react';
 import { Exercise, WorkoutSet, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -84,12 +84,32 @@ export function ExerciseCard({
   const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
   const isDragActiveRef = useRef(false);
   const hasMovedRef = useRef(false);
+  const dragHandleRef = useRef<HTMLDivElement>(null);
 
   const { addSet, removeSet, updateSet, removeExercise, currentWorkout } = useFitnessStore();
   const pr = getPersonalRecord(exercise.name);
   
+  // Disable text selection on iOS during drag
+  useEffect(() => {
+    if (isDragging) {
+      document.body.style.webkitUserSelect = 'none';
+      document.body.style.userSelect = 'none';
+      document.body.style.webkitTouchCallout = 'none';
+    } else {
+      document.body.style.webkitUserSelect = '';
+      document.body.style.userSelect = '';
+      document.body.style.webkitTouchCallout = '';
+    }
+    return () => {
+      document.body.style.webkitUserSelect = '';
+      document.body.style.userSelect = '';
+      document.body.style.webkitTouchCallout = '';
+    };
+  }, [isDragging]);
+  
   // Drag handlers for touch
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // Prevent default to avoid iOS gesture interference
     const touch = e.touches[0];
     touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
     hasMovedRef.current = false;
@@ -313,22 +333,24 @@ export function ExerciseCard({
     <>
       <div
         className="rounded-xl overflow-hidden bg-zinc-800 border-t border-r border-b border-zinc-700"
-        style={{ 
-          borderLeftWidth: '8px', 
+        style={{
+          borderLeftWidth: '8px',
           borderLeftColor: exerciseColors.border,
           userSelect: isDragging ? 'none' : undefined,
+          WebkitUserSelect: isDragging ? 'none' : undefined,
           touchAction: isDragging ? 'none' : undefined,
           position: isDragging ? 'relative' : undefined,
           // Transform for drag
-          transform: isDragging 
-            ? `translateY(${dragY}px) scale(0.8)` 
-            : shiftDirection 
-              ? `translateY(${shiftDirection === 'down' ? 80 : -80}px)` 
+          transform: isDragging
+            ? `translateY(${dragY}px) scale(0.8)`
+            : shiftDirection
+              ? `translateY(${shiftDirection === 'down' ? 80 : -80}px)`
               : undefined,
           transformOrigin: 'center top',
-          transition: isDragging 
-            ? 'none' 
-            : 'transform 250ms cubic-bezier(0.2, 0, 0, 1)',
+          transition: isDragging
+            ? 'none'
+            : 'transform 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          willChange: isDragging || shiftDirection ? 'transform' : undefined,
           zIndex: isDragging ? 1000 : shiftDirection ? 1 : undefined,
           opacity: 1,
         }}
@@ -340,8 +362,16 @@ export function ExerciseCard({
               <div className="flex items-center gap-3">
                 {/* Move buttons / Drag handle */}
                 {currentWorkout && (
-                  <div 
-                    className="flex flex-col gap-0.5 touch-none"
+                  <div
+                    ref={dragHandleRef}
+                    className="flex flex-col gap-0.5"
+                    style={{
+                      touchAction: 'none',
+                      WebkitTouchCallout: 'none',
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}

@@ -50,17 +50,28 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
   
   // Keep ref in sync with state
   dragStateRef.current = dragState;
-  
+
   // Force re-render on scroll during drag to keep element with finger
+  // Also prevent iOS default touch behavior during drag
   useEffect(() => {
     if (!dragState) return;
-    
+
     const handleScroll = () => {
       forceUpdate();
     };
-    
+
+    // Prevent default touch behavior on iOS during drag (passive: false is required)
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
   }, [dragState]);
   
   const { addExercise, removeExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes } = useFitnessStore();
