@@ -350,12 +350,12 @@ export const getWorkoutDates = (): Set<string> => {
 // Экспорт данных в CSV
 export const exportToCSV = (): string => {
   const workouts = getWorkouts();
-  
+
   if (workouts.length === 0) {
     return '';
   }
 
-  const headers = ['Дата', 'Тип тренировки', 'Упражнение', 'Подход', 'Повторения', 'Вес (кг)', 'Время (сек)'];
+  const headers = ['Дата', 'Тип тренировки', 'Упражнение', 'Подход', 'Повторения', 'Вес (кг)', 'Время (сек)', 'Заметки'];
   const rows: string[][] = [headers];
 
   workouts
@@ -371,6 +371,7 @@ export const exportToCSV = (): string => {
             String(set.reps),
             String(set.weight),
             set.time ? String(set.time) : '',
+            workout.notes || '',
           ]);
         });
       });
@@ -437,19 +438,19 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
     }
 
     const workoutsMap = new Map<string, Workout>();
-    
+
     // Пропускаем заголовок
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
-      
+
       const parts = line.split(',');
       if (parts.length < 6) continue;
-      
-      const [date, type, exerciseName, setNum, reps, weight, time] = parts;
-      
+
+      const [date, type, exerciseName, setNum, reps, weight, time, notes] = parts;
+
       if (!date || !type || !exerciseName) continue;
-      
+
       let workout = workoutsMap.get(date);
       if (!workout) {
         workout = {
@@ -457,12 +458,13 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
           date: date.trim(),
           type: type.trim() as WorkoutType,
           exercises: [],
+          notes: notes ? notes.trim() : undefined,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
         workoutsMap.set(date, workout);
       }
-      
+
       let exercise = workout.exercises.find(e => e.name === exerciseName.trim());
       if (!exercise) {
         exercise = {
@@ -473,20 +475,20 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
         };
         workout.exercises.push(exercise);
       }
-      
+
       const newSet: WorkoutSet = {
         id: generateId(),
         reps: parseInt(reps) || 0,
         weight: parseFloat(weight) || 0,
         time: time ? parseInt(time) : undefined,
       };
-      
+
       exercise.sets.push(newSet);
     }
-    
+
     const workouts = Array.from(workoutsMap.values());
     saveWorkouts(workouts);
-    
+
     return { success: true, message: `Импортировано ${workouts.length} тренировок` };
   } catch (error) {
     return { success: false, message: 'Ошибка при обработке CSV файла' };

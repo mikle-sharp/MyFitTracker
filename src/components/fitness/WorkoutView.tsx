@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Trash2, Calendar, Clock, Search, RefreshCw, Pencil } from 'lucide-react';
-import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, isAbsExercise, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType } from '@/lib/types';
+import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType } from '@/lib/types';
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -372,7 +372,6 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 </p>
                 <div className="max-h-[250px] overflow-y-auto space-y-1">
                   {filteredExercises.map((exerciseName) => {
-                    const isAbs = isAbsExercise(exerciseName);
                     const isCurrent = exerciseName === replacingExerciseName;
                     return (
                       <button
@@ -387,9 +386,6 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                         )}
                       >
                         <span>{exerciseName}</span>
-                        {isAbs && (
-                          <Clock className="w-4 h-4" style={{ color: '#3871d4' }} />
-                        )}
                       </button>
                     );
                   })}

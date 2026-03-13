@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Trash2, Plus, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap, Repeat2 } from 'lucide-react';
-import { Exercise, WorkoutSet, isAbsExercise, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType } from '@/lib/types';
+import { Exercise, WorkoutSet, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -67,8 +67,6 @@ export function ExerciseCard({
 
   const { addSet, removeSet, updateSet, removeExercise, currentWorkout } = useFitnessStore();
   const pr = getPersonalRecord(exercise.name);
-  
-  const isAbs = isAbsExercise(exercise.name);
   
   // Определяем тип упражнения для цветовой маркировки
   // Приоритет: 1) явный тип упражнения, 2) вычисленный по названию
@@ -267,12 +265,7 @@ export function ExerciseCard({
                 )}
                 
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-white">{exercise.name}</h3>
-                    {isAbs && (
-                      <span className="hidden text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#10203c', color: '#3871d4' }}>пресс</span>
-                    )}
-                  </div>
+                  <h3 className="font-semibold text-white">{exercise.name}</h3>
                 </div>
               </div>
 

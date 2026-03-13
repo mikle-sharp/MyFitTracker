@@ -260,14 +260,16 @@ export function Calendar() {
               <span
                 style={{
                   color: isSelected ? '#fff' : isTodayDate ? '#fff' : '#d4d4d8',
-                  fontSize: isSelected ? '22px' : '14px'
+                  fontSize: isSelected ? '18px' : '14px',
+                  fontWeight: isSelected ? 'bold' : 'normal',
+                  WebkitTextStroke: isSelected ? '1px #fff' : undefined
                 }}
               >
                 {format(day, 'd')}
               </span>
               {workoutType && marker && (
                 <span
-                  className="text-sm font-bold absolute bottom-1 right-1 leading-none"
+                  className="text-[10px] font-bold absolute bottom-1 right-1 leading-none"
                   style={{ color: colors?.text || '#a1a1aa' }}
                 >
                   {marker}
