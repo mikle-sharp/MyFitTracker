@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { Trash2, Calendar, Clock, Search, RefreshCw, Pencil } from 'lucide-react';
 import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType } from '@/lib/types';
 import { ExerciseCard } from './ExerciseCard';
@@ -32,6 +32,21 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
   const [pendingReplaceName, setPendingReplaceName] = useState('');
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [notesValue, setNotesValue] = useState(workout.notes || '');
+  
+  // Drag-and-drop state
+  const [dragState, setDragState] = useState<{
+    draggedId: string;
+    draggedIndex: number;
+    currentIndex: number;
+    startY: number;
+  } | null>(null);
+  const dragStateRef = useRef<typeof dragState>(null);
+  const exerciseRefsRef = useRef<Map<string, HTMLDivElement>>(new Map());
+  const containerRefRef = useRef<HTMLDivElement>(null);
+  const autoScrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Keep ref in sync with state
+  dragStateRef.current = dragState;
   
   const { addExercise, removeExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes } = useFitnessStore();
 
@@ -119,6 +134,97 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
     setIsNotesOpen(false);
   };
 
+  // Drag-and-drop handlers
+  const handleDragStart = useCallback((exerciseId: string, index: number, startY: number) => {
+    setDragState({
+      draggedId: exerciseId,
+      draggedIndex: index,
+      currentIndex: index,
+      startY,
+    });
+  }, []);
+
+  const handleDragMove = useCallback((currentY: number) => {
+    const currentDragState = dragStateRef.current;
+    if (!currentDragState) return;
+    
+    // Find which exercise we're hovering over by checking Y position
+    let targetIndex = currentDragState.draggedIndex;
+    
+    const exerciseRects: { id: string; index: number; top: number; bottom: number; midY: number }[] = [];
+    exerciseRefsRef.current.forEach((element, id) => {
+      const rect = element.getBoundingClientRect();
+      const idx = workout.exercises.findIndex(e => e.id === id);
+      exerciseRects.push({
+        id,
+        index: idx,
+        top: rect.top,
+        bottom: rect.bottom,
+        midY: rect.top + rect.height / 2
+      });
+    });
+    
+    // Sort by position
+    exerciseRects.sort((a, b) => a.top - b.top);
+    
+    // Find target index
+    for (let i = 0; i < exerciseRects.length; i++) {
+      const item = exerciseRects[i];
+      if (currentY < item.midY) {
+        targetIndex = i;
+        break;
+      }
+      targetIndex = i;
+    }
+    
+    if (targetIndex !== currentDragState.currentIndex) {
+      setDragState(prev => prev ? { ...prev, currentIndex: targetIndex } : null);
+    }
+    
+    // Auto-scroll
+    if (autoScrollIntervalRef.current) {
+      clearInterval(autoScrollIntervalRef.current);
+      autoScrollIntervalRef.current = null;
+    }
+    
+    const scrollZone = 50;
+    if (currentY < scrollZone) {
+      autoScrollIntervalRef.current = setInterval(() => {
+        window.scrollBy(0, -5);
+      }, 16);
+    } else if (currentY > window.innerHeight - scrollZone) {
+      autoScrollIntervalRef.current = setInterval(() => {
+        window.scrollBy(0, 5);
+      }, 16);
+    }
+  }, [workout.exercises]);
+
+  const handleDragEnd = useCallback(() => {
+    if (autoScrollIntervalRef.current) {
+      clearInterval(autoScrollIntervalRef.current);
+      autoScrollIntervalRef.current = null;
+    }
+    
+    const currentDragState = dragStateRef.current;
+    if (currentDragState && currentDragState.currentIndex !== currentDragState.draggedIndex) {
+      // Move exercise to new position
+      const moves = currentDragState.currentIndex - currentDragState.draggedIndex;
+      const exerciseId = currentDragState.draggedId;
+      
+      if (moves > 0) {
+        for (let i = 0; i < moves; i++) {
+          moveExerciseDown(workout.id, exerciseId);
+        }
+      } else {
+        for (let i = 0; i < Math.abs(moves); i++) {
+          moveExerciseUp(workout.id, exerciseId);
+        }
+      }
+    }
+    
+    setDragState(null);
+  }, [workout.id, moveExerciseUp, moveExerciseDown]);
+
   const totalVolume = workout.exercises.reduce((sum, ex) => {
     return sum + ex.sets.reduce((s, set) => s + set.reps * set.weight, 0);
   }, 0);
@@ -189,19 +295,51 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
 
       {/* Exercises list */}
       <AnimatePresence mode="popLayout">
-        {workout.exercises.map((exercise, index) => (
-          <ExerciseCard
-            key={exercise.id}
-            exercise={exercise}
-            workoutId={workout.id}
-            workoutType={workout.type}
-            index={index}
-            totalExercises={workout.exercises.length}
-            onReplace={handleReplaceExercise}
-            onMoveUp={handleMoveUp}
-            onMoveDown={handleMoveDown}
-          />
-        ))}
+        {workout.exercises.map((exercise, index) => {
+          const isDragging = dragState?.draggedId === exercise.id;
+          const isDraggedOver = dragState !== null && !isDragging;
+          const draggedIndex = dragState?.draggedIndex ?? 0;
+          const currentIndex = dragState?.currentIndex ?? 0;
+          const exerciseIndex = index;
+          
+          // Calculate transform for non-dragged items
+          let dragTransform = 0;
+          if (isDraggedOver && dragState) {
+            if (exerciseIndex > draggedIndex && exerciseIndex <= currentIndex) {
+              // Item should move up
+              dragTransform = -80;
+            } else if (exerciseIndex < draggedIndex && exerciseIndex >= currentIndex) {
+              // Item should move down
+              dragTransform = 80;
+            }
+          }
+          
+          return (
+            <div
+              key={exercise.id}
+              ref={(el) => {
+                if (el) exerciseRefsRef.current.set(exercise.id, el);
+              }}
+            >
+              <ExerciseCard
+                exercise={exercise}
+                workoutId={workout.id}
+                workoutType={workout.type}
+                index={index}
+                totalExercises={workout.exercises.length}
+                onReplace={handleReplaceExercise}
+                onMoveUp={handleMoveUp}
+                onMoveDown={handleMoveDown}
+                isDragging={isDragging}
+                isDraggedOver={isDraggedOver}
+                dragTransform={dragTransform}
+                onDragStart={handleDragStart}
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
+              />
+            </div>
+          );
+        })}
       </AnimatePresence>
 
       {/* Add exercise button */}

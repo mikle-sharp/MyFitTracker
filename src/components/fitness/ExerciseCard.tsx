@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Trash2, Plus, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap, Repeat2 } from 'lucide-react';
 import { Exercise, WorkoutSet, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,13 @@ interface ExerciseCardProps {
   onReplace?: (exerciseId: string, exerciseName: string) => void;
   onMoveUp?: (exerciseId: string) => void;
   onMoveDown?: (exerciseId: string) => void;
+  // Drag-and-drop props
+  isDragging?: boolean;
+  isDraggedOver?: boolean;
+  dragTransform?: number;
+  onDragStart?: (exerciseId: string, index: number, startY: number) => void;
+  onDragMove?: (currentY: number) => void;
+  onDragEnd?: () => void;
 }
 
 // Форматирование времени из секунд в MM:SS
@@ -38,7 +45,14 @@ export function ExerciseCard({
   workoutType,
   onReplace, 
   onMoveUp,
-  onMoveDown 
+  onMoveDown,
+  // Drag-and-drop props
+  isDragging = false,
+  isDraggedOver = false,
+  dragTransform = 0,
+  onDragStart,
+  onDragMove,
+  onDragEnd
 }: ExerciseCardProps) {
   // State for adding new set
   const [newReps, setNewReps] = useState('');
@@ -65,8 +79,77 @@ export function ExerciseCard({
   const [showDeleteSetConfirm, setShowDeleteSetConfirm] = useState(false);
   const [setToDelete, setSetToDelete] = useState<string | null>(null);
 
+  // Drag-and-drop state
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
+  const isDragActiveRef = useRef(false);
+  const hasMovedRef = useRef(false);
+
   const { addSet, removeSet, updateSet, removeExercise, currentWorkout } = useFitnessStore();
   const pr = getPersonalRecord(exercise.name);
+  
+  // Drag handlers for touch
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartPosRef.current = { x: touch.clientX, y: touch.clientY };
+    hasMovedRef.current = false;
+    isDragActiveRef.current = false;
+    
+    // Start long press timer
+    longPressTimerRef.current = setTimeout(() => {
+      // Check if finger hasn't moved more than 10px
+      if (!hasMovedRef.current && touchStartPosRef.current) {
+        isDragActiveRef.current = true;
+        // Vibrate
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+        // Notify parent
+        onDragStart?.(exercise.id, index, touch.clientY);
+      }
+    }, 200);
+  }, [exercise.id, index, onDragStart]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    
+    // Check movement before long press activates
+    if (touchStartPosRef.current && !isDragActiveRef.current) {
+      const dx = Math.abs(touch.clientX - touchStartPosRef.current.x);
+      const dy = Math.abs(touch.clientY - touchStartPosRef.current.y);
+      if (dx > 10 || dy > 10) {
+        hasMovedRef.current = true;
+        // Cancel long press timer
+        if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+          longPressTimerRef.current = null;
+        }
+      }
+    }
+    
+    // If drag is active, notify parent of movement
+    if (isDragActiveRef.current) {
+      e.preventDefault();
+      onDragMove?.(touch.clientY);
+    }
+  }, [onDragMove]);
+
+  const handleTouchEnd = useCallback(() => {
+    // Clear timer
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    
+    // End drag if active
+    if (isDragActiveRef.current) {
+      isDragActiveRef.current = false;
+      onDragEnd?.();
+    }
+    
+    touchStartPosRef.current = null;
+    hasMovedRef.current = false;
+  }, [onDragEnd]);
   
   // Определяем тип упражнения для цветовой маркировки
   // Приоритет: 1) явный тип упражнения, 2) вычисленный по названию
@@ -230,19 +313,42 @@ export function ExerciseCard({
     <>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        animate={{ 
+          opacity: 1, 
+          y: 0,
+          scale: isDragging ? 0.8 : 1,
+        }}
         exit={{ opacity: 0, y: -20 }}
+        transition={{ scale: { duration: 0.15 } }}
         className="rounded-xl overflow-hidden bg-zinc-800/50 border-t border-r border-b border-zinc-700"
-        style={{ borderLeftWidth: '8px', borderLeftColor: exerciseColors.border }}
+        style={{ 
+          borderLeftWidth: '8px', 
+          borderLeftColor: exerciseColors.border,
+          userSelect: isDragging ? 'none' : undefined,
+          touchAction: isDragging ? 'none' : undefined,
+          transform: isDraggedOver ? `translateY(${dragTransform}px)` : undefined,
+          transition: isDraggedOver ? 'transform 150ms ease' : undefined,
+        }}
+
+
+
+
+
       >
         <div className="flex">
           <div className="flex-1 min-w-0">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: exerciseColors.border }}>
               <div className="flex items-center gap-3">
-                {/* Move buttons */}
+                {/* Move buttons / Drag handle */}
                 {currentWorkout && (
-                  <div className="flex flex-col gap-0.5">
+                  <div 
+                    className="flex flex-col gap-0.5 touch-none"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    onTouchCancel={handleTouchEnd}
+                  >
                     <Button
                       variant="ghost"
                       size="icon"
