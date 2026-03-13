@@ -183,7 +183,7 @@ export function ExerciseCard({
     common: 'fullbody', // для common используем фиолетовый как для fullbody
   };
   
-  const workoutTypeForColor = exerciseTypeToWorkoutType[exerciseType];
+  const workoutTypeForColor = exerciseTypeToWorkoutType[exerciseType] || 'fullbody';
   const exerciseColors = WORKOUT_TYPE_COLORS[workoutTypeForColor];
   
   // Вычисляем номер следующего подхода и получаем предыдущие значения
@@ -332,8 +332,11 @@ export function ExerciseCard({
   return (
     <>
       <div
-        className="rounded-xl overflow-hidden bg-zinc-800 border-t border-r border-b border-zinc-700"
+        className="rounded-xl overflow-hidden bg-zinc-800 border-t border-r border-b"
         style={{
+          borderTopColor: exerciseColors.border,
+          borderRightColor: exerciseColors.border,
+          borderBottomColor: exerciseColors.border,
           borderLeftWidth: '8px',
           borderLeftColor: exerciseColors.border,
           userSelect: isDragging ? 'none' : undefined,
@@ -342,7 +345,7 @@ export function ExerciseCard({
           position: isDragging ? 'relative' : undefined,
           // Transform for drag
           transform: isDragging
-            ? `translateY(${dragY}px) scale(0.8)`
+            ? `translateY(${dragY}px) scale(0.9)`
             : shiftDirection
               ? `translateY(${shiftDirection === 'down' ? 80 : -80}px)`
               : undefined,
@@ -358,8 +361,8 @@ export function ExerciseCard({
         <div className="flex">
           <div className="flex-1 min-w-0">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: exerciseColors.border }}>
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between py-2 pl-2 pr-4 border-b" style={{ borderColor: exerciseColors.border }}>
+              <div className="flex items-center gap-2">
                 {/* Move buttons / Drag handle */}
                 {currentWorkout && (
                   <div
@@ -382,7 +385,7 @@ export function ExerciseCard({
                       size="icon"
                       onClick={() => onMoveUp?.(exercise.id)}
                       disabled={index === 0}
-                      className="h-9 w-9 text-zinc-500 hover:text-white hover:bg-zinc-700 disabled:opacity-30"
+                      className="h-7 w-7 text-zinc-500 hover:text-white hover:bg-zinc-700 disabled:opacity-30"
                     >
                       <ChevronUp className="w-4 h-4" />
                     </Button>
@@ -391,7 +394,7 @@ export function ExerciseCard({
                       size="icon"
                       onClick={() => onMoveDown?.(exercise.id)}
                       disabled={index === totalExercises - 1}
-                      className="h-9 w-9 text-zinc-500 hover:text-white hover:bg-zinc-700 disabled:opacity-30"
+                      className="h-7 w-7 text-zinc-500 hover:text-white hover:bg-zinc-700 disabled:opacity-30"
                     >
                       <ChevronDown className="w-4 h-4" />
                     </Button>
@@ -434,7 +437,7 @@ export function ExerciseCard({
             </div>
 
             {/* Sets */}
-            <div className="p-4" style={{ paddingLeft: '48px' }}>
+            <div className="pt-2 pb-4 flex flex-col gap-2" style={{ paddingLeft: '52px', paddingRight: '16px' }}>
               {exercise.sets.map((set, setIndex) => {
                 // Вычисляем номер рабочего подхода (не учитывая разминочные)
                 let workingSetNumber = 0;
@@ -448,15 +451,14 @@ export function ExerciseCard({
                 <div
                   key={set.id}
                   className={cn(
-                    'flex items-center gap-3 py-2',
-                    !isLastSet && 'border-b border-dashed border-zinc-700',
+                    'flex items-center gap-3',
                     editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg' : ''
                   )}
                 >
                   <div className={cn(
                     'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0',
                     set.isWarmup
-                      ? 'bg-zinc-900 text-zinc-500 border border-zinc-800'
+                      ? 'bg-transparent text-zinc-500 border border-zinc-500'
                       : 'bg-zinc-700 text-zinc-300'
                   )}>
                     {set.isWarmup ? 'Р' : workingSetNumber}
@@ -556,7 +558,7 @@ export function ExerciseCard({
 
               {/* Add set form */}
               {isAddingSet ? (
-                <div className="space-y-2 mt-4 pt-4 border-t border-zinc-700">
+                <div className="space-y-2 mt-2 pt-2 border-t border-zinc-700">
                   {/* Toggle buttons */}
                   <div className="flex gap-2 flex-wrap items-center">
                     {/* Чекбокс разминки */}
@@ -734,13 +736,14 @@ export function ExerciseCard({
                   </div>
                 </div>
               ) : (
-                <Button
-                  variant="ghost"
-                  onClick={() => setIsAddingSet(true)}
-                  className="w-full mt-3 bg-zinc-700/30 text-zinc-400 hover:text-white hover:bg-zinc-700/50"
-                >
-                  Добавить подход
-                </Button>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setIsAddingSet(true)}
+                    className="py-2 px-4 rounded-md bg-zinc-700/50 text-zinc-500 text-sm font-medium hover:bg-zinc-700 hover:text-white transition-colors"
+                  >
+                    Добавить подход
+                  </button>
+                </div>
               )}
             </div>
           </div>
