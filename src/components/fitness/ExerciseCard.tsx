@@ -23,8 +23,8 @@ interface ExerciseCardProps {
   onMoveDown?: (exerciseId: string) => void;
   // Drag-and-drop props
   isDragging?: boolean;
-  isDraggedOver?: boolean;
-  dragTransform?: number;
+  dragY?: number;
+  shiftDirection?: 'up' | 'down' | null;
   onDragStart?: (exerciseId: string, index: number, startY: number) => void;
   onDragMove?: (currentY: number) => void;
   onDragEnd?: () => void;
@@ -48,8 +48,8 @@ export function ExerciseCard({
   onMoveDown,
   // Drag-and-drop props
   isDragging = false,
-  isDraggedOver = false,
-  dragTransform = 0,
+  dragY = 0,
+  shiftDirection = null,
   onDragStart,
   onDragMove,
   onDragEnd
@@ -311,29 +311,27 @@ export function ExerciseCard({
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ 
-          opacity: 1, 
-          y: 0,
-          scale: isDragging ? 0.8 : 1,
-        }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ scale: { duration: 0.15 } }}
-        className="rounded-xl overflow-hidden bg-zinc-800/50 border-t border-r border-b border-zinc-700"
+      <div
+        className="rounded-xl overflow-hidden bg-zinc-800 border-t border-r border-b border-zinc-700"
         style={{ 
           borderLeftWidth: '8px', 
           borderLeftColor: exerciseColors.border,
           userSelect: isDragging ? 'none' : undefined,
           touchAction: isDragging ? 'none' : undefined,
-          transform: isDraggedOver ? `translateY(${dragTransform}px)` : undefined,
-          transition: isDraggedOver ? 'transform 150ms ease' : undefined,
+          position: isDragging ? 'relative' : undefined,
+          // Transform for drag
+          transform: isDragging 
+            ? `translateY(${dragY}px) scale(0.8)` 
+            : shiftDirection 
+              ? `translateY(${shiftDirection === 'down' ? 80 : -80}px)` 
+              : undefined,
+          transformOrigin: 'center top',
+          transition: isDragging 
+            ? 'none' 
+            : 'transform 250ms cubic-bezier(0.2, 0, 0, 1)',
+          zIndex: isDragging ? 1000 : shiftDirection ? 1 : undefined,
+          opacity: 1,
         }}
-
-
-
-
-
       >
         <div className="flex">
           <div className="flex-1 min-w-0">
@@ -717,7 +715,7 @@ export function ExerciseCard({
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Delete exercise confirmation */}
       <ConfirmDialog

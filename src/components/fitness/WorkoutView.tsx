@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect, useReducer } from 'react';
 import { Trash2, Calendar, Clock, Search, RefreshCw, Pencil } from 'lucide-react';
 import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType } from '@/lib/types';
 import { ExerciseCard } from './ExerciseCard';
@@ -39,7 +39,10 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
     draggedIndex: number;
     currentIndex: number;
     startY: number;
+    currentY: number;
+    startScrollY: number;
   } | null>(null);
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
   const dragStateRef = useRef<typeof dragState>(null);
   const exerciseRefsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const containerRefRef = useRef<HTMLDivElement>(null);
@@ -47,6 +50,18 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
   
   // Keep ref in sync with state
   dragStateRef.current = dragState;
+  
+  // Force re-render on scroll during drag to keep element with finger
+  useEffect(() => {
+    if (!dragState) return;
+    
+    const handleScroll = () => {
+      forceUpdate();
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [dragState]);
   
   const { addExercise, removeExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes } = useFitnessStore();
 
@@ -141,6 +156,8 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
       draggedIndex: index,
       currentIndex: index,
       startY,
+      currentY: startY,
+      startScrollY: window.scrollY,
     });
   }, []);
 
@@ -148,10 +165,14 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
     const currentDragState = dragStateRef.current;
     if (!currentDragState) return;
     
+    // Update currentY for animation (account for scroll changes)
+    const scrollDelta = window.scrollY - currentDragState.startScrollY;
+    setDragState(prev => prev ? { ...prev, currentY: currentY } : null);
+    
     // Find which exercise we're hovering over by checking Y position
     let targetIndex = currentDragState.draggedIndex;
     
-    const exerciseRects: { id: string; index: number; top: number; bottom: number; midY: number }[] = [];
+    const exerciseRects: { id: string; index: number; top: number; bottom: number; height: number }[] = [];
     exerciseRefsRef.current.forEach((element, id) => {
       const rect = element.getBoundingClientRect();
       const idx = workout.exercises.findIndex(e => e.id === id);
@@ -160,21 +181,31 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
         index: idx,
         top: rect.top,
         bottom: rect.bottom,
-        midY: rect.top + rect.height / 2
+        height: rect.height
       });
     });
     
     // Sort by position
     exerciseRects.sort((a, b) => a.top - b.top);
     
-    // Find target index
+    // Find target index - use top third of element as threshold
     for (let i = 0; i < exerciseRects.length; i++) {
       const item = exerciseRects[i];
-      if (currentY < item.midY) {
-        targetIndex = i;
-        break;
+      const threshold = item.top + item.height * 0.33; // Top 33% of element
+      
+      // If dragging down and past threshold of this item
+      if (i > currentDragState.draggedIndex) {
+        if (currentY > threshold) {
+          targetIndex = i;
+        }
       }
-      targetIndex = i;
+      // If dragging up and before threshold of this item
+      else if (i < currentDragState.draggedIndex) {
+        if (currentY < item.bottom - item.height * 0.33) {
+          targetIndex = i;
+          break;
+        }
+      }
     }
     
     if (targetIndex !== currentDragState.currentIndex) {
@@ -187,14 +218,14 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
       autoScrollIntervalRef.current = null;
     }
     
-    const scrollZone = 50;
+    const scrollZone = 60;
     if (currentY < scrollZone) {
       autoScrollIntervalRef.current = setInterval(() => {
-        window.scrollBy(0, -5);
+        window.scrollBy(0, -15);
       }, 16);
     } else if (currentY > window.innerHeight - scrollZone) {
       autoScrollIntervalRef.current = setInterval(() => {
-        window.scrollBy(0, 5);
+        window.scrollBy(0, 15);
       }, 16);
     }
   }, [workout.exercises]);
@@ -297,20 +328,27 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
       <AnimatePresence mode="popLayout">
         {workout.exercises.map((exercise, index) => {
           const isDragging = dragState?.draggedId === exercise.id;
-          const isDraggedOver = dragState !== null && !isDragging;
           const draggedIndex = dragState?.draggedIndex ?? 0;
           const currentIndex = dragState?.currentIndex ?? 0;
           const exerciseIndex = index;
           
-          // Calculate transform for non-dragged items
-          let dragTransform = 0;
-          if (isDraggedOver && dragState) {
+          // Calculate dragY for dragged element (relative movement from start)
+          // Account for scroll changes during drag - this keeps element with finger
+          let dragY = 0;
+          if (isDragging && dragState) {
+            const scrollDelta = window.scrollY - dragState.startScrollY;
+            dragY = dragState.currentY - dragState.startY;
+            // Add scrollDelta to compensate for page movement
+            dragY += scrollDelta;
+          }
+          
+          // Calculate shift direction for non-dragged items
+          let shiftDirection: 'up' | 'down' | null = null;
+          if (dragState && !isDragging) {
             if (exerciseIndex > draggedIndex && exerciseIndex <= currentIndex) {
-              // Item should move up
-              dragTransform = -80;
+              shiftDirection = 'up';
             } else if (exerciseIndex < draggedIndex && exerciseIndex >= currentIndex) {
-              // Item should move down
-              dragTransform = 80;
+              shiftDirection = 'down';
             }
           }
           
@@ -331,8 +369,8 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 onMoveUp={handleMoveUp}
                 onMoveDown={handleMoveDown}
                 isDragging={isDragging}
-                isDraggedOver={isDraggedOver}
-                dragTransform={dragTransform}
+                dragY={dragY}
+                shiftDirection={shiftDirection}
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
