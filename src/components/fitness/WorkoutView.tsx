@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useCallback, useEffect, useReducer } from 'react';
-import { Trash2, Calendar, Clock, Search, RefreshCw, Pencil } from 'lucide-react';
+import { Trash2, Calendar, Clock, Search, RefreshCw, Pencil, X } from 'lucide-react';
 import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType } from '@/lib/types';
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '@/components/ui/button';
@@ -47,9 +47,23 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
   const exerciseRefsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const containerRefRef = useRef<HTMLDivElement>(null);
   const autoScrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
   
   // Keep ref in sync with state
   dragStateRef.current = dragState;
+
+  // Auto-resize notes textarea when dialog opens
+  useEffect(() => {
+    if (isNotesOpen) {
+      // Use requestAnimationFrame to ensure textarea is rendered
+      requestAnimationFrame(() => {
+        if (notesTextareaRef.current) {
+          notesTextareaRef.current.style.height = 'auto';
+          notesTextareaRef.current.style.height = notesTextareaRef.current.scrollHeight + 'px';
+        }
+      });
+    }
+  }, [isNotesOpen]);
 
   // Force re-render on scroll during drag to keep element with finger
   // Also prevent iOS default touch behavior during drag
@@ -158,6 +172,15 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
   const handleSaveNotes = () => {
     updateWorkoutNotes(workout.id, notesValue);
     setIsNotesOpen(false);
+  };
+
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNotesValue(e.target.value);
+    // Auto-resize textarea
+    if (notesTextareaRef.current) {
+      notesTextareaRef.current.style.height = 'auto';
+      notesTextareaRef.current.style.height = notesTextareaRef.current.scrollHeight + 'px';
+    }
   };
 
   // Drag-and-drop handlers
@@ -613,35 +636,47 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
 
       {/* Notes dialog */}
       <Dialog open={isNotesOpen} onOpenChange={setIsNotesOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-700">
-          <DialogHeader>
-            <DialogTitle className="text-white">Заметки к тренировке</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <textarea
-              value={notesValue}
-              onChange={(e) => setNotesValue(e.target.value)}
-              placeholder="Добавьте заметки к этой тренировке..."
-              className="w-full h-32 bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white placeholder-zinc-500 resize-none focus:outline-none"
-              style={{ '--tw-ring-color': '#037b34' } as React.CSSProperties}
-              onFocus={(e) => e.target.style.borderColor = '#037b34'}
-              onBlur={(e) => e.target.style.borderColor = '#3f3f46'}
-            />
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="ghost"
-                onClick={() => setIsNotesOpen(false)}
-                className="text-zinc-400"
-              >
-                Отмена
-              </Button>
-              <Button
-                onClick={handleSaveNotes}
-                style={{ backgroundColor: '#037b34' }}
-              >
-                Сохранить
-              </Button>
-            </div>
+        <DialogContent 
+          className="bg-zinc-800 border-2 !p-0 !gap-0"
+          style={{ borderColor: colors.border }}
+          showCloseButton={false}
+        >
+          {/* Header row: title + close button */}
+          <div className="flex items-center justify-between px-4 pt-4">
+            <DialogTitle className="text-white font-medium text-base">Заметки к тренировке</DialogTitle>
+            <button
+              onClick={() => setIsNotesOpen(false)}
+              className="text-zinc-500 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          {/* Textarea */}
+          <textarea
+            ref={notesTextareaRef}
+            value={notesValue}
+            onChange={handleNotesChange}
+            placeholder="Добавьте заметки к этой тренировке..."
+            className="w-[calc(100%-2rem)] bg-zinc-900/50 border-2 rounded-lg p-2 mx-4 mt-4 text-white placeholder-zinc-500 resize-none focus:outline-none block"
+            style={{ borderColor: colors.border, overflow: 'hidden', height: 'auto', minHeight: '60px' }}
+          />
+          
+          {/* Buttons */}
+          <div className="flex justify-end gap-2 px-4 pt-4 pb-4">
+            <button
+              onClick={() => setIsNotesOpen(false)}
+              className="py-2 px-4 rounded-md bg-zinc-700/50 text-zinc-500 text-sm font-medium hover:bg-zinc-700 hover:text-white transition-colors min-w-[100px]"
+            >
+              Отмена
+            </button>
+            <button
+              onClick={handleSaveNotes}
+              className="py-2 px-4 rounded-md text-white text-sm font-medium transition-colors min-w-[100px]"
+              style={{ backgroundColor: colors.border }}
+            >
+              Сохранить
+            </button>
           </div>
         </DialogContent>
       </Dialog>
