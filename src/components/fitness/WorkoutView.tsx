@@ -320,7 +320,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                   setNotesValue(workout.notes || '');
                   setIsNotesOpen(true);
                 }}
-                className="h-9 w-9 rounded-md text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50"
+                className="h-9 w-9 rounded-md text-zinc-500 hover:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent"
                 title="Добавить заметку"
               >
                 <Pencil className="w-4 h-4" style={workout.notes ? { color: colors.text } : undefined} />
@@ -330,7 +330,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
               variant="ghost"
               size="icon"
               onClick={() => setShowDeleteWorkoutConfirm(true)}
-              className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10"
+              className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent"
             >
               <Trash2 className="w-5 h-5" />
             </Button>

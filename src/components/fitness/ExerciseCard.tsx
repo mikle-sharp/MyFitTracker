@@ -413,8 +413,7 @@ export function ExerciseCard({
                       variant="ghost"
                       size="icon"
                       onClick={() => onReplace(exercise.id, exercise.name)}
-                      className="text-zinc-500 hover:bg-blue-500/10 h-9 w-9"
-                      style={{ '--tw-hover-color': '#3871d4' } as React.CSSProperties}
+                      className="text-zinc-500 hover:!bg-transparent dark:hover:!bg-transparent h-9 w-9"
                       title="Заменить упражнение"
                     >
                       <RefreshCw className="w-4 h-4" />
@@ -427,7 +426,7 @@ export function ExerciseCard({
                     variant="ghost"
                     size="icon"
                     onClick={() => setShowDeleteExerciseConfirm(true)}
-                    className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 h-9 w-9"
+                    className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-9 w-9"
                     title="Удалить упражнение"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -529,7 +528,7 @@ export function ExerciseCard({
                         variant="ghost"
                         size="icon"
                         onClick={() => setEditingSetId(null)}
-                        className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 h-9 w-9 shrink-0 self-end"
+                        className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-9 w-9 shrink-0 self-end"
                       >
                         <X className="w-4 h-4" />
                       </Button>
@@ -547,7 +546,7 @@ export function ExerciseCard({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleRemoveSet(set.id)}
-                        className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 h-9 w-9 shrink-0"
+                        className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-9 w-9 shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -736,7 +735,7 @@ export function ExerciseCard({
                   </div>
                 </div>
               ) : (
-                <div className="flex justify-end">
+                <div className="flex justify-end mt-1">
                   <button
                     onClick={() => setIsAddingSet(true)}
                     className="py-2 px-4 rounded-md bg-zinc-700/50 text-zinc-500 text-sm font-medium hover:bg-zinc-700 hover:text-white transition-colors"
