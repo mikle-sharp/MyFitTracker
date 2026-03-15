@@ -54,7 +54,7 @@ export default function Home() {
                 <Dumbbell className="w-6 h-6" style={{ color: '#19a655' }} />
               </div>
             </div>
-            <h1 className="text-lg font-bold text-white">Мой журнал тренировок</h1>
+            <h1 className="text-lg font-bold text-white cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Мой журнал тренировок</h1>
             <div className="flex-1 flex justify-end">
               <SettingsPanel />
             </div>

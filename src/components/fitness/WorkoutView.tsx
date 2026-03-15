@@ -424,9 +424,8 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
       }}>
         <DialogTrigger asChild>
           <Button
-            variant="outline"
-            className="w-full border-dashed border-zinc-600 text-zinc-400 hover:text-white py-6 justify-center"
-            style={{ '--hover-border': '#037b34', '--hover-bg': '#072f18' } as React.CSSProperties}
+            className="w-full py-6 justify-center text-sm font-medium text-primary-foreground"
+            style={{ backgroundColor: '#19a655' }}
           >
             Добавить упражнение
           </Button>
@@ -581,11 +580,11 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                   Выберите упражнение
                 </p>
                 <div className="max-h-[250px] overflow-y-auto space-y-1">
-                  {filteredExercises.map((exerciseName) => {
+                  {filteredExercises.map((exerciseName, index) => {
                     const isCurrent = exerciseName === replacingExerciseName;
                     return (
                       <button
-                        key={exerciseName}
+                        key={`${exerciseName}-${index}`}
                         onClick={() => handleConfirmReplace(exerciseName)}
                         disabled={isCurrent}
                         className={cn(
@@ -666,14 +665,14 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
           <div className="flex justify-end gap-2 px-4 pt-4 pb-4">
             <button
               onClick={() => setIsNotesOpen(false)}
-              className="py-2 px-4 rounded-md bg-zinc-700/50 text-zinc-500 text-sm font-medium hover:bg-zinc-700 hover:text-white transition-colors min-w-[100px]"
+              className="py-2 px-4 rounded-md bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300 text-sm font-medium min-w-[100px]"
             >
               Отмена
             </button>
             <button
               onClick={handleSaveNotes}
-              className="py-2 px-4 rounded-md text-white text-sm font-medium transition-colors min-w-[100px]"
-              style={{ backgroundColor: colors.border }}
+              className="py-2 px-4 rounded-md text-primary-foreground text-sm font-medium min-w-[100px]"
+              style={{ backgroundColor: '#19a655' }}
             >
               Сохранить
             </button>
@@ -689,7 +688,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
         description={`Упражнение "${replacingExerciseName}" будет заменено на "${pendingReplaceName}". Все подходы будут удалены.`}
         confirmText="Заменить"
         onConfirm={confirmReplace}
-        variant="warning"
+        borderColor={colors.border}
       />
 
       {/* Delete workout confirmation */}
@@ -700,7 +699,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
         description={`Тренировка от ${format(parseISO(workout.date), 'd MMMM yyyy', { locale: ru })} будет удалена вместе со всеми упражнениями и подходами. Это действие нельзя отменить.`}
         confirmText="Удалить"
         onConfirm={handleDeleteWorkout}
-        variant="danger"
+        borderColor={colors.border}
       />
     </div>
   );

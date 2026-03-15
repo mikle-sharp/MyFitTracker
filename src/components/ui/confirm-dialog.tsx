@@ -1,15 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -20,6 +17,7 @@ interface ConfirmDialogProps {
   cancelText?: string;
   onConfirm: () => void;
   variant?: 'danger' | 'warning';
+  borderColor?: string;
 }
 
 export function ConfirmDialog({
@@ -30,50 +28,87 @@ export function ConfirmDialog({
   confirmText = 'Удалить',
   cancelText = 'Отмена',
   onConfirm,
-  variant = 'danger',
+  borderColor,
 }: ConfirmDialogProps) {
-  const handleConfirm = () => {
+  const [showSecondConfirm, setShowSecondConfirm] = useState(false);
+
+  const handleFirstConfirm = () => {
+    setShowSecondConfirm(true);
+  };
+
+  const handleSecondConfirm = () => {
     onConfirm();
+    setShowSecondConfirm(false);
+    onOpenChange(false);
+  };
+
+  const handleClose = () => {
+    setShowSecondConfirm(false);
     onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 max-w-sm">
-        <DialogHeader>
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              variant === 'danger' ? 'bg-red-500/20' : 'bg-amber-500/20'
-            }`}>
-              <AlertTriangle className={`w-5 h-5 ${
-                variant === 'danger' ? 'text-red-400' : 'text-amber-400'
-              }`} />
-            </div>
-            <DialogTitle className="text-white">{title}</DialogTitle>
-          </div>
-          <DialogDescription className="text-zinc-400 mt-2">
-            {description}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="mt-4 flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="flex-1 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
-          >
-            {cancelText}
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            className={`flex-1 ${
-              variant === 'danger' 
-                ? 'bg-red-600 hover:bg-red-500' 
-                : 'bg-amber-600 hover:bg-amber-500'
-            }`}
-          >
-            {confirmText}
-          </Button>
-        </DialogFooter>
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent
+        className="bg-zinc-900 max-w-[calc(100%-2rem)] border-2 p-0"
+        showCloseButton={false}
+        style={{ borderColor: borderColor || '#c93843' }}
+      >
+        <DialogTitle className="sr-only">{showSecondConfirm ? 'Вы уверены?' : title}</DialogTitle>
+        <div className="flex flex-col">
+          {showSecondConfirm ? (
+            <>
+              {/* Second confirmation */}
+              <div className="pt-4" />
+              <div className="text-white text-center font-semibold">Вы уверены?</div>
+              
+              <div className="pt-4" />
+              <div className="flex flex-row px-4 pb-4">
+                <Button
+                  onClick={handleClose}
+                  className="flex-1 bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300"
+                >
+                  Нет
+                </Button>
+                <div className="w-4" />
+                <Button
+                  onClick={handleSecondConfirm}
+                  className="flex-1 text-primary-foreground border-0"
+                  style={{ backgroundColor: '#c93843' }}
+                >
+                  Да
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* First confirmation */}
+              <div className="pt-4" />
+              <div className="text-white text-center font-semibold">{title}</div>
+              
+              <div className="pt-4" />
+              <div className="text-zinc-400 text-justify px-4">{description}</div>
+              
+              <div className="pt-4" />
+              <div className="flex flex-row px-4 pb-4">
+                <Button
+                  onClick={handleFirstConfirm}
+                  className="flex-1 text-primary-foreground border-0"
+                  style={{ backgroundColor: '#c93843' }}
+                >
+                  {confirmText}
+                </Button>
+                <div className="w-4" />
+                <Button
+                  onClick={handleClose}
+                  className="flex-1 bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300"
+                >
+                  {cancelText}
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

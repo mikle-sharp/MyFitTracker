@@ -289,15 +289,14 @@ export function ExerciseCard({
     const hasReps = set.reps > 0;
     const hasTime = set.time && set.time > 0;
     const isPRSet = isPR(set.weight, set.reps, setIndex);
+    const isTimeOnly = hasTime && !hasReps;
 
     return (
       <div className="flex items-center">
-        {/* Столбец 1: Вес / Иконка User / Иконка Clock */}
+        {/* Столбец 1: Вес / Иконка User */}
         <span className="inline-block w-8 text-left font-medium text-sm">
           {isBodyweight ? (
             <User className="w-4 h-4 inline" style={{ color: '#19a655' }} />
-          ) : hasTime && !hasReps ? (
-            <Clock className="w-4 h-4 inline" style={{ color: '#944ad4' }} />
           ) : (
             <span style={isPRSet ? { color: '#ffae00' } : { color: '#fff' }}>{set.weight}</span>
           )}
@@ -308,22 +307,23 @@ export function ExerciseCard({
           {!isBodyweight && set.weight > 0 && 'кг'}
         </span>
 
-        {/* Столбец 3: "×" / Время */}
-        <span
-          className="inline-block w-4 text-center text-sm"
-          style={hasTime && !hasReps ? { color: '#944ad4', fontWeight: 500 } : { color: '#71717a' }}
-        >
-          {hasTime && !hasReps ? formatTime(set.time!) : hasReps ? '×' : ''}
+        {/* Столбец 3: "×" / Иконка Clock */}
+        <span className="inline-flex w-4 h-7 items-center justify-center text-sm" style={{ color: '#71717a' }}>
+          {isTimeOnly ? (
+            <Clock className="w-2 h-2" />
+          ) : hasReps ? (
+            '×'
+          ) : (
+            ''
+          )}
         </span>
 
-        {/* Столбец 4: Повторения */}
-        <span className={cn(
-          'inline-block w-6 text-left font-medium text-sm',
-          isPRSet ? '' : 'text-red-400'
-        )}
-        style={isPRSet ? { color: '#ffae00' } : undefined}
+        {/* Столбец 4: Повторения / Время */}
+        <span
+          className="inline-block w-6 text-left font-medium text-sm"
+          style={isTimeOnly ? { color: '#944ad4' } : isPRSet ? { color: '#ffae00' } : undefined}
         >
-          {hasReps ? set.reps : ''}
+          {isTimeOnly ? formatTime(set.time!) : hasReps ? set.reps : ''}
         </span>
       </div>
     );
@@ -332,7 +332,7 @@ export function ExerciseCard({
   return (
     <>
       <div
-        className="rounded-xl overflow-hidden bg-zinc-800 border-t border-r border-b"
+        className="rounded-xl overflow-hidden bg-zinc-800 border-t border-r border-b relative"
         style={{
           borderTopColor: exerciseColors.border,
           borderRightColor: exerciseColors.border,
@@ -358,6 +358,10 @@ export function ExerciseCard({
           opacity: 1,
         }}
       >
+        {/* Overlay to block clicks while editing or adding set */}
+        {(editingSetId || isAddingSet) && (
+          <div className="absolute inset-0 z-10" onClick={(e) => e.stopPropagation()} />
+        )}
         <div className="flex">
           <div className="flex-1 min-w-0">
             {/* Header */}
@@ -408,12 +412,11 @@ export function ExerciseCard({
 
               {currentWorkout && (
                 <div className="flex items-center gap-1">
-                  {onReplace && !exercise.isCustom && (
+                  {onReplace && (
                     <Button
                       variant="ghost"
-                      size="icon"
                       onClick={() => onReplace(exercise.id, exercise.name)}
-                      className="text-zinc-500 hover:!bg-transparent dark:hover:!bg-transparent h-9 w-9"
+                      className="text-zinc-500 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 p-0"
                       title="Заменить упражнение"
                     >
                       <RefreshCw className="w-4 h-4" />
@@ -424,9 +427,8 @@ export function ExerciseCard({
                   
                   <Button
                     variant="ghost"
-                    size="icon"
                     onClick={() => setShowDeleteExerciseConfirm(true)}
-                    className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-9 w-9"
+                    className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 p-0"
                     title="Удалить упражнение"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -436,7 +438,7 @@ export function ExerciseCard({
             </div>
 
             {/* Sets */}
-            <div className="py-4 flex flex-col" style={{ paddingLeft: '52px', paddingRight: '16px' }}>
+            <div className="py-4 flex flex-col" style={{ paddingLeft: '44px', paddingRight: '16px' }}>
               <div className="space-y-2">
               {exercise.sets.map((set, setIndex) => {
                 // Вычисляем номер рабочего подхода (не учитывая разминочные)
@@ -452,7 +454,7 @@ export function ExerciseCard({
                   key={set.id}
                   className={cn(
                     'flex items-center gap-3',
-                    editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg' : ''
+                    editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg relative z-20' : ''
                   )}
                 >
                   <div className={cn(
@@ -466,7 +468,7 @@ export function ExerciseCard({
                   
                   {editingSetId === set.id ? (
                     <>
-                      <div className="flex items-center gap-2 flex-wrap flex-1">
+                      <div className="flex items-center gap-3 flex-wrap flex-1">
                         {/* Вес - показываем только если он был введен (не 0 и не собственный вес) */}
                         {set.weight > 0 && (
                           <Input
@@ -476,7 +478,7 @@ export function ExerciseCard({
                             value={editWeight}
                             onChange={(e) => setEditWeight(e.target.value)}
                             placeholder="Вес, кг"
-                            className="w-20 h-7 bg-zinc-700 border-zinc-600 text-white text-xs"
+                            className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         )}
                         
@@ -488,7 +490,7 @@ export function ExerciseCard({
                             value={editReps}
                             onChange={(e) => setEditReps(e.target.value)}
                             placeholder="Повторения"
-                            className="w-24 h-7 bg-zinc-700 border-zinc-600 text-white text-xs"
+                            className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         )}
                         
@@ -501,7 +503,7 @@ export function ExerciseCard({
                               value={editTimeMinutes}
                               onChange={(e) => setEditTimeMinutes(e.target.value)}
                               placeholder="Мин"
-                              className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center"
+                              className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span className="text-zinc-500 text-xs">:</span>
                             <Input
@@ -511,7 +513,7 @@ export function ExerciseCard({
                               value={editTimeSeconds}
                               onChange={(e) => setEditTimeSeconds(e.target.value)}
                               placeholder="Сек"
-                              className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center"
+                              className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                           </div>
                         )}
@@ -519,7 +521,7 @@ export function ExerciseCard({
                         <Button
                           size="sm"
                           onClick={() => handleUpdateSet(set.id, set)}
-                          className="bg-emerald-600 hover:bg-emerald-500 h-7 w-7 p-0"
+                          className="h-7 w-7 p-0 flex items-center justify-center bg-[#19a655]"
                         >
                           <Check className="w-3 h-3" />
                         </Button>
@@ -527,9 +529,8 @@ export function ExerciseCard({
                       
                       <Button
                         variant="ghost"
-                        size="icon"
                         onClick={() => setEditingSetId(null)}
-                        className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-9 w-9 shrink-0 self-end"
+                        className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 shrink-0 p-0"
                       >
                         <X className="w-4 h-4" />
                       </Button>
@@ -558,7 +559,7 @@ export function ExerciseCard({
 
               {/* Add set form */}
               {isAddingSet ? (
-                <div className="space-y-2 mt-2 pt-2 border-t border-zinc-700">
+                <div className="space-y-2 mt-2 pt-2 border-t border-zinc-700 relative z-20">
                   {/* Toggle buttons */}
                   <div className="flex gap-2 flex-wrap items-center">
                     {/* Чекбокс разминки */}
@@ -739,7 +740,8 @@ export function ExerciseCard({
                 <div className={cn("flex justify-end", exercise.sets.length > 0 && "mt-4")}>
                   <button
                     onClick={() => setIsAddingSet(true)}
-                    className="py-2 px-4 rounded-md bg-zinc-700/50 text-zinc-500 text-sm font-medium hover:bg-zinc-700 hover:text-white transition-colors"
+                    className="py-2 px-4 rounded-md text-sm font-medium text-primary-foreground"
+                    style={{ backgroundColor: '#19a655' }}
                   >
                     Добавить подход
                   </button>
@@ -758,7 +760,7 @@ export function ExerciseCard({
         description={`Упражнение "${exercise.name}" и все его подходы будут удалены. Это действие нельзя отменить.`}
         confirmText="Удалить"
         onConfirm={handleDeleteExercise}
-        variant="danger"
+        borderColor={exerciseColors.border}
       />
 
       {/* Delete set confirmation */}
@@ -772,7 +774,7 @@ export function ExerciseCard({
         description="Этот подход будет удалён. Это действие нельзя отменить."
         confirmText="Удалить"
         onConfirm={confirmDeleteSet}
-        variant="danger"
+        borderColor={exerciseColors.border}
       />
     </>
   );
