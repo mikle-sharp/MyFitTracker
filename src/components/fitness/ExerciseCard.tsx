@@ -438,7 +438,7 @@ export function ExerciseCard({
             </div>
 
             {/* Sets */}
-            <div className="py-4 flex flex-col" style={{ paddingLeft: '44px', paddingRight: '16px' }}>
+            <div className={cn("flex flex-col", exercise.sets.length > 0 || !isAddingSet ? "py-4" : "pb-4")} style={{ paddingLeft: '44px', paddingRight: '16px' }}>
               <div className="space-y-2">
               {exercise.sets.map((set, setIndex) => {
                 // Вычисляем номер рабочего подхода (не учитывая разминочные)
@@ -559,9 +559,9 @@ export function ExerciseCard({
 
               {/* Add set form */}
               {isAddingSet ? (
-                <div className="space-y-2 pt-4 relative z-20">
+                <div className="pt-4 relative z-20">
                   {/* Toggle tags */}
-                  <div className="flex gap-2 flex-wrap items-center">
+                  <div className="flex gap-2 flex-wrap items-center mb-2">
                     <div
                       onClick={() => setIsWarmup(!isWarmup)}
                       className={cn(
@@ -572,7 +572,7 @@ export function ExerciseCard({
                       <Zap className="w-3 h-3 text-amber-400" />
                       <span className="text-[10px] text-zinc-300">Разм.</span>
                     </div>
-                    
+
                     <div
                       onClick={() => setUseBodyweight(!useBodyweight)}
                       className={cn(
@@ -583,7 +583,7 @@ export function ExerciseCard({
                       <User className="w-3 h-3 text-emerald-400" />
                       <span className="text-[10px] text-zinc-300">Собст. вес</span>
                     </div>
-                    
+
                     <div
                       onClick={() => setUseReps(!useReps)}
                       className={cn(
@@ -594,7 +594,7 @@ export function ExerciseCard({
                       <Repeat2 className="w-3 h-3 text-red-400" />
                       <span className="text-[10px] text-zinc-300">Повт.</span>
                     </div>
-                    
+
                     <div
                       onClick={() => setUseTime(!useTime)}
                       className={cn(
@@ -608,7 +608,7 @@ export function ExerciseCard({
                   </div>
 
                   {/* Input fields */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 mb-2">
                     <div className={cn(
                       'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0',
                       isWarmup
@@ -637,7 +637,7 @@ export function ExerciseCard({
                         value={newReps}
                         onChange={(e) => setNewReps(e.target.value)}
                         placeholder="повт."
-                        className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                     )}
 
@@ -649,7 +649,7 @@ export function ExerciseCard({
                           value={newTimeMinutes}
                           onChange={(e) => setNewTimeMinutes(e.target.value)}
                           placeholder="мин."
-                          className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span className="text-zinc-500 text-xs">:</span>
                         <Input
@@ -659,30 +659,41 @@ export function ExerciseCard({
                           value={newTimeSeconds}
                           onChange={(e) => setNewTimeSeconds(e.target.value)}
                           placeholder="сек."
-                          className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Previous values hint */}
                   {(() => {
                     const prevData = isWarmup ? prevWarmupSetData : prevWorkingSetData;
                     if (!prevData) return null;
-                    
+
                     return (
-                      <div className="flex items-center gap-2 text-[10px] text-zinc-500 ml-10">
-                        <span>Прошлый раз:</span>
-                        {prevData.isBodyweight ? (
-                          <span className="text-emerald-400">собственный вес</span>
-                        ) : prevData.weight > 0 ? (
-                          <span>{prevData.weight} кг</span>
-                        ) : null}
-                        {prevData.reps > 0 && (
-                          <span>× {prevData.reps} повт.</span>
+                      <div className="flex items-center text-[10px] text-zinc-500">
+                        <div className="w-7 text-center">Было</div>
+                        {!useBodyweight && (
+                          <>
+                            <div className="w-3" />
+                            <div className="w-14 text-center">
+                              {prevData.isBodyweight ? (
+                                <span className="text-emerald-400">св.вес</span>
+                              ) : prevData.weight > 0 ? (
+                                <span>{prevData.weight} кг</span>
+                              ) : null}
+                            </div>
+                          </>
                         )}
-                        {prevData.time > 0 && (
-                          <span className="text-purple-400">{formatTime(prevData.time)}</span>
+                        {useReps && prevData.reps > 0 && (
+                          <>
+                            {!useBodyweight && <div className="w-3 text-center">×</div>}
+                            {useBodyweight && <div className="w-3" />}
+                            <div className="w-14 text-center">{prevData.reps} повт.</div>
+                          </>
+                        )}
+                        {useTime && prevData.time > 0 && (
+                          <div className="text-center text-purple-400">{formatTime(prevData.time)}</div>
                         )}
                       </div>
                     );
