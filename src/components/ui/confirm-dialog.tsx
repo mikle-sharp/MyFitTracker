@@ -70,7 +70,7 @@ export function ConfirmDialog({
                 >
                   Нет
                 </Button>
-                <div className="w-4" />
+                <div className="w-2" />
                 <Button
                   onClick={handleSecondConfirm}
                   className="flex-1 text-primary-foreground border-0"
@@ -98,7 +98,7 @@ export function ConfirmDialog({
                 >
                   {confirmText}
                 </Button>
-                <div className="w-4" />
+                <div className="w-2" />
                 <Button
                   onClick={handleClose}
                   className="flex-1 bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300"

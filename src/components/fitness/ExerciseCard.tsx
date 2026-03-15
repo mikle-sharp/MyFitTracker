@@ -559,124 +559,107 @@ export function ExerciseCard({
 
               {/* Add set form */}
               {isAddingSet ? (
-                <div className="space-y-2 mt-2 pt-2 border-t border-zinc-700 relative z-20">
-                  {/* Toggle buttons */}
+                <div className="space-y-2 pt-4 relative z-20">
+                  {/* Toggle tags */}
                   <div className="flex gap-2 flex-wrap items-center">
-                    {/* Чекбокс разминки */}
-                    <label className={cn(
-                      'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
-                      isWarmup ? 'bg-amber-600/20 border border-amber-500/50' : 'bg-zinc-700/50 border border-zinc-600'
-                    )}>
-                      <input
-                        type="checkbox"
-                        checked={isWarmup}
-                        onChange={(e) => setIsWarmup(e.target.checked)}
-                        className="w-3.5 h-3.5 rounded border-zinc-600 bg-zinc-700 text-amber-600"
-                      />
+                    <div
+                      onClick={() => setIsWarmup(!isWarmup)}
+                      className={cn(
+                        'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
+                        isWarmup ? 'bg-amber-600/20 border border-amber-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                      )}
+                    >
                       <Zap className="w-3 h-3 text-amber-400" />
-                      <span className="text-[10px] text-zinc-300">Разминка</span>
-                    </label>
+                      <span className="text-[10px] text-zinc-300">Разм.</span>
+                    </div>
                     
-                    <label className={cn(
-                      'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
-                      useBodyweight ? 'bg-emerald-600/20 border border-emerald-500/50' : 'bg-zinc-700/50 border border-zinc-600'
-                    )}>
-                      <input
-                        type="checkbox"
-                        checked={useBodyweight}
-                        onChange={(e) => setUseBodyweight(e.target.checked)}
-                        className="w-3.5 h-3.5 rounded border-zinc-600 bg-zinc-700 text-emerald-600"
-                      />
+                    <div
+                      onClick={() => setUseBodyweight(!useBodyweight)}
+                      className={cn(
+                        'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
+                        useBodyweight ? 'bg-emerald-600/20 border border-emerald-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                      )}
+                    >
                       <User className="w-3 h-3 text-emerald-400" />
-                      <span className="text-[10px] text-zinc-300">Собственный вес</span>
-                    </label>
+                      <span className="text-[10px] text-zinc-300">Собст. вес</span>
+                    </div>
                     
-                    <label className={cn(
-                      'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
-                      useReps ? 'bg-red-600/20 border border-red-500/50' : 'bg-zinc-700/50 border border-zinc-600'
-                    )}>
-                      <input
-                        type="checkbox"
-                        checked={useReps}
-                        onChange={(e) => setUseReps(e.target.checked)}
-                        className="w-3.5 h-3.5 rounded border-zinc-600 bg-zinc-700 text-red-600"
-                      />
+                    <div
+                      onClick={() => setUseReps(!useReps)}
+                      className={cn(
+                        'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
+                        useReps ? 'bg-red-600/20 border border-red-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                      )}
+                    >
                       <Repeat2 className="w-3 h-3 text-red-400" />
-                      <span className="text-[10px] text-zinc-300">Повторения</span>
-                    </label>
+                      <span className="text-[10px] text-zinc-300">Повт.</span>
+                    </div>
                     
-                    <label className={cn(
-                      'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
-                      useTime ? 'bg-purple-600/20 border border-purple-500/50' : 'bg-zinc-700/50 border border-zinc-600'
-                    )}>
-                      <input
-                        type="checkbox"
-                        checked={useTime}
-                        onChange={(e) => setUseTime(e.target.checked)}
-                        className="w-3.5 h-3.5 rounded border-zinc-600 bg-zinc-700 text-purple-600"
-                      />
+                    <div
+                      onClick={() => setUseTime(!useTime)}
+                      className={cn(
+                        'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
+                        useTime ? 'bg-purple-600/20 border border-purple-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                      )}
+                    >
                       <Clock className="w-3 h-3 text-purple-400" />
-                      <span className="text-[10px] text-zinc-300">Время</span>
-                    </label>
+                      <span className="text-[10px] text-zinc-300">Вр.</span>
+                    </div>
                   </div>
 
                   {/* Input fields */}
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-3">
                     <div className={cn(
                       'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0',
                       isWarmup
-                        ? 'bg-zinc-900 text-zinc-500 border border-zinc-800'
+                        ? 'bg-transparent text-zinc-500 border border-zinc-500'
                         : 'bg-zinc-700 text-zinc-300'
                     )}>
                       {isWarmup ? 'Р' : exercise.sets.filter(s => !s.isWarmup).length + 1}
                     </div>
 
                     {!useBodyweight && (
-                      <div className="flex items-center gap-1">
-                        <WeightIcon className="w-3 h-3 text-zinc-500" />
-                        <Input
-                          type="number"
-                          step="0.5"
-                          min={"0.1"}
-                          value={newWeight}
-                          onChange={(e) => setNewWeight(e.target.value)}
-                          placeholder="Вес, кг"
-                          className="w-20 h-8 bg-zinc-700 border-zinc-600 text-white text-xs"
-                        />
-                      </div>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        min="0.1"
+                        value={newWeight}
+                        onChange={(e) => setNewWeight(e.target.value)}
+                        placeholder="кг"
+                        className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
                     )}
 
                     {useReps && (
                       <Input
                         type="number"
-                        min={"1"}
+                        min="1"
                         value={newReps}
                         onChange={(e) => setNewReps(e.target.value)}
-                        placeholder="Повторения"
-                        className="w-24 h-8 bg-zinc-700 border-zinc-600 text-white text-xs"
+                        placeholder="повт."
+                        className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                     )}
 
                     {useTime && (
                       <div className="flex items-center gap-0.5">
-                        <Clock className="w-3 h-3 text-purple-400" />
                         <Input
                           type="number"
-                          min={"0"}
+                          min="0"
                           value={newTimeMinutes}
                           onChange={(e) => setNewTimeMinutes(e.target.value)}
-                          placeholder="Мин"
-                          className="w-14 h-8 bg-zinc-700 border-zinc-600 text-white text-xs text-center"
+                          placeholder="мин."
+                          className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span className="text-zinc-500 text-xs">:</span>
                         <Input
                           type="number"
-                          min={"0"}
+                          min="0"
                           max={59}
                           value={newTimeSeconds}
                           onChange={(e) => setNewTimeSeconds(e.target.value)}
-                          placeholder="Сек"
-                          className="w-14 h-8 bg-zinc-700 border-zinc-600 text-white text-xs text-center"
+                          placeholder="сек."
+                          className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
                     )}
@@ -688,7 +671,7 @@ export function ExerciseCard({
                     if (!prevData) return null;
                     
                     return (
-                      <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-1 ml-9">
+                      <div className="flex items-center gap-2 text-[10px] text-zinc-500 ml-10">
                         <span>Прошлый раз:</span>
                         {prevData.isBodyweight ? (
                           <span className="text-emerald-400">собственный вес</span>
@@ -705,10 +688,9 @@ export function ExerciseCard({
                     );
                   })()}
 
-                  {/* Buttons in bottom-right corner */}
-                  <div className="flex justify-end items-center gap-2 mt-3">
-                    <Button
-                      variant="ghost"
+                  {/* Buttons */}
+                  <div className="flex justify-end items-center gap-2 pt-4">
+                    <button
                       onClick={() => {
                         setIsAddingSet(false);
                         setNewReps('');
@@ -719,28 +701,29 @@ export function ExerciseCard({
                         setUseReps(true);
                         setIsWarmup(false);
                       }}
-                      className="h-9 text-zinc-400 text-xs"
+                      className="py-2 px-4 rounded-md bg-zinc-700 text-zinc-300 text-sm font-medium border-0 hover:bg-zinc-700 hover:text-zinc-300"
                     >
                       Отмена
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       onClick={handleAddSet}
                       disabled={
                         (useReps && !newReps) || 
                         (!useBodyweight && useReps && !newWeight) ||
                         (!useReps && !newTimeMinutes && !newTimeSeconds)
                       }
-                      className="bg-emerald-600 hover:bg-emerald-500 h-9 px-4 text-white font-medium"
+                      className="py-2 px-4 rounded-md text-primary-foreground text-sm font-medium border-0 hover:opacity-90 disabled:opacity-50"
+                      style={{ backgroundColor: '#19a655' }}
                     >
                       Добавить
-                    </Button>
+                    </button>
                   </div>
                 </div>
               ) : (
                 <div className={cn("flex justify-end", exercise.sets.length > 0 && "mt-4")}>
                   <button
                     onClick={() => setIsAddingSet(true)}
-                    className="py-2 px-4 rounded-md text-sm font-medium text-primary-foreground"
+                    className="py-2 px-4 rounded-md text-sm font-medium text-primary-foreground hover:opacity-90"
                     style={{ backgroundColor: '#19a655' }}
                   >
                     Добавить подход
