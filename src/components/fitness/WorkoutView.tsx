@@ -294,6 +294,49 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
     return sum + ex.sets.reduce((s, set) => s + set.reps * set.weight, 0);
   }, 0);
 
+  // Расчёт затраченного времени
+  const getWorkoutDuration = (): number | null => {
+    // Если есть duration из импорта - используем его
+    if (workout.duration) {
+      return workout.duration;
+    }
+
+    // Проверяем, что дата тренировки = сегодня
+    const today = new Date().toISOString().split('T')[0];
+    if (workout.date !== today) {
+      return null;
+    }
+
+    // Собираем все timestamps из подходов
+    const timestamps: number[] = [];
+    workout.exercises.forEach(ex => {
+      ex.sets.forEach(set => {
+        if (set.timestamp) {
+          timestamps.push(new Date(set.timestamp).getTime());
+        }
+      });
+    });
+
+    if (timestamps.length < 2) {
+      return null;
+    }
+
+    // Считаем разницу между первым и последним подходом в минутах
+    const minTime = Math.min(...timestamps);
+    const maxTime = Math.max(...timestamps);
+    const diffMinutes = Math.round((maxTime - minTime) / (1000 * 60));
+
+    return diffMinutes;
+  };
+
+  const formatDuration = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  };
+
+  const workoutDuration = getWorkoutDuration();
+
   return (
     <div className="space-y-4">
       {/* Workout header */}
@@ -346,14 +389,24 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
         )}
 
         {/* Stats */}
-        <div className="flex gap-6 mt-4 justify-end">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white">{workout.exercises.length}</div>
-            <div className="text-xs text-zinc-500">Упражнений</div>
+        <div className="flex justify-between mt-4">
+          <div className="ml-10">
+            {workoutDuration !== null && (
+              <>
+                <div className="text-2xl font-bold text-white">{formatDuration(workoutDuration)}</div>
+                <div className="text-xs text-zinc-500">Затрачено (чч:мм)</div>
+              </>
+            )}
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white">{Math.round(totalVolume)}</div>
-            <div className="text-xs text-zinc-500">Объем (кг)</div>
+          <div className="flex gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">{workout.exercises.length}</div>
+              <div className="text-xs text-zinc-500">Упражнений</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">{Math.round(totalVolume)}</div>
+              <div className="text-xs text-zinc-500">Объем (кг)</div>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -660,18 +713,13 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
             className="w-[calc(100%-2rem)] bg-zinc-900/50 border-2 rounded-lg p-2 mx-4 mt-4 text-white placeholder-zinc-500 resize-none focus:outline-none block"
             style={{ borderColor: colors.border, overflow: 'hidden', height: 'auto', minHeight: '60px' }}
           />
-          
+
           {/* Buttons */}
-          <div className="flex justify-end gap-2 px-4 pt-4 pb-4">
-            <button
-              onClick={() => setIsNotesOpen(false)}
-              className="py-2 px-4 rounded-md bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300 text-sm font-medium min-w-[100px]"
-            >
-              Отмена
-            </button>
+          <div className="flex justify-end px-4 pt-4 pb-4">
             <button
               onClick={handleSaveNotes}
-              className="py-2 px-4 rounded-md text-primary-foreground text-sm font-medium min-w-[100px]"
+              disabled={!notesValue.trim()}
+              className="py-2 px-4 rounded-md text-primary-foreground text-sm font-medium min-w-[100px] disabled:opacity-50 disabled:pointer-events-none"
               style={{ backgroundColor: '#19a655' }}
             >
               Сохранить

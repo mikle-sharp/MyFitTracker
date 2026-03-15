@@ -267,7 +267,7 @@ export const addSetToExercise = (
 ): WorkoutSet | null => {
   const workouts = getWorkouts();
   const workout = workouts.find(w => w.id === workoutId);
-  
+
   if (!workout) return null;
 
   const exercise = workout.exercises.find(e => e.id === exerciseId);
@@ -279,6 +279,7 @@ export const addSetToExercise = (
     weight,
     time,
     isWarmup,
+    timestamp: new Date().toISOString(),
   };
 
   // Разминочные подходы добавляем в начало списка
@@ -355,7 +356,7 @@ export const exportToCSV = (): string => {
     return '';
   }
 
-  const headers = ['Дата', 'Тип тренировки', 'Упражнение', 'Подход', 'Повторения', 'Вес (кг)', 'Время (сек)', 'Заметки'];
+  const headers = ['Дата', 'Тип тренировки', 'Длительность (мин)', 'Упражнение', 'Подход', 'Повторения', 'Вес (кг)', 'Время (сек)', 'Заметки'];
   const rows: string[][] = [headers];
 
   workouts
@@ -366,6 +367,7 @@ export const exportToCSV = (): string => {
           rows.push([
             workout.date,
             workout.type,
+            workout.duration ? String(workout.duration) : '',
             exercise.name,
             String(index + 1),
             String(set.reps),
@@ -447,7 +449,35 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
       const parts = line.split(',');
       if (parts.length < 6) continue;
 
-      const [date, type, exerciseName, setNum, reps, weight, time, notes] = parts;
+      // Поддерживаем как новый формат (с duration), так и старый (без)
+      const hasDuration = parts.length >= 9;
+      const [date, type, durationOrExercise, exerciseOrSetNum, repsOrWeight, weightOrTime, timeOrNotes, notesOrUndefined] = parts;
+
+      let exerciseName: string;
+      let reps: string;
+      let weight: string;
+      let time: string | undefined;
+      let notes: string | undefined;
+      let duration: string | undefined;
+
+      if (hasDuration) {
+        // Новый формат: Дата, Тип, Длительность, Упражнение, Подход, Повторения, Вес, Время, Заметки
+        duration = durationOrExercise;
+        exerciseName = exerciseOrSetNum;
+        // setNum пропускаем
+        reps = repsOrWeight;
+        weight = weightOrTime;
+        time = timeOrNotes;
+        notes = notesOrUndefined;
+      } else {
+        // Старый формат: Дата, Тип, Упражнение, Подход, Повторения, Вес, Время, Заметки
+        exerciseName = durationOrExercise;
+        // setNum пропускаем
+        reps = exerciseOrSetNum;
+        weight = repsOrWeight;
+        time = weightOrTime;
+        notes = timeOrNotes;
+      }
 
       if (!date || !type || !exerciseName) continue;
 
@@ -459,6 +489,7 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
           type: type.trim() as WorkoutType,
           exercises: [],
           notes: notes ? notes.trim() : undefined,
+          duration: duration ? parseInt(duration) : undefined,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };

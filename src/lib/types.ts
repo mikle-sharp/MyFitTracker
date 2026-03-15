@@ -23,6 +23,7 @@ export interface WorkoutSet {
   time?: number; // время в секундах
   inputType?: ExerciseInputType; // тип ввода для этого подхода
   isWarmup?: boolean; // разминочный подход
+  timestamp?: string; // время добавления подхода (ISO string)
 }
 
 // Упражнение
@@ -41,6 +42,7 @@ export interface Workout {
   type: WorkoutType;
   exercises: Exercise[];
   notes?: string;
+  duration?: number; // длительность в минутах (для импортированных данных)
   createdAt: string;
   updatedAt: string;
 }
