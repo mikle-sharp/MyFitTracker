@@ -436,7 +436,8 @@ export function ExerciseCard({
             </div>
 
             {/* Sets */}
-            <div className="pt-2 pb-4 flex flex-col gap-2" style={{ paddingLeft: '52px', paddingRight: '16px' }}>
+            <div className="py-4 flex flex-col" style={{ paddingLeft: '52px', paddingRight: '16px' }}>
+              <div className="space-y-2">
               {exercise.sets.map((set, setIndex) => {
                 // Вычисляем номер рабочего подхода (не учитывая разминочные)
                 let workingSetNumber = 0;
@@ -537,16 +538,15 @@ export function ExerciseCard({
                     <>
                       <div
                         onClick={() => startEditingSet(set)}
-                        className="flex-1 cursor-pointer hover:bg-zinc-700/30 py-1 px-2 -ml-2 rounded-lg transition-colors"
+                        className="flex-1 h-7 flex items-center cursor-pointer hover:bg-zinc-700/30 px-2 -ml-2 rounded-lg transition-colors"
                       >
                         {renderSetDisplay(set, setIndex)}
                       </div>
                       
                       <Button
                         variant="ghost"
-                        size="icon"
                         onClick={() => handleRemoveSet(set.id)}
-                        className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-9 w-9 shrink-0"
+                        className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 shrink-0 p-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -554,6 +554,7 @@ export function ExerciseCard({
                   )}
                 </div>
               );})}
+              </div>
 
               {/* Add set form */}
               {isAddingSet ? (
@@ -735,7 +736,7 @@ export function ExerciseCard({
                   </div>
                 </div>
               ) : (
-                <div className="flex justify-end mt-1">
+                <div className={cn("flex justify-end", exercise.sets.length > 0 && "mt-4")}>
                   <button
                     onClick={() => setIsAddingSet(true)}
                     className="py-2 px-4 rounded-md bg-zinc-700/50 text-zinc-500 text-sm font-medium hover:bg-zinc-700 hover:text-white transition-colors"
