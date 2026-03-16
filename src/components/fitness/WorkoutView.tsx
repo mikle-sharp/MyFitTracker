@@ -106,7 +106,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
     return new Set(workout.exercises.map(e => e.name));
   }, [workout.exercises]);
 
-  // Упражнения для отображения (поиск ищет везде, теги только сортируют)
+  // Упражнения для отображения
   const displayedExercises = useMemo(() => {
     let result = allExercisesList;
     
@@ -117,11 +117,9 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
       );
     }
     
-    // Теги только сортируют - сначала совпадающие, потом остальные
+    // Теги фильтруют - показываем только совпадающие
     if (exerciseTypeFilter) {
-      const withTag = result.filter(ex => getExerciseType(ex) === exerciseTypeFilter);
-      const withoutTag = result.filter(ex => getExerciseType(ex) !== exerciseTypeFilter);
-      result = [...withTag, ...withoutTag];
+      result = result.filter(ex => getExerciseType(ex) === exerciseTypeFilter);
     }
     
     return result;
@@ -549,7 +547,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск упражнения..."
-                className="bg-zinc-900/50 border-zinc-700 text-white pl-9"
+                className="!bg-zinc-900/50 border-2 border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 pl-9"
                 autoComplete="off"
                 inputMode="search"
               />
@@ -687,7 +685,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 setDuplicateExerciseError(false);
               }}
               placeholder="Название упражнения"
-              className="bg-zinc-900/50 border-zinc-700 text-white"
+              className="!bg-zinc-900/50 border-2 border-zinc-700 rounded-lg text-white placeholder:text-zinc-500"
               autoComplete="off"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && newExerciseName.trim() && !duplicateExerciseError) {

@@ -69,7 +69,7 @@ export default function Home() {
             <TabsTrigger
               value="workout"
               className="relative z-10 transition-colors py-0"
-              style={{ color: activeTab === 'workout' ? '#fff' : '#19a655' }}
+              style={{ color: activeTab === 'workout' ? '#1a1a1a' : '#19a655' }}
             >
               <span className="flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4" />
@@ -79,7 +79,7 @@ export default function Home() {
             <TabsTrigger
               value="records"
               className="relative z-10 transition-colors py-0"
-              style={{ color: activeTab === 'records' ? '#fff' : '#ffae00' }}
+              style={{ color: activeTab === 'records' ? '#1a1a1a' : '#ffae00' }}
             >
               <span className="flex items-center gap-2">
                 <Trophy className="w-4 h-4" />
@@ -92,7 +92,7 @@ export default function Home() {
               className="absolute top-0 bottom-0 w-1/2 rounded-md transition-all duration-300 ease-out"
               style={{
                 left: activeTab === 'workout' ? '0%' : '50%',
-                backgroundColor: activeTab === 'workout' ? '#072f18' : '#ffae00'
+                backgroundColor: activeTab === 'workout' ? '#19a655' : '#ffae00'
               }}
             />
           </TabsList>
