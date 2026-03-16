@@ -751,7 +751,12 @@ export function ExerciseCard({
         open={showDeleteExerciseConfirm}
         onOpenChange={setShowDeleteExerciseConfirm}
         title="Удалить упражнение?"
-        description={`Упражнение "${exercise.name}" и все его подходы будут удалены. Это действие нельзя отменить.`}
+        description={
+          <>
+            Упражнение <strong className="text-white">"{exercise.name}"</strong> и все его подходы будут удалены.<br />
+            Это действие нельзя отменить.
+          </>
+        }
         confirmText="Удалить"
         onConfirm={handleDeleteExercise}
         borderColor={exerciseColors.border}
@@ -765,7 +770,37 @@ export function ExerciseCard({
           if (!open) setSetToDelete(null);
         }}
         title="Удалить подход?"
-        description="Этот подход будет удалён. Это действие нельзя отменить."
+        description={
+          <>
+            {setToDelete && (() => {
+              const setToDeleteData = exercise.sets.find(s => s.id === setToDelete);
+              if (!setToDeleteData) return null;
+              
+              if (setToDeleteData.isWarmup) {
+                return (
+                  <>
+                    <strong className="text-white">Разминочный</strong> подход будет удалён.<br />
+                    Это действие нельзя отменить.
+                  </>
+                );
+              }
+              
+              // Вычисляем номер рабочего подхода (как в UI)
+              let workingSetNumber = 0;
+              for (let i = 0; i < exercise.sets.length; i++) {
+                if (!exercise.sets[i].isWarmup) workingSetNumber++;
+                if (exercise.sets[i].id === setToDelete) break;
+              }
+              
+              return (
+                <>
+                  Подход <strong className="text-white">#{workingSetNumber}</strong> будет удалён.<br />
+                  Это действие нельзя отменить.
+                </>
+              );
+            })()}
+          </>
+        }
         confirmText="Удалить"
         onConfirm={confirmDeleteSet}
         borderColor={exerciseColors.border}

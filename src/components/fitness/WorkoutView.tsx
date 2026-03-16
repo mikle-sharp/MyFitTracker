@@ -13,7 +13,7 @@ import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFitnessStore } from '@/lib/store';
-import { getAllExercisesForType } from '@/lib/storage';
+import { getAllExercisesForType, getAllExercises } from '@/lib/storage';
 
 interface WorkoutViewProps {
   workout: Workout;
@@ -21,12 +21,16 @@ interface WorkoutViewProps {
 
 export function WorkoutView({ workout }: WorkoutViewProps) {
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
+  const [isCreateCustomOpen, setIsCreateCustomOpen] = useState(false);
   const [isReplaceExerciseOpen, setIsReplaceExerciseOpen] = useState(false);
   const [replacingExerciseId, setReplacingExerciseId] = useState<string | null>(null);
   const [replacingExerciseName, setReplacingExerciseName] = useState('');
   const [newExerciseName, setNewExerciseName] = useState('');
   const [newExerciseType, setNewExerciseType] = useState<ExerciseType>('chest');
   const [searchQuery, setSearchQuery] = useState('');
+  const [exerciseTypeFilter, setExerciseTypeFilter] = useState<ExerciseType | null>(null);
+  const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
+  const [duplicateExerciseError, setDuplicateExerciseError] = useState(false);
   const [showDeleteWorkoutConfirm, setShowDeleteWorkoutConfirm] = useState(false);
   const [showReplaceConfirm, setShowReplaceConfirm] = useState(false);
   const [pendingReplaceName, setPendingReplaceName] = useState('');
@@ -92,24 +96,42 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
 
   const colors = WORKOUT_TYPE_COLORS[workout.type];
 
-  // Получаем все упражнения для данного типа (стандартные + пользовательские)
-  const availableExercises = useMemo(() => {
-    return getAllExercisesForType(workout.type);
-  }, [workout.type]);
+  // Получаем ВСЕ упражнения из базы (стандартные + пользовательские всех типов)
+  const allExercisesList = useMemo(() => {
+    return getAllExercises();
+  }, []);
 
-  // Фильтруем упражнения по поиску
-  const filteredExercises = useMemo(() => {
-    if (!searchQuery) return availableExercises;
-    return availableExercises.filter(ex => 
-      ex.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [availableExercises, searchQuery]);
+  // Добавленные упражнения
+  const addedExerciseNames = useMemo(() => {
+    return new Set(workout.exercises.map(e => e.name));
+  }, [workout.exercises]);
 
-  // Упражнения, которые еще не добавлены
-  const notAddedExercises = useMemo(() => {
-    const addedNames = new Set(workout.exercises.map(e => e.name));
-    return filteredExercises.filter(ex => !addedNames.has(ex));
-  }, [filteredExercises, workout.exercises]);
+  // Упражнения для отображения (поиск ищет везде, теги только сортируют)
+  const displayedExercises = useMemo(() => {
+    let result = allExercisesList;
+    
+    // Фильтр по поиску - ищет по всем упражнениям
+    if (searchQuery) {
+      result = result.filter(ex => 
+        ex.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // Теги только сортируют - сначала совпадающие, потом остальные
+    if (exerciseTypeFilter) {
+      const withTag = result.filter(ex => getExerciseType(ex) === exerciseTypeFilter);
+      const withoutTag = result.filter(ex => getExerciseType(ex) !== exerciseTypeFilter);
+      result = [...withTag, ...withoutTag];
+    }
+    
+    return result;
+  }, [allExercisesList, searchQuery, exerciseTypeFilter]);
+
+  // Проверка на дубликат упражнения
+  const checkDuplicateExercise = (name: string): boolean => {
+    const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    return allExercisesList.some(ex => ex.toLowerCase() === capitalizedName.toLowerCase());
+  };
 
   const handleAddExercise = (name?: string, exerciseType?: ExerciseType) => {
     const exerciseName = name || newExerciseName.trim();
@@ -119,13 +141,31 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
       setNewExerciseName('');
       setNewExerciseType('chest');
       setSearchQuery('');
+      setExerciseTypeFilter(null);
+      setSelectedExercise(null);
+      setDuplicateExerciseError(false);
       setIsAddExerciseOpen(false);
+      setIsCreateCustomOpen(false);
+    }
+  };
+
+  const handleAddSelectedExercise = () => {
+    if (selectedExercise) {
+      const exerciseType = getExerciseType(selectedExercise);
+      handleAddExercise(selectedExercise, exerciseType);
     }
   };
 
   const handleAddCustomExercise = () => {
     if (newExerciseName.trim()) {
-      handleAddExercise(newExerciseName.trim(), newExerciseType);
+      // Проверка на дубликат
+      if (checkDuplicateExercise(newExerciseName.trim())) {
+        setDuplicateExerciseError(true);
+        return;
+      }
+      // Делаем первую букву заглавной
+      const capitalizedName = newExerciseName.trim().charAt(0).toUpperCase() + newExerciseName.trim().slice(1);
+      handleAddExercise(capitalizedName, newExerciseType);
     }
   };
 
@@ -146,8 +186,8 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
     if (replacingExerciseId && pendingReplaceName) {
       // Удаляем старое упражнение
       removeExercise(workout.id, replacingExerciseId);
-      // Добавляем новое
-      addExercise(workout.id, pendingReplaceName);
+      // Добавляем новое с правильным типом
+      addExercise(workout.id, pendingReplaceName, getExerciseType(pendingReplaceName));
       setIsReplaceExerciseOpen(false);
       setReplacingExerciseId(null);
       setReplacingExerciseName('');
@@ -473,21 +513,35 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
         if (!open) {
           setSearchQuery('');
           setNewExerciseName('');
+          setExerciseTypeFilter(null);
+          setSelectedExercise(null);
         }
       }}>
         <DialogTrigger asChild>
-          <Button
-            className="w-full py-6 justify-center text-sm font-medium text-primary-foreground"
+          <button
+            className="w-full py-2 rounded-md text-sm font-medium text-primary-foreground"
             style={{ backgroundColor: '#19a655' }}
           >
             Добавить упражнение
-          </Button>
+          </button>
         </DialogTrigger>
-        <DialogContent className="bg-zinc-900 border-zinc-700 max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="text-white">Добавить упражнение</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
+        <DialogContent 
+          className="bg-zinc-800 border-2 max-h-[80vh] !p-0 !gap-0"
+          style={{ borderColor: colors.border }}
+          showCloseButton={false}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-4">
+            <DialogTitle className="text-white font-medium text-base">Добавить упражнение</DialogTitle>
+            <button
+              onClick={() => setIsAddExerciseOpen(false)}
+              className="text-zinc-500 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-4 space-y-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -495,103 +549,203 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск упражнения..."
-                className="bg-zinc-800 border-zinc-700 text-white pl-9"
+                className="bg-zinc-900/50 border-zinc-700 text-white pl-9"
+                autoComplete="off"
+                inputMode="search"
               />
             </div>
 
-            {/* Available exercises */}
-            {notAddedExercises.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs text-zinc-500 uppercase tracking-wide">
-                  Доступные упражнения
-                </p>
-                <div className="max-h-[200px] overflow-y-auto space-y-1">
-                  {notAddedExercises.map((exerciseName) => {
-                    const exerciseType = getExerciseType(exerciseName);
-                    const exerciseColors = EXERCISE_TYPE_COLORS[exerciseType];
-                    const exerciseMarker = EXERCISE_TYPE_MARKERS[exerciseType];
-                    return (
-                      <button
-                        key={exerciseName}
-                        onClick={() => handleAddExercise(exerciseName)}
-                        className="w-full text-left px-3 py-2 rounded-lg transition-colors hover:bg-zinc-800 text-zinc-300 hover:text-white flex items-center gap-2"
+            {/* Type filter tags */}
+            <div className="flex gap-1">
+              {(['chest', 'back', 'legs', 'common'] as ExerciseType[]).map((type) => {
+                const typeColors = EXERCISE_TYPE_COLORS[type];
+                const typeMarker = EXERCISE_TYPE_MARKERS[type];
+                const isSelected = exerciseTypeFilter === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setExerciseTypeFilter(isSelected ? null : type)}
+                    className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all border-2 flex-1 justify-center"
+                    style={isSelected ? {
+                      backgroundColor: typeColors.bg,
+                      color: typeColors.text,
+                      borderColor: typeColors.border
+                    } : {
+                      backgroundColor: '#27272a',
+                      color: '#a1a1aa',
+                      borderColor: 'transparent'
+                    }}
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded text-[9px] font-bold flex items-center justify-center"
+                      style={{ backgroundColor: isSelected ? typeColors.bg : '#3f3f46', color: typeColors.text }}
+                    >
+                      {typeMarker}
+                    </span>
+                    <span className="truncate">{EXERCISE_TYPE_NAMES[type]}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Available exercises list - fixed height */}
+            <div className="h-[200px] overflow-y-auto space-y-1 border border-zinc-700 rounded-md p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
+              {displayedExercises.length > 0 ? (
+                displayedExercises.map((exerciseName) => {
+                  const exerciseType = getExerciseType(exerciseName);
+                  const exerciseColors = EXERCISE_TYPE_COLORS[exerciseType];
+                  const exerciseMarker = EXERCISE_TYPE_MARKERS[exerciseType];
+                  const isSelected = selectedExercise === exerciseName;
+                  const isAdded = addedExerciseNames.has(exerciseName);
+                  return (
+                    <button
+                      key={exerciseName}
+                      onClick={() => !isAdded && setSelectedExercise(isSelected ? null : exerciseName)}
+                      disabled={isAdded}
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2",
+                        isAdded 
+                          ? "opacity-40 cursor-not-allowed text-zinc-500"
+                          : isSelected 
+                            ? "bg-zinc-600 text-white" 
+                            : "hover:bg-zinc-700/50 text-zinc-300 hover:text-white"
+                      )}
+                    >
+                      <span
+                        className="w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: exerciseColors.bg, color: exerciseColors.text }}
                       >
-                        <span
-                          className="w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: exerciseColors.bg, color: exerciseColors.text }}
-                        >
-                          {exerciseMarker}
-                        </span>
-                        <span className="flex-1">{exerciseName}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+                        {exerciseMarker}
+                      </span>
+                      <span className="flex-1">{exerciseName}</span>
+                      {isAdded && <span className="text-xs">✓</span>}
+                    </button>
+                  );
+                })
+              ) : (
+                <p className="text-center text-zinc-500 py-4">Нет упражнений</p>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom buttons */}
+          <div className="flex items-center justify-between px-4 pb-4">
+            <button
+              onClick={() => {
+                setIsAddExerciseOpen(false);
+                setIsCreateCustomOpen(true);
+              }}
+              className="py-2 px-4 rounded-md text-sm font-medium text-black hover:opacity-90"
+              style={{ backgroundColor: '#ffae00' }}
+            >
+              Создать своё
+            </button>
+            <button
+              onClick={handleAddSelectedExercise}
+              disabled={!selectedExercise}
+              className="py-2 px-4 rounded-md text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#19a655' }}
+            >
+              Добавить
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create custom exercise dialog */}
+      <Dialog open={isCreateCustomOpen} onOpenChange={(open) => {
+        setIsCreateCustomOpen(open);
+        if (!open) {
+          setNewExerciseName('');
+          setNewExerciseType('chest');
+          setDuplicateExerciseError(false);
+        }
+      }}>
+        <DialogContent 
+          className="bg-zinc-800 border-2 max-h-[80vh] !p-0 !gap-0"
+          style={{ borderColor: colors.border }}
+          showCloseButton={false}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-4">
+            <DialogTitle className="text-white font-medium text-base">Введите название упражнения</DialogTitle>
+            <button
+              onClick={() => setIsCreateCustomOpen(false)}
+              className="text-zinc-500 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-4 space-y-4">
+            {/* Name input */}
+            <Input
+              value={newExerciseName}
+              onChange={(e) => {
+                setNewExerciseName(e.target.value);
+                setDuplicateExerciseError(false);
+              }}
+              placeholder="Название упражнения"
+              className="bg-zinc-900/50 border-zinc-700 text-white"
+              autoComplete="off"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newExerciseName.trim() && !duplicateExerciseError) {
+                  handleAddCustomExercise();
+                }
+              }}
+            />
+
+            {/* Duplicate error */}
+            {duplicateExerciseError && (
+              <p className="text-red-400 text-xs">Такое упражнение уже существует</p>
             )}
 
-            {/* Custom exercise input */}
-            <div className="border-t border-zinc-700 pt-4">
-              <p className="text-xs text-zinc-500 uppercase tracking-wide mb-2">
-                Свое упражнение
-              </p>
-              <div className="space-y-3">
-                <Input
-                  value={newExerciseName}
-                  onChange={(e) => setNewExerciseName(e.target.value)}
-                  placeholder="Название упражнения"
-                  className="bg-zinc-800 border-zinc-700 text-white"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleAddCustomExercise();
-                    }
-                  }}
-                />
-                
-                {/* Тип упражнения */}
-                <div className="flex flex-wrap gap-2">
-                  {(['chest', 'back', 'legs', 'common'] as ExerciseType[]).map((type) => {
-                    const typeColors = EXERCISE_TYPE_COLORS[type];
-                    const typeMarker = EXERCISE_TYPE_MARKERS[type];
-                    const isSelected = newExerciseType === type;
-                    return (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => setNewExerciseType(type)}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all border-2"
-                        style={isSelected ? {
-                          backgroundColor: typeColors.bg,
-                          color: typeColors.text,
-                          borderColor: typeColors.border
-                        } : {
-                          backgroundColor: '#27272a',
-                          color: '#a1a1aa',
-                          borderColor: 'transparent'
-                        }}
-                      >
-                        <span
-                          className="w-4 h-4 rounded text-[10px] font-bold flex items-center justify-center"
-                          style={{ backgroundColor: isSelected ? typeColors.bg : '#3f3f46', color: typeColors.text }}
-                        >
-                          {typeMarker}
-                        </span>
-                        {EXERCISE_TYPE_NAMES[type]}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  onClick={handleAddCustomExercise}
-                  disabled={!newExerciseName.trim()}
-                  className="w-full h-9 px-4 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:pointer-events-none justify-center"
-                  style={{ backgroundColor: '#037b34' }}
-                >
-                  Добавить
-                </button>
-              </div>
+            {/* Type tags */}
+            <div className="flex gap-1">
+              {(['chest', 'back', 'legs', 'common'] as ExerciseType[]).map((type) => {
+                const typeColors = EXERCISE_TYPE_COLORS[type];
+                const typeMarker = EXERCISE_TYPE_MARKERS[type];
+                const isSelected = newExerciseType === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setNewExerciseType(type)}
+                    className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all border-2 flex-1 justify-center"
+                    style={isSelected ? {
+                      backgroundColor: typeColors.bg,
+                      color: typeColors.text,
+                      borderColor: typeColors.border
+                    } : {
+                      backgroundColor: '#27272a',
+                      color: '#a1a1aa',
+                      borderColor: 'transparent'
+                    }}
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded text-[9px] font-bold flex items-center justify-center"
+                      style={{ backgroundColor: isSelected ? typeColors.bg : '#3f3f46', color: typeColors.text }}
+                    >
+                      {typeMarker}
+                    </span>
+                    <span className="truncate">{EXERCISE_TYPE_NAMES[type]}</span>
+                  </button>
+                );
+              })}
             </div>
+          </div>
+
+          {/* Create button */}
+          <div className="flex justify-end px-4 pb-4">
+            <button
+              onClick={handleAddCustomExercise}
+              disabled={!newExerciseName.trim()}
+              className="py-2 px-4 rounded-md text-sm font-medium text-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#ffae00' }}
+            >
+              Создать
+            </button>
           </div>
         </DialogContent>
       </Dialog>
@@ -627,13 +781,13 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
             </div>
 
             {/* Available exercises */}
-            {filteredExercises.length > 0 && (
+            {displayedExercises.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs text-zinc-500 uppercase tracking-wide">
                   Выберите упражнение
                 </p>
                 <div className="max-h-[250px] overflow-y-auto space-y-1">
-                  {filteredExercises.map((exerciseName, index) => {
+                  {displayedExercises.map((exerciseName, index) => {
                     const isCurrent = exerciseName === replacingExerciseName;
                     return (
                       <button
@@ -744,7 +898,12 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
         open={showDeleteWorkoutConfirm}
         onOpenChange={setShowDeleteWorkoutConfirm}
         title="Удалить тренировку?"
-        description={`Тренировка от ${format(parseISO(workout.date), 'd MMMM yyyy', { locale: ru })} будет удалена вместе со всеми упражнениями и подходами. Это действие нельзя отменить.`}
+        description={
+          <>
+            Тренировка от <strong className="text-white">{format(parseISO(workout.date), 'd MMMM yyyy', { locale: ru })}</strong> будет удалена вместе со всеми упражнениями и подходами.<br />
+            Это действие нельзя отменить.
+          </>
+        }
         confirmText="Удалить"
         onConfirm={handleDeleteWorkout}
         borderColor={colors.border}

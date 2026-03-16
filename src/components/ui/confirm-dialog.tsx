@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ interface ConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  description: string;
+  description: ReactNode;
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void;
@@ -87,7 +87,7 @@ export function ConfirmDialog({
               <div className="text-white text-center font-semibold">{title}</div>
               
               <div className="pt-4" />
-              <div className="text-zinc-400 text-justify px-4">{description}</div>
+              <div className="text-zinc-400 text-center px-4">{description}</div>
               
               <div className="pt-4" />
               <div className="flex flex-row px-4 pb-4">

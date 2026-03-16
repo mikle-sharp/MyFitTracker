@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { WorkoutType } from '@/lib/types';
 import { WorkoutTypeSelector } from './WorkoutTypeSelector';
-import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { useFitnessStore } from '@/lib/store';
 
@@ -29,7 +28,7 @@ export function NewWorkoutForm({ date, onCreated }: NewWorkoutFormProps) {
       animate={{ opacity: 1, scale: 1 }}
       className="bg-zinc-900/50 rounded-xl border border-zinc-800 relative"
     >
-      <div className="p-4 pb-20">
+      <div className="p-4">
         <div className="text-center mb-4">
           <p className="text-zinc-400 text-sm">
             Выберите тип тренировки
@@ -42,18 +41,17 @@ export function NewWorkoutForm({ date, onCreated }: NewWorkoutFormProps) {
             onSelect={setSelectedType}
           />
         </div>
-      </div>
 
-      {/* Button centered */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-1/2">
-        <Button
-          onClick={handleCreate}
-          disabled={!selectedType}
-          className="w-full h-12 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-white font-medium"
-          style={{ backgroundColor: '#037b34' }}
-        >
-          Начать
-        </Button>
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={handleCreate}
+            disabled={!selectedType}
+            className="w-1/2 py-2 rounded-md text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: '#19a655' }}
+          >
+            Начать
+          </button>
+        </div>
       </div>
     </motion.div>
   );

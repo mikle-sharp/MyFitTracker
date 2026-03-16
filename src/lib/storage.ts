@@ -96,6 +96,25 @@ export const getAllExercisesForType = (type: WorkoutType): string[] => {
   return [...defaultExercises, ...customExercises];
 };
 
+// Получение ВСЕХ упражнений из базы (стандартные + пользовательские всех типов)
+export const getAllExercises = (): string[] => {
+  const allExercises = new Set<string>();
+  
+  // Стандартные упражнения всех типов
+  (['chest', 'back', 'legs'] as WorkoutType[]).forEach(t => {
+    const defaultExercises = DEFAULT_EXERCISES[t];
+    defaultExercises.forEach(ex => allExercises.add(ex));
+  });
+  
+  // Пользовательские упражнения всех типов
+  (['chest', 'back', 'legs', 'fullbody'] as WorkoutType[]).forEach(t => {
+    const customExercises = getCustomExercisesByType(t);
+    customExercises.forEach(ex => allExercises.add(ex));
+  });
+  
+  return Array.from(allExercises);
+};
+
 // Создание новой тренировки
 export const createWorkout = (date: string, type: WorkoutType): Workout => {
   const now = new Date().toISOString();
