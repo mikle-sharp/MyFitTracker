@@ -381,7 +381,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-4 rounded-xl border"
+        className="p-4 rounded-lg border"
         style={{
           backgroundColor: colors.bg,
           borderColor: colors.border
@@ -401,7 +401,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                   setNotesValue(workout.notes || '');
                   setIsNotesOpen(true);
                 }}
-                className="h-9 w-9 rounded-md text-zinc-500 hover:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent"
+                className="h-9 w-9 rounded-lg text-zinc-500 hover:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent"
                 title="Добавить заметку"
               >
                 <Pencil className="w-4 h-4" style={workout.notes ? { color: colors.text } : undefined} />
@@ -517,7 +517,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
       }}>
         <DialogTrigger asChild>
           <button
-            className="w-full py-2 rounded-md text-sm font-medium text-primary-foreground"
+            className="w-full py-2 rounded-lg text-sm font-medium text-primary-foreground"
             style={{ backgroundColor: '#19a655' }}
           >
             Добавить упражнение
@@ -564,7 +564,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                     key={type}
                     type="button"
                     onClick={() => setExerciseTypeFilter(isSelected ? null : type)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all border-2 flex-1 justify-center"
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border-2 flex-1 justify-center"
                     style={isSelected ? {
                       backgroundColor: typeColors.bg,
                       color: typeColors.text,
@@ -588,7 +588,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
             </div>
 
             {/* Available exercises list - fixed height */}
-            <div className="h-[200px] overflow-y-auto space-y-1 border border-zinc-700 rounded-md p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
+            <div className="h-[200px] overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
               {displayedExercises.length > 0 ? (
                 displayedExercises.map((exerciseName) => {
                   const exerciseType = getExerciseType(exerciseName);
@@ -634,7 +634,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 setIsAddExerciseOpen(false);
                 setIsCreateCustomOpen(true);
               }}
-              className="py-2 px-4 rounded-md text-sm font-medium text-black hover:opacity-90"
+              className="py-2 px-4 rounded-lg text-sm font-medium text-black hover:opacity-90"
               style={{ backgroundColor: '#ffae00' }}
             >
               Создать своё
@@ -642,7 +642,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
             <button
               onClick={handleAddSelectedExercise}
               disabled={!selectedExercise}
-              className="py-2 px-4 rounded-md text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#19a655' }}
             >
               Добавить
@@ -710,7 +710,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                     key={type}
                     type="button"
                     onClick={() => setNewExerciseType(type)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all border-2 flex-1 justify-center"
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border-2 flex-1 justify-center"
                     style={isSelected ? {
                       backgroundColor: typeColors.bg,
                       color: typeColors.text,
@@ -739,7 +739,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
             <button
               onClick={handleAddCustomExercise}
               disabled={!newExerciseName.trim()}
-              className="py-2 px-4 rounded-md text-sm font-medium text-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="py-2 px-4 rounded-lg text-sm font-medium text-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#ffae00' }}
             >
               Создать
@@ -871,7 +871,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
             <button
               onClick={handleSaveNotes}
               disabled={!notesValue.trim()}
-              className="py-2 px-4 rounded-md text-primary-foreground text-sm font-medium min-w-[100px] disabled:opacity-50 disabled:pointer-events-none"
+              className="py-2 px-4 rounded-lg text-primary-foreground text-sm font-medium min-w-[100px] disabled:opacity-50 disabled:pointer-events-none"
               style={{ backgroundColor: '#19a655' }}
             >
               Сохранить

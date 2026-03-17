@@ -332,7 +332,7 @@ export function ExerciseCard({
   return (
     <>
       <div
-        className="rounded-xl overflow-hidden bg-zinc-800 border-t border-r border-b relative"
+        className="rounded-lg overflow-hidden bg-zinc-800 border-t border-r border-b relative"
         style={{
           borderTopColor: exerciseColors.border,
           borderRightColor: exerciseColors.border,
@@ -496,7 +496,7 @@ export function ExerciseCard({
                         
                         {/* Время - показываем только если было */}
                         {set.time && set.time > 0 && (
-                          <div className="flex items-center gap-0.5">
+                          <div className="flex items-center">
                             <Input
                               type="number"
                               min="0"
@@ -505,7 +505,7 @@ export function ExerciseCard({
                               placeholder="Мин"
                               className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <span className="text-zinc-500 text-xs">:</span>
+                            <span className="text-zinc-500 text-xs mx-1.5">:</span>
                             <Input
                               type="number"
                               min="0"
@@ -642,7 +642,7 @@ export function ExerciseCard({
                     )}
 
                     {useTime && (
-                      <div className="flex items-center gap-0.5">
+                      <div className="flex items-center">
                         <Input
                           type="number"
                           min="0"
@@ -651,7 +651,7 @@ export function ExerciseCard({
                           placeholder="мин."
                           className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
-                        <span className="text-zinc-500 text-xs">:</span>
+                        <span className="text-zinc-500 text-xs mx-1.5">:</span>
                         <Input
                           type="number"
                           min="0"
@@ -712,7 +712,7 @@ export function ExerciseCard({
                         setUseReps(true);
                         setIsWarmup(false);
                       }}
-                      className="py-2 px-4 rounded-md bg-zinc-700 text-zinc-300 text-sm font-medium border-0 hover:bg-zinc-700 hover:text-zinc-300"
+                      className="py-2 px-4 rounded-lg bg-zinc-700 text-zinc-300 text-sm font-medium border-0 hover:bg-zinc-700 hover:text-zinc-300"
                     >
                       Отмена
                     </button>
@@ -723,7 +723,7 @@ export function ExerciseCard({
                         (!useBodyweight && useReps && !newWeight) ||
                         (!useReps && !newTimeMinutes && !newTimeSeconds)
                       }
-                      className="py-2 px-4 rounded-md text-primary-foreground text-sm font-medium border-0 hover:opacity-90 disabled:opacity-50"
+                      className="py-2 px-4 rounded-lg text-primary-foreground text-sm font-medium border-0 hover:opacity-90 disabled:opacity-50"
                       style={{ backgroundColor: '#19a655' }}
                     >
                       Добавить
@@ -734,7 +734,7 @@ export function ExerciseCard({
                 <div className={cn("flex justify-end", exercise.sets.length > 0 && "mt-4")}>
                   <button
                     onClick={() => setIsAddingSet(true)}
-                    className="py-2 px-4 rounded-md text-sm font-medium text-primary-foreground hover:opacity-90"
+                    className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90"
                     style={{ backgroundColor: '#19a655' }}
                   >
                     Добавить подход

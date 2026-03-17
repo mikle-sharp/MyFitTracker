@@ -54,14 +54,14 @@ export function PersonalRecords() {
 
   if (records.length === 0) {
     return (
-      <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 p-4 text-center">
+      <div className="bg-zinc-900/50 rounded-lg border border-zinc-800 p-4 text-center">
         <p className="text-zinc-500">У Вас пока нет рекордов</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 overflow-hidden">
+    <div className="bg-zinc-900/50 rounded-lg border border-zinc-800 overflow-hidden">
       <div className="p-3 flex items-center justify-center">
         <h3 className="text-lg font-semibold text-white">Личные рекорды</h3>
       </div>

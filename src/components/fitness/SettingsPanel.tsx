@@ -580,14 +580,14 @@ export function SettingsPanel() {
         {/* Header with title and close button */}
         <div className="flex items-center justify-center px-4 pt-4 pb-0 relative">
           <DialogTitle className="text-lg font-semibold text-white m-0">Инструменты</DialogTitle>
-          <DialogClose className="absolute right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none text-zinc-400 hover:text-white">
+          <DialogClose className="absolute right-4 rounded-lg opacity-70 transition-opacity hover:opacity-100 focus:outline-none text-zinc-400 hover:text-white">
             <XIcon className="w-4 h-4" />
           </DialogClose>
         </div>
 
         <div className="p-4 space-y-4">
           {/* Google Account Section */}
-          <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700">
+          <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
               <Sheet className="w-4 h-4" style={{ color: '#037b34' }} />
               <h4 className="text-sm font-medium text-white">Google Sheets</h4>
@@ -709,7 +709,7 @@ export function SettingsPanel() {
           </div>
 
           {/* Import/Export section */}
-          <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700">
+          <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
               <FileSpreadsheet className="w-4 h-4" style={{ color: '#1d4fa0' }} />
               <h4 className="text-sm font-medium text-white">Восстановление / Резервное копирование</h4>
@@ -804,7 +804,7 @@ export function SettingsPanel() {
           </div>
 
           {/* Test data section */}
-          <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700">
+          <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex flex-col gap-4">
               <Button
                 onClick={handleLoadTestData}

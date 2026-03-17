@@ -89,7 +89,7 @@ export default function Home() {
 
             {/* Animated background */}
             <div
-              className="absolute top-0 bottom-0 w-1/2 rounded-md transition-all duration-300 ease-out"
+              className="absolute top-0 bottom-0 w-1/2 rounded-lg transition-all duration-300 ease-out"
               style={{
                 left: activeTab === 'workout' ? '0%' : '50%',
                 backgroundColor: activeTab === 'workout' ? '#19a655' : '#ffae00'

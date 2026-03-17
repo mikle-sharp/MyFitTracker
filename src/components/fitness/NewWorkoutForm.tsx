@@ -26,7 +26,7 @@ export function NewWorkoutForm({ date, onCreated }: NewWorkoutFormProps) {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-zinc-900/50 rounded-xl border border-zinc-800 relative"
+      className="bg-zinc-900/50 rounded-lg border border-zinc-800 relative"
     >
       <div className="p-4">
         <div className="text-center mb-4">
@@ -46,7 +46,7 @@ export function NewWorkoutForm({ date, onCreated }: NewWorkoutFormProps) {
           <button
             onClick={handleCreate}
             disabled={!selectedType}
-            className="w-1/2 py-2 rounded-md text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-1/2 py-2 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: '#19a655' }}
           >
             Начать

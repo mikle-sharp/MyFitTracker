@@ -109,7 +109,7 @@ export function Calendar() {
   const currentYear = currentMonth.getFullYear();
 
   return (
-    <div className="w-full bg-zinc-900/50 rounded-xl p-4 border border-zinc-800">
+    <div className="w-full bg-zinc-900/50 rounded-lg p-4 border border-zinc-800">
       {/* Month/Year selectors - справа */}
       <div className="flex justify-end items-center gap-2 mb-4">
         {/* Month selector */}
@@ -138,7 +138,7 @@ export function Calendar() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute top-full right-0 mt-2 bg-zinc-800 rounded-xl border border-zinc-700 shadow-xl z-50 overflow-hidden"
+                className="absolute top-full right-0 mt-2 bg-zinc-800 rounded-lg border border-zinc-700 shadow-xl z-50 overflow-hidden"
               >
                 <div className="grid grid-cols-3 gap-1 p-2 min-w-[200px]">
                   {MONTHS.map((month, index) => (
@@ -186,7 +186,7 @@ export function Calendar() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute top-full right-0 mt-2 bg-zinc-800 rounded-xl border border-zinc-700 shadow-xl z-50 overflow-hidden max-h-[200px] overflow-y-auto"
+                className="absolute top-full right-0 mt-2 bg-zinc-800 rounded-lg border border-zinc-700 shadow-xl z-50 overflow-hidden max-h-[200px] overflow-y-auto"
               >
                 <div className="flex flex-col gap-1 p-2">
                   {YEARS().map(year => (

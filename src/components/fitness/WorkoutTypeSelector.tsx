@@ -40,7 +40,7 @@ export function WorkoutTypeSelector({ selectedType, onSelect }: WorkoutTypeSelec
             whileTap={{ scale: 0.98 }}
             onClick={() => onSelect(type)}
             className={cn(
-              'relative p-4 rounded-xl border-2 transition-all duration-300',
+              'relative p-4 rounded-lg border-2 transition-all duration-300',
               'flex flex-col items-center gap-2',
               'min-h-[100px]',
               isSelected
