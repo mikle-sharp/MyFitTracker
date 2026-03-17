@@ -469,29 +469,38 @@ export function ExerciseCard({
                   {editingSetId === set.id ? (
                     <>
                       <div className="flex items-center gap-3 flex-wrap flex-1">
-                        {/* Вес - показываем только если он был введен (не 0 и не собственный вес) */}
-                        {set.weight > 0 && (
-                          <Input
-                            type="number"
-                            step="0.5"
-                            min="0.1"
-                            value={editWeight}
-                            onChange={(e) => setEditWeight(e.target.value)}
-                            placeholder="Вес, кг"
-                            className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          />
-                        )}
-                        
-                        {/* Повторения - показываем только если были */}
-                        {set.reps > 0 && (
-                          <Input
-                            type="number"
-                            min="1"
-                            value={editReps}
-                            onChange={(e) => setEditReps(e.target.value)}
-                            placeholder="Повторения"
-                            className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          />
+                        {/* Вес и повторения */}
+                        {(set.weight > 0 || set.reps > 0) && (
+                          <div className="flex items-center">
+                            {/* Вес - показываем только если он был введен (не 0 и не собственный вес) */}
+                            {set.weight > 0 && (
+                              <Input
+                                type="number"
+                                step="0.5"
+                                min="0.1"
+                                value={editWeight}
+                                onChange={(e) => setEditWeight(e.target.value)}
+                                placeholder="Вес, кг"
+                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              />
+                            )}
+                            
+                            {set.weight > 0 && set.reps > 0 && (
+                              <span className="text-zinc-500 text-sm mx-1">×</span>
+                            )}
+                            
+                            {/* Повторения - показываем только если были */}
+                            {set.reps > 0 && (
+                              <Input
+                                type="number"
+                                min="1"
+                                value={editReps}
+                                onChange={(e) => setEditReps(e.target.value)}
+                                placeholder="Повторения"
+                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              />
+                            )}
+                          </div>
                         )}
                         
                         {/* Время - показываем только если было */}
@@ -618,27 +627,35 @@ export function ExerciseCard({
                       {isWarmup ? 'Р' : exercise.sets.filter(s => !s.isWarmup).length + 1}
                     </div>
 
-                    {!useBodyweight && (
-                      <Input
-                        type="number"
-                        step="0.5"
-                        min="0.1"
-                        value={newWeight}
-                        onChange={(e) => setNewWeight(e.target.value)}
-                        placeholder="кг"
-                        className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                    )}
+                    {(!useBodyweight || useReps) && (
+                      <div className="flex items-center">
+                        {!useBodyweight && (
+                          <Input
+                            type="number"
+                            step="0.5"
+                            min="0.1"
+                            value={newWeight}
+                            onChange={(e) => setNewWeight(e.target.value)}
+                            placeholder="кг"
+                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        )}
 
-                    {useReps && (
-                      <Input
-                        type="number"
-                        min="1"
-                        value={newReps}
-                        onChange={(e) => setNewReps(e.target.value)}
-                        placeholder="повт."
-                        className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
+                        {!useBodyweight && useReps && (
+                          <span className="text-zinc-500 text-sm mx-1">×</span>
+                        )}
+
+                        {useReps && (
+                          <Input
+                            type="number"
+                            min="1"
+                            value={newReps}
+                            onChange={(e) => setNewReps(e.target.value)}
+                            placeholder="повт."
+                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        )}
+                      </div>
                     )}
 
                     {useTime && (
