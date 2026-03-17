@@ -529,12 +529,12 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           </button>
         </DialogTrigger>
         <DialogContent 
-          className="bg-zinc-800 border-2 max-h-[80vh] !p-0 !gap-0"
+          className="bg-zinc-800 border max-h-[80vh] !p-0 !gap-0 flex flex-col"
           style={{ borderColor: colors.border }}
           showCloseButton={false}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 pt-4">
+          <div className="flex items-center justify-between px-4 pt-4 shrink-0">
             <DialogTitle className="text-white font-medium text-base">Добавить упражнение</DialogTitle>
             <button
               onClick={() => setIsAddExerciseOpen(false)}
@@ -544,7 +544,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             </button>
           </div>
 
-          <div className="p-4 space-y-4">
+          <div className="flex flex-col min-h-0 p-4 gap-4 flex-1">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -569,7 +569,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                     key={type}
                     type="button"
                     onClick={() => setExerciseTypeFilter(isSelected ? null : type)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border-2 flex-1 justify-center"
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border flex-1 justify-center"
                     style={isSelected ? {
                       backgroundColor: typeColors.bg,
                       color: typeColors.text,
@@ -592,8 +592,8 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
               })}
             </div>
 
-            {/* Available exercises list - fixed height */}
-            <div className="h-[200px] overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
+            {/* Available exercises list */}
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
               {displayedExercises.length > 0 ? (
                 displayedExercises.map((exerciseName) => {
                   const exerciseType = getExerciseType(exerciseName);
@@ -633,7 +633,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           </div>
 
           {/* Bottom buttons */}
-          <div className="flex items-center justify-between px-4 pb-4">
+          <div className="flex items-center justify-between px-4 pb-4 shrink-0">
             <button
               onClick={() => {
                 setIsAddExerciseOpen(false);
@@ -666,7 +666,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         }
       }}>
         <DialogContent 
-          className="bg-zinc-800 border-2 max-h-[80vh] !p-0 !gap-0"
+          className="bg-zinc-800 border max-h-[80vh] !p-0 !gap-0"
           style={{ borderColor: colors.border }}
           showCloseButton={false}
         >
@@ -715,7 +715,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                     key={type}
                     type="button"
                     onClick={() => setNewExerciseType(type)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border-2 flex-1 justify-center"
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border flex-1 justify-center"
                     style={isSelected ? {
                       backgroundColor: typeColors.bg,
                       color: typeColors.text,
@@ -766,12 +766,12 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         }
       }}>
         <DialogContent
-          className="bg-zinc-800 border-2 max-h-[80vh] !p-0 !gap-0"
+          className="bg-zinc-800 border max-h-[80vh] !p-0 !gap-0 flex flex-col"
           style={{ borderColor: EXERCISE_TYPE_COLORS[getExerciseType(replacingExerciseName)]?.border || colors.border }}
           showCloseButton={false}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 pt-4">
+          <div className="flex items-center justify-between px-4 pt-4 shrink-0">
             <DialogTitle className="text-white font-medium text-base">
               Заменить <span className="text-zinc-400">{replacingExerciseName}</span> на
             </DialogTitle>
@@ -783,7 +783,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             </button>
           </div>
 
-          <div className="p-4 space-y-4">
+          <div className="flex flex-col min-h-0 p-4 gap-4 flex-1">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -808,7 +808,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                     key={type}
                     type="button"
                     onClick={() => setExerciseTypeFilter(isSelected ? null : type)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border-2 flex-1 justify-center"
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border flex-1 justify-center"
                     style={isSelected ? {
                       backgroundColor: typeColors.bg,
                       color: typeColors.text,
@@ -832,7 +832,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             </div>
 
             {/* Available exercises list */}
-            <div className="h-[200px] overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
               {displayedExercises.length > 0 ? (
                 displayedExercises.map((exerciseName) => {
                   const exerciseType = getExerciseType(exerciseName);
@@ -872,7 +872,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           </div>
 
           {/* Replace button */}
-          <div className="flex justify-end px-4 pb-4">
+          <div className="flex justify-end px-4 pb-4 shrink-0">
             <button
               onClick={() => selectedReplaceExercise && handleConfirmReplace(selectedReplaceExercise)}
               disabled={!selectedReplaceExercise}
@@ -888,7 +888,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       {/* Notes dialog */}
       <Dialog open={isNotesOpen} onOpenChange={setIsNotesOpen}>
         <DialogContent 
-          className="bg-zinc-800 border-2 !p-0 !gap-0"
+          className="bg-zinc-800 border !p-0 !gap-0"
           style={{ borderColor: colors.border }}
           showCloseButton={false}
         >

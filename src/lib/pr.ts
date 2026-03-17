@@ -1,6 +1,16 @@
 import { Workout, PersonalRecord, RecordData, WorkoutSet } from './types';
 import { getWorkouts } from './storage';
 
+// Проверка, совпадают ли два рекорда (один и тот же подход)
+const isSameRecord = (rec1: RecordData | null, rec2: RecordData | null): boolean => {
+  if (!rec1 || !rec2) return false;
+  return (
+    rec1.date === rec2.date &&
+    rec1.workoutId === rec2.workoutId &&
+    rec1.setIndex === rec2.setIndex
+  );
+};
+
 // Сравнение рекордов по весу
 // Возвращает true, если новый подход лучше текущего рекорда
 const isBetterWeightRecord = (
@@ -53,34 +63,51 @@ export const calculatePersonalRecords = (): PersonalRecord[] => {
           setIndex: setIndex
         };
         
-        // Проверяем рекорд по весу
-        const isWeightRecord = isBetterWeightRecord(set.weight, set.reps, currentRecord?.weightRecord || null);
-        
-        // Проверяем рекорд по объёму
-        const isVolumeRecord = isBetterVolumeRecord(volume, currentRecord?.volumeRecord || null);
+        const volumeData: RecordData = {
+          value: volume,
+          reps: set.reps,
+          date: workout.date,
+          workoutId: workout.id,
+          setIndex: setIndex
+        };
         
         if (!currentRecord) {
-          // Первое упражнение - создаём запись
+          // Первое упражнение - создаём запись только с weightRecord
+          // volumeRecord будет добавлен позже, если найдётся другой подход с большим объёмом
           records.set(exercise.name, {
             exerciseName: exercise.name,
             workoutType: workout.type,
-            weightRecord: isWeightRecord ? { ...setData, value: set.weight } : null,
+            weightRecord: { ...setData, value: set.weight },
             prevWeightRecord: null,
-            volumeRecord: isVolumeRecord ? { ...setData, value: volume } : null,
+            volumeRecord: null,
             prevVolumeRecord: null
           });
         } else {
           // Обновляем существующую запись
           const updated: PersonalRecord = { ...currentRecord };
           
+          // Проверяем рекорд по весу
+          const isWeightRecord = isBetterWeightRecord(set.weight, set.reps, currentRecord.weightRecord);
+          
           if (isWeightRecord) {
             updated.prevWeightRecord = currentRecord.weightRecord;
             updated.weightRecord = { ...setData, value: set.weight };
+            // Если новый рекорд по весу совпадает с текущим рекордом по объёму - удаляем volumeRecord
+            if (isSameRecord(updated.weightRecord, updated.volumeRecord)) {
+              updated.prevVolumeRecord = updated.volumeRecord;
+              updated.volumeRecord = null;
+            }
           }
           
+          // Проверяем рекорд по объёму (строго больше)
+          const isVolumeRecord = isBetterVolumeRecord(volume, currentRecord.volumeRecord);
+          
           if (isVolumeRecord) {
-            updated.prevVolumeRecord = currentRecord.volumeRecord;
-            updated.volumeRecord = { ...setData, value: volume };
+            // Проверяем, что это не тот же подход, что и текущий рекорд по весу
+            if (!isSameRecord(updated.weightRecord, volumeData)) {
+              updated.prevVolumeRecord = currentRecord.volumeRecord;
+              updated.volumeRecord = volumeData;
+            }
           }
           
           records.set(exercise.name, updated);

@@ -50,7 +50,7 @@ export function ConfirmDialog({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="bg-zinc-900 max-w-[calc(100%-2rem)] border-2 p-0"
+        className="bg-zinc-900 max-w-[calc(100%-2rem)] border p-0"
         showCloseButton={false}
         style={{ borderColor: borderColor || '#c93843' }}
       >

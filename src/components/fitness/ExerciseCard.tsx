@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getPersonalRecord } from '@/lib/pr';
+import { getPersonalRecord, getRecordType } from '@/lib/pr';
 import { useFitnessStore } from '@/lib/store';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { getPreviousSetData } from '@/lib/storage';
@@ -89,6 +89,43 @@ export function ExerciseCard({
   const isDragActiveRef = useRef(false);
   const hasMovedRef = useRef(false);
   const dragHandleRef = useRef<HTMLDivElement>(null);
+  
+  // Ref for highlighted set scrolling
+  const highlightedSetRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to highlighted set when it changes
+  useEffect(() => {
+    if (highlightSetIndex === undefined) return;
+    
+    // Retry scrolling until the element is available
+    let attempts = 0;
+    const maxAttempts = 10;
+    const intervalMs = 100;
+    
+    const tryScroll = () => {
+      if (highlightedSetRef.current) {
+        highlightedSetRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+        return true;
+      }
+      return false;
+    };
+    
+    // Try immediately
+    if (tryScroll()) return;
+    
+    // If not available, retry periodically
+    const interval = setInterval(() => {
+      attempts++;
+      if (tryScroll() || attempts >= maxAttempts) {
+        clearInterval(interval);
+      }
+    }, intervalMs);
+    
+    return () => clearInterval(interval);
+  }, [highlightSetIndex]);
 
   const { addSet, removeSet, updateSet, removeExercise, currentWorkout } = useFitnessStore();
   const pr = getPersonalRecord(exercise.name);
@@ -198,24 +235,14 @@ export function ExerciseCard({
   const prevWorkingSetData = getPreviousSetData(exercise.name, nextWorkingSetNumber, false);
   const prevWarmupSetData = getPreviousSetData(exercise.name, nextWarmupSetNumber, true);
   
-  // Проверка, является ли подход рекордным (равен текущему рекорду)
-  // И является ли он ПЕРВЫМ таким подходом в текущей тренировке
-  const isPR = (weight: number, reps: number, currentSetIndex: number) => {
-    if (weight <= 0 || reps <= 0) return false;
-    if (!pr || !pr.weightRecord) return false;
-    // Рекорд - если вес равен рекордному весу И повторения равны рекордным
-    if (weight !== pr.weightRecord.value || reps !== pr.weightRecord.reps) return false;
+  // Цвета для рекордов
+  const WEIGHT_RECORD_COLOR = '#ffb900';
+  const VOLUME_RECORD_COLOR = '#cd7f32';
 
-    // Проверяем, есть ли более ранний подход с теми же рекордными параметрами
-    for (let i = 0; i < currentSetIndex; i++) {
-      const prevSet = exercise.sets[i];
-      if (prevSet.weight === weight && prevSet.reps === reps) {
-        // Нашли более ранний подход с таким же рекордом - текущий не золотой
-        return false;
-      }
-    }
-
-    return true;
+  // Определение типа рекорда для подхода
+  const getSetRecordType = (weight: number, reps: number, setIndex: number): 'weight' | 'volume' | null => {
+    if (weight <= 0 || reps <= 0) return null;
+    return getRecordType(exercise.name, weight, reps, setIndex, workoutId);
   };
 
   const handleAddSet = () => {
@@ -292,8 +319,15 @@ export function ExerciseCard({
     const isBodyweight = set.weight === 0;
     const hasReps = set.reps > 0;
     const hasTime = set.time && set.time > 0;
-    const isPRSet = isPR(set.weight, set.reps, setIndex);
+    const recordType = getSetRecordType(set.weight, set.reps, setIndex);
     const isTimeOnly = hasTime && !hasReps;
+
+    // Определяем цвет для рекорда
+    const getRecordColor = () => {
+      if (recordType === 'weight') return WEIGHT_RECORD_COLOR;
+      if (recordType === 'volume') return VOLUME_RECORD_COLOR;
+      return '#fff';
+    };
 
     return (
       <div className="flex items-center">
@@ -302,7 +336,7 @@ export function ExerciseCard({
           {isBodyweight ? (
             <User className="w-4 h-4 inline" style={{ color: '#19a655' }} />
           ) : (
-            <span style={isPRSet ? { color: '#ffae00' } : { color: '#fff' }}>{set.weight}</span>
+            <span style={{ color: getRecordColor() }}>{set.weight}</span>
           )}
         </span>
 
@@ -325,7 +359,7 @@ export function ExerciseCard({
         {/* Столбец 4: Повторения / Время */}
         <span
           className="inline-block w-6 text-left font-medium text-sm"
-          style={isTimeOnly ? { color: '#944ad4' } : isPRSet ? { color: '#ffae00' } : undefined}
+          style={isTimeOnly ? { color: '#944ad4' } : recordType ? { color: getRecordColor() } : undefined}
         >
           {isTimeOnly ? formatTime(set.time!) : hasReps ? set.reps : ''}
         </span>
@@ -457,10 +491,11 @@ export function ExerciseCard({
                 return (
                 <div
                   key={set.id}
+                  ref={isHighlighted ? highlightedSetRef : null}
                   className={cn(
                     'flex items-center gap-3 transition-all duration-500',
                     editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg relative z-20' : '',
-                    isHighlighted ? 'bg-amber-500/20 -mx-2 px-2 rounded-lg ring-2 ring-amber-500/50' : ''
+                    isHighlighted ? 'bg-amber-500/20 -mx-2 px-2 rounded-lg ring-1 ring-amber-500/50' : ''
                   )}
                 >
                   <div className={cn(
@@ -577,16 +612,18 @@ export function ExerciseCard({
                 <div className="pt-4 relative z-20">
                   {/* Toggle tags */}
                   <div className="flex gap-2 flex-wrap items-center mb-2">
-                    <div
-                      onClick={() => setIsWarmup(!isWarmup)}
-                      className={cn(
-                        'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
-                        isWarmup ? 'bg-amber-600/20 border border-amber-500/50' : 'bg-zinc-700/50 border border-zinc-600'
-                      )}
-                    >
-                      <Zap className="w-3 h-3 text-amber-400" />
-                      <span className="text-[10px] text-zinc-300">Разм.</span>
-                    </div>
+                    {!exercise.sets.some(s => s.isWarmup) && (
+                      <div
+                        onClick={() => setIsWarmup(!isWarmup)}
+                        className={cn(
+                          'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
+                          isWarmup ? 'bg-amber-600/20 border border-amber-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                        )}
+                      >
+                        <Zap className="w-3 h-3 text-amber-400" />
+                        <span className="text-[10px] text-zinc-300">Разм.</span>
+                      </div>
+                    )}
 
                     <div
                       onClick={() => setUseBodyweight(!useBodyweight)}
@@ -623,7 +660,7 @@ export function ExerciseCard({
                   </div>
 
                   {/* Input fields */}
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-2 mb-2 -ml-9">
                     <div className={cn(
                       'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0',
                       isWarmup
@@ -634,7 +671,7 @@ export function ExerciseCard({
                     </div>
 
                     {(!useBodyweight || useReps) && (
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-3 relative">
                         {!useBodyweight && (
                           <Input
                             type="number"
@@ -648,7 +685,7 @@ export function ExerciseCard({
                         )}
 
                         {!useBodyweight && useReps && (
-                          <span className="text-zinc-500 text-sm mx-1">×</span>
+                          <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-sm">×</span>
                         )}
 
                         {useReps && (
@@ -665,7 +702,7 @@ export function ExerciseCard({
                     )}
 
                     {useTime && (
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-3 relative">
                         <Input
                           type="number"
                           min="0"
@@ -674,7 +711,7 @@ export function ExerciseCard({
                           placeholder="мин."
                           className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
-                        <span className="text-zinc-500 text-xs mx-1.5">:</span>
+                        <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-xs">:</span>
                         <Input
                           type="number"
                           min="0"
@@ -694,29 +731,31 @@ export function ExerciseCard({
                     if (!prevData) return null;
 
                     return (
-                      <div className="flex items-center text-[10px] text-zinc-500">
+                      <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-2">
                         <div className="w-7 text-center">Было</div>
-                        {!useBodyweight && (
-                          <>
-                            <div className="w-3" />
-                            <div className="w-14 text-center">
-                              {prevData.isBodyweight ? (
-                                <span className="text-emerald-400">св.вес</span>
-                              ) : prevData.weight > 0 ? (
-                                <span>{prevData.weight} кг</span>
-                              ) : null}
-                            </div>
-                          </>
-                        )}
-                        {useReps && prevData.reps > 0 && (
-                          <>
-                            {!useBodyweight && <div className="w-3 text-center">×</div>}
-                            {useBodyweight && <div className="w-3" />}
-                            <div className="w-14 text-center">{prevData.reps} повт.</div>
-                          </>
+                        {(!useBodyweight || useReps) && (
+                          <div className="flex items-center gap-3 relative">
+                            {!useBodyweight && (
+                              <div className="w-14 text-center">
+                                {prevData.isBodyweight ? (
+                                  <span className="text-emerald-400">св.вес</span>
+                                ) : prevData.weight > 0 ? (
+                                  <span>{prevData.weight} кг</span>
+                                ) : null}
+                              </div>
+                            )}
+                            {useReps && prevData.reps > 0 && (
+                              <>
+                                {!useBodyweight && <span className="absolute left-1/2 -translate-x-1/2 text-center">×</span>}
+                                <div className="w-14 text-center">{prevData.reps} повт.</div>
+                              </>
+                            )}
+                          </div>
                         )}
                         {useTime && prevData.time > 0 && (
-                          <div className="text-center text-purple-400">{formatTime(prevData.time)}</div>
+                          <div className="flex items-center gap-3 relative text-purple-400">
+                            <div className="w-14 text-center">{formatTime(prevData.time)}</div>
+                          </div>
                         )}
                       </div>
                     );
