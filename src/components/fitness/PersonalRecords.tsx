@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { getExerciseType, EXERCISE_TYPE_COLORS, WORKOUT_TYPE_ICONS } from '@/lib/types';
 
 const WEIGHT_RECORD_COLOR = '#ffb900';
-const VOLUME_RECORD_COLOR = '#71717a';
+const VOLUME_RECORD_COLOR = '#cd7f32';
 
 interface PersonalRecordsProps {
   onNavigateToWorkout?: (date: string, exerciseName: string, setIndex: number) => void;
@@ -26,10 +26,6 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
 
   return (
     <div className="bg-zinc-900/50 rounded-lg border border-zinc-800 overflow-hidden">
-      <div className="p-3 flex items-center justify-center">
-        <h3 className="text-lg font-semibold text-white">Личные рекорды</h3>
-      </div>
-
       <ScrollArea>
         <div className="p-2 space-y-1">
           {records.map((record, index) => {
@@ -42,37 +38,23 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="grid items-stretch rounded-lg bg-zinc-800 border-l-4 overflow-hidden py-4"
+                className="grid items-stretch rounded-lg bg-zinc-800 border-l-4 overflow-hidden"
                 style={{ 
                   borderLeftColor: colors.border,
-                  gridTemplateColumns: 'auto 1fr 100px 1fr',
-                  gap: '0.5rem'
+                  gridTemplateColumns: '3fr 2fr'
                 }}
               >
-                {/* Колонка 1: Иконка */}
-                <div className="flex items-center ml-2">
+                {/* Столбец 1: Иконка и название упражнения (3/5) */}
+                <div className="flex items-center gap-3 px-4 py-3">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: colors.bg }}>
                     <span className="text-base">{WORKOUT_TYPE_ICONS[record.workoutType]}</span>
                   </div>
-                </div>
-                
-                {/* Колонка 2: Название упражнения */}
-                <div className="flex items-center">
                   <span className="font-medium text-white break-words">{record.exerciseName}</span>
                 </div>
                 
-                {/* Колонка 3: Метки "По весу" / "По объёму" */}
-                <div className="flex flex-col ml-6">
-                  {record.weightRecord && (
-                    <div className="text-xs text-zinc-500 flex-1 flex items-center">По весу</div>
-                  )}
-                  {record.volumeRecord && (
-                    <div className="text-xs text-zinc-500 flex-1 flex items-center">По объёму</div>
-                  )}
-                </div>
-                
-                {/* Колонка 4: Рекорды */}
-                <div className="flex flex-col mr-4">
+                {/* Столбец 2: 4 строки рекордов (2/5), отступ 8px от правого края */}
+                <div className="flex flex-col mr-2">
+                  {/* Строка 1: Рекорд по весу (отступ 4px сверху, высота n, flex-2) */}
                   {record.weightRecord && (
                     <button
                       onClick={() => onNavigateToWorkout?.(
@@ -80,7 +62,8 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                         record.exerciseName,
                         record.weightRecord!.setIndex
                       )}
-                      className="flex items-center gap-2 px-3 text-left hover:bg-zinc-700/50 rounded-lg transition-colors flex-1"
+                      className="flex items-center gap-2 px-3 text-left hover:bg-zinc-700/50 transition-colors mt-2 rounded-lg"
+                      style={{ flex: '2 1 0%' }}
                     >
                       <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium">
                         {record.weightRecord.value} кг
@@ -92,6 +75,14 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                     </button>
                   )}
                   
+                  {/* Строка 2: Подсказка "По весу" (высота n/2, flex-1) */}
+                  {record.weightRecord && (
+                    <div className="flex items-center justify-end px-3 text-[10px] text-zinc-600" style={{ flex: '1 1 0%' }}>
+                      По весу
+                    </div>
+                  )}
+                  
+                  {/* Строка 3: Рекорд по объёму (высота n, flex-2) */}
                   {record.volumeRecord && (() => {
                     const weight = record.volumeRecord.value / record.volumeRecord.reps;
                     const weightStr = Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
@@ -102,7 +93,8 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                           record.exerciseName,
                           record.volumeRecord!.setIndex
                         )}
-                        className="flex items-center gap-2 px-3 text-left hover:bg-zinc-700/50 rounded-lg transition-colors flex-1"
+                        className="flex items-center gap-2 px-3 text-left hover:bg-zinc-700/50 transition-colors rounded-lg"
+                        style={{ flex: '2 1 0%' }}
                       >
                         <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium">
                           {weightStr} кг
@@ -114,6 +106,13 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                       </button>
                     );
                   })()}
+                  
+                  {/* Строка 4: Подсказка "По объёму" (отступ 4px снизу, высота n/2, flex-1) */}
+                  {record.volumeRecord && (
+                    <div className="flex items-center justify-end px-3 text-[10px] text-zinc-600 mb-2" style={{ flex: '1 1 0%' }}>
+                      По объёму
+                    </div>
+                  )}
                 </div>
               </motion.div>
             );
