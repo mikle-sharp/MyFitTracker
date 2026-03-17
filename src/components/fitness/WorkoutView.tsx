@@ -30,6 +30,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [exerciseTypeFilter, setExerciseTypeFilter] = useState<ExerciseType | null>(null);
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
+  const [selectedReplaceExercise, setSelectedReplaceExercise] = useState<string | null>(null);
   const [duplicateExerciseError, setDuplicateExerciseError] = useState(false);
   const [showDeleteWorkoutConfirm, setShowDeleteWorkoutConfirm] = useState(false);
   const [showReplaceConfirm, setShowReplaceConfirm] = useState(false);
@@ -172,6 +173,8 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
     setReplacingExerciseName(exerciseName);
     setSearchQuery('');
     setNewExerciseName('');
+    setSelectedReplaceExercise(null);
+    setExerciseTypeFilter(getExerciseType(exerciseName));
     setIsReplaceExerciseOpen(true);
   };
 
@@ -547,7 +550,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск упражнения..."
-                className="!bg-zinc-900/50 border-2 border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 pl-9"
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 pl-9"
                 autoComplete="off"
                 inputMode="search"
               />
@@ -685,7 +688,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 setDuplicateExerciseError(false);
               }}
               placeholder="Название упражнения"
-              className="!bg-zinc-900/50 border-2 border-zinc-700 rounded-lg text-white placeholder:text-zinc-500"
+              className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500"
               autoComplete="off"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && newExerciseName.trim() && !duplicateExerciseError) {
@@ -756,17 +759,29 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
           setReplacingExerciseName('');
           setSearchQuery('');
           setNewExerciseName('');
+          setSelectedReplaceExercise(null);
+          setExerciseTypeFilter(null);
         }
       }}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="text-white">Заменить упражнение</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <p className="text-sm text-zinc-400">
-              Заменить <strong className="text-white">{replacingExerciseName}</strong> на:
-            </p>
-            
+        <DialogContent
+          className="bg-zinc-800 border-2 max-h-[80vh] !p-0 !gap-0"
+          style={{ borderColor: EXERCISE_TYPE_COLORS[getExerciseType(replacingExerciseName)]?.border || colors.border }}
+          showCloseButton={false}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-4">
+            <DialogTitle className="text-white font-medium text-base">
+              Заменить <span className="text-zinc-400">{replacingExerciseName}</span> на
+            </DialogTitle>
+            <button
+              onClick={() => setIsReplaceExerciseOpen(false)}
+              className="text-zinc-500 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-4 space-y-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -774,66 +789,96 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск упражнения..."
-                className="bg-zinc-800 border-zinc-700 text-white pl-9"
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 pl-9"
+                autoComplete="off"
+                inputMode="search"
               />
             </div>
 
-            {/* Available exercises */}
-            {displayedExercises.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs text-zinc-500 uppercase tracking-wide">
-                  Выберите упражнение
-                </p>
-                <div className="max-h-[250px] overflow-y-auto space-y-1">
-                  {displayedExercises.map((exerciseName, index) => {
-                    const isCurrent = exerciseName === replacingExerciseName;
-                    return (
-                      <button
-                        key={`${exerciseName}-${index}`}
-                        onClick={() => handleConfirmReplace(exerciseName)}
-                        disabled={isCurrent}
-                        className={cn(
-                          'w-full text-left px-3 py-2 rounded-lg transition-colors',
-                          'hover:bg-zinc-800 text-zinc-300 hover:text-white',
-                          'flex items-center justify-between',
-                          isCurrent && 'opacity-50 cursor-not-allowed'
-                        )}
-                      >
-                        <span>{exerciseName}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Custom exercise input */}
-            <div className="border-t border-zinc-700 pt-4">
-              <p className="text-xs text-zinc-500 uppercase tracking-wide mb-2">
-                Или введите своё
-              </p>
-              <div className="flex gap-2">
-                <Input
-                  value={newExerciseName}
-                  onChange={(e) => setNewExerciseName(e.target.value)}
-                  placeholder="Название упражнения"
-                  className="bg-zinc-800 border-zinc-700 text-white flex-1"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && newExerciseName.trim()) {
-                      handleConfirmReplace(newExerciseName.trim());
-                    }
-                  }}
-                />
-                <Button
-                  onClick={() => handleConfirmReplace(newExerciseName.trim())}
-                  disabled={!newExerciseName.trim()}
-                  style={{ backgroundColor: '#1d4fa0' }}
-                >
-                  <RefreshCw className="w-4 h-4 mr-1" />
-                  Заменить
-                </Button>
-              </div>
+            {/* Type filter tags */}
+            <div className="flex gap-1">
+              {(['chest', 'back', 'legs', 'common'] as ExerciseType[]).map((type) => {
+                const typeColors = EXERCISE_TYPE_COLORS[type];
+                const typeMarker = EXERCISE_TYPE_MARKERS[type];
+                const isSelected = exerciseTypeFilter === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setExerciseTypeFilter(isSelected ? null : type)}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border-2 flex-1 justify-center"
+                    style={isSelected ? {
+                      backgroundColor: typeColors.bg,
+                      color: typeColors.text,
+                      borderColor: typeColors.border
+                    } : {
+                      backgroundColor: '#27272a',
+                      color: '#a1a1aa',
+                      borderColor: 'transparent'
+                    }}
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded text-[9px] font-bold flex items-center justify-center"
+                      style={{ backgroundColor: isSelected ? typeColors.bg : '#3f3f46', color: typeColors.text }}
+                    >
+                      {typeMarker}
+                    </span>
+                    <span className="truncate">{EXERCISE_TYPE_NAMES[type]}</span>
+                  </button>
+                );
+              })}
             </div>
+
+            {/* Available exercises list */}
+            <div className="h-[200px] overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
+              {displayedExercises.length > 0 ? (
+                displayedExercises.map((exerciseName) => {
+                  const exerciseType = getExerciseType(exerciseName);
+                  const exerciseColors = EXERCISE_TYPE_COLORS[exerciseType];
+                  const exerciseMarker = EXERCISE_TYPE_MARKERS[exerciseType];
+                  const isSelected = selectedReplaceExercise === exerciseName;
+                  const isCurrent = exerciseName === replacingExerciseName;
+                  return (
+                    <button
+                      key={exerciseName}
+                      onClick={() => !isCurrent && setSelectedReplaceExercise(isSelected ? null : exerciseName)}
+                      disabled={isCurrent}
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2",
+                        isCurrent
+                          ? "opacity-40 cursor-not-allowed text-zinc-500"
+                          : isSelected
+                            ? "bg-zinc-600 text-white"
+                            : "hover:bg-zinc-700/50 text-zinc-300 hover:text-white"
+                      )}
+                    >
+                      <span
+                        className="w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: exerciseColors.bg, color: exerciseColors.text }}
+                      >
+                        {exerciseMarker}
+                      </span>
+                      <span className="flex-1">{exerciseName}</span>
+                      {isCurrent && <span className="text-xs">текущее</span>}
+                    </button>
+                  );
+                })
+              ) : (
+                <p className="text-center text-zinc-500 py-4">Нет упражнений</p>
+              )}
+            </div>
+          </div>
+
+          {/* Replace button */}
+          <div className="flex justify-end px-4 pb-4">
+            <button
+              onClick={() => selectedReplaceExercise && handleConfirmReplace(selectedReplaceExercise)}
+              disabled={!selectedReplaceExercise}
+              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#19a655' }}
+            >
+              Заменить
+            </button>
           </div>
         </DialogContent>
       </Dialog>
@@ -862,8 +907,8 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
             value={notesValue}
             onChange={handleNotesChange}
             placeholder="Добавьте заметки к этой тренировке..."
-            className="w-[calc(100%-2rem)] bg-zinc-900/50 border-2 rounded-lg p-2 mx-4 mt-4 text-white placeholder-zinc-500 resize-none focus:outline-none block"
-            style={{ borderColor: colors.border, overflow: 'hidden', height: 'auto', minHeight: '60px' }}
+            className="w-[calc(100%-2rem)] bg-zinc-900/50 border border-zinc-700 rounded-lg p-2 mx-4 mt-4 text-white placeholder-zinc-500 resize-none focus:outline-none block"
+            style={{ overflow: 'hidden', height: 'auto', minHeight: '60px' }}
           />
 
           {/* Buttons */}
