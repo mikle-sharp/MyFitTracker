@@ -17,9 +17,10 @@ import { getAllExercisesForType, getAllExercises } from '@/lib/storage';
 
 interface WorkoutViewProps {
   workout: Workout;
+  highlightExercise?: { name: string; setIndex: number } | null;
 }
 
-export function WorkoutView({ workout }: WorkoutViewProps) {
+export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
   const [isCreateCustomOpen, setIsCreateCustomOpen] = useState(false);
   const [isReplaceExerciseOpen, setIsReplaceExerciseOpen] = useState(false);
@@ -502,6 +503,7 @@ export function WorkoutView({ workout }: WorkoutViewProps) {
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
+                highlightSetIndex={highlightExercise?.name === exercise.name ? highlightExercise.setIndex : undefined}
               />
             </div>
           );

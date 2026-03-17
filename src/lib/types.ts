@@ -47,15 +47,25 @@ export interface Workout {
   updatedAt: string;
 }
 
+// Данные о рекорде
+export interface RecordData {
+  value: number;        // вес для weight рекорда, объём для volume рекорда
+  reps: number;         // повторения
+  date: string;         // дата установки рекорда
+  workoutId: string;    // ID тренировки
+  setIndex: number;     // номер подхода (0-indexed)
+}
+
 // Личный рекорд
 export interface PersonalRecord {
   exerciseName: string;
-  maxWeight: number;
-  reps: number; // количество повторений с максимальным весом
-  time?: number; // время в секундах (для рекордов по времени)
-  date: string;
-  workoutId: string;
   workoutType: WorkoutType; // тип тренировки для цветовой индикации
+  // Рекорд по весу (важнее вес, потом повторы)
+  weightRecord: RecordData | null;
+  prevWeightRecord: RecordData | null;
+  // Рекорд по объёму (weight × reps)
+  volumeRecord: RecordData | null;
+  prevVolumeRecord: RecordData | null;
 }
 
 // Предустановленные упражнения для каждого типа тренировки

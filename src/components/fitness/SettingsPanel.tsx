@@ -191,12 +191,38 @@ export function SettingsPanel() {
         });
       });
       
-      const flatRecords = records.map(r => ({
-        exercise: r.exerciseName,
-        reps: r.reps,
-        weight: r.maxWeight,
-        date: r.date,
-      }));
+      const flatRecords: Array<{
+        exercise: string;
+        type: 'weight' | 'volume';
+        reps?: number;
+        weight?: number;
+        volume?: number;
+        date?: string;
+      }> = [];
+      
+      records.forEach(r => {
+        // Weight record
+        if (r.weightRecord) {
+          flatRecords.push({
+            exercise: r.exerciseName,
+            type: 'weight',
+            reps: r.weightRecord.reps,
+            weight: r.weightRecord.value,
+            date: r.weightRecord.date,
+          });
+        }
+        
+        // Volume record
+        if (r.volumeRecord) {
+          flatRecords.push({
+            exercise: r.exerciseName,
+            type: 'volume',
+            volume: r.volumeRecord.value,
+            date: r.volumeRecord.date,
+          });
+        }
+      });
+
       
       const response = await fetch('/api/google-sheets', {
         method: 'POST',

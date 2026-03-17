@@ -1,30 +1,89 @@
-import { Workout, PersonalRecord, WorkoutSet } from './types';
+import { Workout, PersonalRecord, RecordData, WorkoutSet } from './types';
 import { getWorkouts } from './storage';
 
-// Расчет всех личных рекордов
+// Сравнение рекордов по весу
+// Возвращает true, если новый подход лучше текущего рекорда
+const isBetterWeightRecord = (
+  newWeight: number,
+  newReps: number,
+  currentRecord: RecordData | null
+): boolean => {
+  if (!currentRecord) return newWeight > 0;
+  
+  // Больше вес = лучше
+  if (newWeight > currentRecord.value) return true;
+  // При равном весе больше повторений = лучше
+  if (newWeight === currentRecord.value && newReps > currentRecord.reps) return true;
+  
+  return false;
+};
+
+// Сравнение рекордов по объёму
+const isBetterVolumeRecord = (
+  newVolume: number,
+  currentRecord: RecordData | null
+): boolean => {
+  if (!currentRecord) return newVolume > 0;
+  return newVolume > currentRecord.value;
+};
+
+// Расчёт всех личных рекордов
 export const calculatePersonalRecords = (): PersonalRecord[] => {
   const workouts = getWorkouts();
   const records: Map<string, PersonalRecord> = new Map();
 
-  workouts.forEach(workout => {
-    workout.exercises.forEach(exercise => {
-      exercise.sets.forEach(set => {
+  // Сортируем тренировки по дате (от старых к новым) для правильного отслеживания первого рекорда
+  const sortedWorkouts = [...workouts].sort((a, b) => a.date.localeCompare(b.date));
+
+  sortedWorkouts.forEach(workout => {
+    workout.exercises.forEach((exercise, exerciseIndex) => {
+      exercise.sets.forEach((set, setIndex) => {
         // Пропускаем подходы без веса или с нулевым весом (собственный вес)
         if (!set.weight || set.weight <= 0) return;
         
         const currentRecord = records.get(exercise.name);
+        const volume = set.weight * set.reps;
         
-        // Рекорд - максимальный вес
-        // Если вес больше текущего рекорда, обновляем
-        if (!currentRecord || set.weight > currentRecord.maxWeight) {
+        // Данные о текущем подходе
+        const setData: RecordData = {
+          value: set.weight,
+          reps: set.reps,
+          date: workout.date,
+          workoutId: workout.id,
+          setIndex: setIndex
+        };
+        
+        // Проверяем рекорд по весу
+        const isWeightRecord = isBetterWeightRecord(set.weight, set.reps, currentRecord?.weightRecord || null);
+        
+        // Проверяем рекорд по объёму
+        const isVolumeRecord = isBetterVolumeRecord(volume, currentRecord?.volumeRecord || null);
+        
+        if (!currentRecord) {
+          // Первое упражнение - создаём запись
           records.set(exercise.name, {
             exerciseName: exercise.name,
-            maxWeight: set.weight,
-            reps: set.reps,
-            date: workout.date,
-            workoutId: workout.id,
             workoutType: workout.type,
+            weightRecord: isWeightRecord ? { ...setData, value: set.weight } : null,
+            prevWeightRecord: null,
+            volumeRecord: isVolumeRecord ? { ...setData, value: volume } : null,
+            prevVolumeRecord: null
           });
+        } else {
+          // Обновляем существующую запись
+          const updated: PersonalRecord = { ...currentRecord };
+          
+          if (isWeightRecord) {
+            updated.prevWeightRecord = currentRecord.weightRecord;
+            updated.weightRecord = { ...setData, value: set.weight };
+          }
+          
+          if (isVolumeRecord) {
+            updated.prevVolumeRecord = currentRecord.volumeRecord;
+            updated.volumeRecord = { ...setData, value: volume };
+          }
+          
+          records.set(exercise.name, updated);
         }
       });
     });
@@ -41,18 +100,57 @@ export const getPersonalRecord = (exerciseName: string): PersonalRecord | null =
   return records.find(r => r.exerciseName === exerciseName) || null;
 };
 
-// Проверка, является ли вес новым рекордом
-export const isNewPersonalRecord = (
+// Проверка, является ли подход рекордным (для подсветки в ExerciseCard)
+// Возвращает тип рекорда или null
+export const getRecordType = (
   exerciseName: string,
-  weight: number
-): boolean => {
-  const currentRecord = getPersonalRecord(exerciseName);
-  return !currentRecord || weight > currentRecord.maxWeight;
+  weight: number,
+  reps: number,
+  currentSetIndex: number,
+  currentWorkoutId: string
+): 'weight' | 'volume' | null => {
+  if (weight <= 0) return null;
+  
+  const record = getPersonalRecord(exerciseName);
+  if (!record) return null;
+  
+  const volume = weight * reps;
+  
+  // Проверяем рекорд по весу - только если это именно тот подход, который установил рекорд
+  if (record.weightRecord) {
+    const isWeightMatch = 
+      weight === record.weightRecord.value &&
+      reps === record.weightRecord.reps &&
+      currentWorkoutId === record.weightRecord.workoutId &&
+      currentSetIndex === record.weightRecord.setIndex;
+    
+    if (isWeightMatch) return 'weight';
+  }
+  
+  // Проверяем рекорд по объёму - только если это именно тот подход
+  if (record.volumeRecord) {
+    const isVolumeMatch = 
+      volume === record.volumeRecord.value &&
+      reps === record.volumeRecord.reps &&
+      currentWorkoutId === record.volumeRecord.workoutId &&
+      currentSetIndex === record.volumeRecord.setIndex;
+    
+    if (isVolumeMatch) return 'volume';
+  }
+  
+  return null;
 };
 
-// Форматирование рекорда для отображения
-export const formatPersonalRecord = (record: PersonalRecord): string => {
-  return `${record.maxWeight} кг × ${record.reps}`;
+// Форматирование рекорда по весу для отображения
+export const formatWeightRecord = (record: RecordData | null): string => {
+  if (!record) return '-';
+  return `${record.value} кг × ${record.reps}`;
+};
+
+// Форматирование рекорда по объёму для отображения
+export const formatVolumeRecord = (record: RecordData | null): string => {
+  if (!record) return '-';
+  return `${record.value} кг`;
 };
 
 // Форматирование времени

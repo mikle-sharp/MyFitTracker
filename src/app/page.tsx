@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dumbbell, Trophy, Calendar as CalendarIcon } from 'lucide-react';
 
@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function Home() {
   const [activeTab, setActiveTab] = useState('workout');
   const [mounted, setMounted] = useState(false);
+  const [highlightExercise, setHighlightExercise] = useState<{ name: string; setIndex: number } | null>(null);
   
   const {
     init,
@@ -23,6 +24,18 @@ export default function Home() {
     loadWorkoutForDate,
     currentWorkout,
   } = useFitnessStore();
+
+  // Навигация к тренировке с рекордом
+  const handleNavigateToWorkout = (date: string, exerciseName: string, setIndex: number) => {
+    // Переключаемся на вкладку тренировок
+    setActiveTab('workout');
+    // Загружаем тренировку для указанной даты
+    loadWorkoutForDate(date);
+    // Устанавливаем подсветку упражнения
+    setHighlightExercise({ name: exerciseName, setIndex });
+    // Сбрасываем подсветку через 2 секунды
+    setTimeout(() => setHighlightExercise(null), 2000);
+  };
 
   useEffect(() => {
     if (!isInitialized) {
@@ -111,7 +124,7 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
-                    <WorkoutView workout={currentWorkout} />
+                    <WorkoutView workout={currentWorkout} highlightExercise={highlightExercise} />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -131,7 +144,7 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="records" className="mt-0">
-            <PersonalRecords />
+            <PersonalRecords onNavigateToWorkout={handleNavigateToWorkout} />
           </TabsContent>
         </Tabs>
       </main>

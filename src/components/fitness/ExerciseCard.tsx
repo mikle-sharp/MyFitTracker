@@ -28,6 +28,8 @@ interface ExerciseCardProps {
   onDragStart?: (exerciseId: string, index: number, startY: number) => void;
   onDragMove?: (currentY: number) => void;
   onDragEnd?: () => void;
+  // Highlight specific set (for navigation from records)
+  highlightSetIndex?: number;
 }
 
 // Форматирование времени из секунд в MM:SS
@@ -52,7 +54,9 @@ export function ExerciseCard({
   shiftDirection = null,
   onDragStart,
   onDragMove,
-  onDragEnd
+  onDragEnd,
+  // Highlight props
+  highlightSetIndex
 }: ExerciseCardProps) {
   // State for adding new set
   const [newReps, setNewReps] = useState('');
@@ -197,10 +201,10 @@ export function ExerciseCard({
   // Проверка, является ли подход рекордным (равен текущему рекорду)
   // И является ли он ПЕРВЫМ таким подходом в текущей тренировке
   const isPR = (weight: number, reps: number, currentSetIndex: number) => {
-    if (weight <= 0) return false;
-    if (!pr) return false;
+    if (weight <= 0 || reps <= 0) return false;
+    if (!pr || !pr.weightRecord) return false;
     // Рекорд - если вес равен рекордному весу И повторения равны рекордным
-    if (weight !== pr.maxWeight || reps !== pr.reps) return false;
+    if (weight !== pr.weightRecord.value || reps !== pr.weightRecord.reps) return false;
 
     // Проверяем, есть ли более ранний подход с теми же рекордными параметрами
     for (let i = 0; i < currentSetIndex; i++) {
@@ -448,13 +452,15 @@ export function ExerciseCard({
                 }
                 
                 const isLastSet = setIndex === exercise.sets.length - 1;
+                const isHighlighted = highlightSetIndex === setIndex;
 
                 return (
                 <div
                   key={set.id}
                   className={cn(
-                    'flex items-center gap-3',
-                    editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg relative z-20' : ''
+                    'flex items-center gap-3 transition-all duration-500',
+                    editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg relative z-20' : '',
+                    isHighlighted ? 'bg-amber-500/20 -mx-2 px-2 rounded-lg ring-2 ring-amber-500/50' : ''
                   )}
                 >
                   <div className={cn(
