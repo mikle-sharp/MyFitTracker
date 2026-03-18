@@ -12,6 +12,27 @@ import { useFitnessStore } from '@/lib/store';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { getPreviousSetData } from '@/lib/storage';
 
+// Компонент для названия упражнения с авто-размером шрифта
+function ExerciseNameHeader({ name }: { name: string }) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const [fontSize, setFontSize] = useState<'text-base' | 'text-sm'>('text-base');
+
+  useEffect(() => {
+    if (ref.current) {
+      const lineHeight = parseFloat(getComputedStyle(ref.current).lineHeight);
+      const height = ref.current.scrollHeight;
+      const lines = height / lineHeight;
+      if (lines > 2) {
+        setFontSize('text-sm');
+      }
+    }
+  }, [name]);
+
+  return (
+    <h3 ref={ref} className={`font-semibold text-white ${fontSize}`}>{name}</h3>
+  );
+}
+
 interface ExerciseCardProps {
   exercise: Exercise;
   workoutId: string;
@@ -444,7 +465,7 @@ export function ExerciseCard({
                 )}
                 
                 <div>
-                  <h3 className="font-semibold text-white">{exercise.name}</h3>
+                  <ExerciseNameHeader name={exercise.name} />
                 </div>
               </div>
 
@@ -703,7 +724,7 @@ export function ExerciseCard({
                     )}
 
                     {useTime && (
-                      <div className="flex items-center gap-3 relative">
+                      <div className="flex items-center gap-3 relative ml-1">
                         <Input
                           type="number"
                           min="0"
@@ -732,7 +753,7 @@ export function ExerciseCard({
                     if (!prevData) return null;
 
                     return (
-                      <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-2">
+                      <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-3">
                         <div className="w-7 text-center">Было</div>
                         {(!useBodyweight || useReps) && (
                           <div className="flex items-center gap-3 relative">

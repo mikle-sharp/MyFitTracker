@@ -124,6 +124,14 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    /* Запрет выделения текста везде кроме полей ввода */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* Разрешаем выделение в полях ввода */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
   }
   body {
     @apply bg-background text-foreground;

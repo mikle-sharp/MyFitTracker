@@ -55,7 +55,8 @@ export function Calendar() {
     const allDays = eachDayOfInterval({ start, end });
 
     const startDay = getDay(start);
-    const prefixDays = Array(startDay).fill(null);
+    // Понедельник = 0, воскресенье = 6
+    const prefixDays = Array(startDay === 0 ? 6 : startDay - 1).fill(null);
 
     return [...prefixDays, ...allDays];
   }, [currentMonth]);
@@ -72,7 +73,7 @@ export function Calendar() {
     }
   }, [currentMonth, selectedDate, setSelectedDate, loadWorkoutForDate]);
 
-  const weekDays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
   const handleDateClick = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');

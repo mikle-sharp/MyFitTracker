@@ -1,10 +1,31 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import { calculatePersonalRecords } from '@/lib/pr';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getExerciseType, EXERCISE_TYPE_COLORS, WORKOUT_TYPE_ICONS } from '@/lib/types';
+
+// Компонент для названия упражнения с авто-размером шрифта
+function ExerciseName({ name }: { name: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [fontSize, setFontSize] = useState<'text-base' | 'text-sm'>('text-base');
+
+  useEffect(() => {
+    if (ref.current) {
+      const lineHeight = parseFloat(getComputedStyle(ref.current).lineHeight);
+      const height = ref.current.scrollHeight;
+      const lines = height / lineHeight;
+      if (lines > 3) {
+        setFontSize('text-sm');
+      }
+    }
+  }, [name]);
+
+  return (
+    <span ref={ref} className={`font-medium text-white break-words ${fontSize}`}>{name}</span>
+  );
+}
 
 const WEIGHT_RECORD_COLOR = '#ffb900';
 const VOLUME_RECORD_COLOR = '#cd7f32';
@@ -51,7 +72,7 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                 {/* Столбец 1: Иконка и название упражнения (3/5) */}
                 <div className="flex items-center gap-3 px-3 py-3">
                   <div className="w-9 h-9 shrink-0" style={{ backgroundColor: colors.border }} />
-                  <span className="font-medium text-white break-words">{record.exerciseName}</span>
+                  <ExerciseName name={record.exerciseName} />
                 </div>
                 
                 {/* Столбец 2: записи рекордов (2/5) */}
