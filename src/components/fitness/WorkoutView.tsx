@@ -482,8 +482,10 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           }
           
           return (
-            <div
+            <motion.div
               key={exercise.id}
+              layout
+              transition={{ duration: 0.35, ease: 'easeOut' }}
               ref={(el) => {
                 if (el) exerciseRefsRef.current.set(exercise.id, el);
               }}
@@ -503,9 +505,9 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
-                highlightSetIndex={highlightExercise?.name === exercise.name ? highlightExercise.setIndex : undefined}
+              highlightSetIndex={highlightExercise?.name === exercise.name ? highlightExercise.setIndex : undefined}
               />
-            </div>
+            </motion.div>
           );
         })}
       </AnimatePresence>

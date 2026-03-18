@@ -493,8 +493,8 @@ export function ExerciseCard({
                   key={set.id}
                   ref={isHighlighted ? highlightedSetRef : null}
                   className={cn(
-                    'flex items-center gap-3 transition-all duration-500',
-                    editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg relative z-[10000]' : '',
+                    'flex items-center transition-all duration-500',
+                    editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg relative z-[10000] gap-2' : 'gap-3',
                     isHighlighted ? 'bg-amber-500/20 -mx-2 px-2 rounded-lg ring-1 ring-amber-500/50' : ''
                   )}
                 >
@@ -512,8 +512,7 @@ export function ExerciseCard({
                       <div className="flex items-center gap-3 flex-wrap flex-1">
                         {/* Вес и повторения */}
                         {(set.weight > 0 || set.reps > 0) && (
-                          <div className="flex items-center">
-                            {/* Вес - показываем только если он был введен (не 0 и не собственный вес) */}
+                          <div className="flex items-center gap-3 relative">
                             {set.weight > 0 && (
                               <Input
                                 type="number"
@@ -527,10 +526,9 @@ export function ExerciseCard({
                             )}
                             
                             {set.weight > 0 && set.reps > 0 && (
-                              <span className="text-zinc-500 text-sm mx-1">×</span>
+                              <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-sm">×</span>
                             )}
                             
-                            {/* Повторения - показываем только если были */}
                             {set.reps > 0 && (
                               <Input
                                 type="number"
@@ -544,9 +542,9 @@ export function ExerciseCard({
                           </div>
                         )}
                         
-                        {/* Время - показываем только если было */}
+                        {/* Время */}
                         {set.time && set.time > 0 && (
-                          <div className="flex items-center">
+                          <div className="flex items-center gap-3 relative">
                             <Input
                               type="number"
                               min="0"
@@ -555,7 +553,7 @@ export function ExerciseCard({
                               placeholder="Мин"
                               className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <span className="text-zinc-500 text-xs mx-1.5">:</span>
+                            <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-xs">:</span>
                             <Input
                               type="number"
                               min="0"

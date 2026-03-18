@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, isSameMonth } from 'date-fns';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, isSameMonth, subMonths, addMonths } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronDown, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFitnessStore } from '@/lib/store';
 import { WORKOUT_TYPE_COLORS, WorkoutType } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Минимальная дистанция свайпа для переключения месяца (в пикселях)
+const SWIPE_THRESHOLD = 40;
 
 const MONTHS = [
   'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -32,6 +35,9 @@ export function Calendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
+  
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   
   const { selectedDate, setSelectedDate, loadWorkoutForDate, clearSelection, workouts } = useFitnessStore();
 
@@ -105,11 +111,66 @@ export function Calendar() {
     }
   };
 
+  const goToPrevMonth = () => {
+    setSlideDirection('right');
+    const newDate = subMonths(currentMonth, 1);
+    setCurrentMonth(newDate);
+    if (selectedDate) {
+      const selected = new Date(selectedDate);
+      if (!isSameMonth(selected, newDate)) {
+        clearSelection();
+      }
+    }
+  };
+
+  const goToNextMonth = () => {
+    setSlideDirection('left');
+    const newDate = addMonths(currentMonth, 1);
+    setCurrentMonth(newDate);
+    if (selectedDate) {
+      const selected = new Date(selectedDate);
+      if (!isSameMonth(selected, newDate)) {
+        clearSelection();
+      }
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+    
+    // Проверяем, что свайп горизонтальный (не вертикальный скролл)
+    // и достаточно длинный
+    if (deltaY < 70 && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+      if (deltaX > 0) {
+        // Свайп вправо → предыдущий месяц
+        goToPrevMonth();
+      } else {
+        // Свайп влево → следующий месяц
+        goToNextMonth();
+      }
+    }
+    
+    touchStartRef.current = null;
+  };
+
   const currentMonthIndex = currentMonth.getMonth();
   const currentYear = currentMonth.getFullYear();
 
   return (
-    <div className="w-full bg-zinc-900/50 rounded-lg p-4 border border-zinc-800">
+    <div 
+      className="w-full bg-zinc-900/50 rounded-lg p-4 border border-zinc-800"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Month/Year selectors - справа */}
       <div className="flex justify-end items-center gap-2 mb-4">
         {/* Month selector */}
@@ -222,7 +283,16 @@ export function Calendar() {
       </div>
 
       {/* Days grid */}
-      <div className="grid grid-cols-7 gap-1">
+      <AnimatePresence mode="wait" custom={slideDirection}>
+        <motion.div
+          key={currentMonth.toISOString()}
+          custom={slideDirection}
+          initial={{ opacity: 0, x: slideDirection === 'left' ? 30 : slideDirection === 'right' ? -30 : 0 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: slideDirection === 'left' ? -30 : slideDirection === 'right' ? 30 : 0 }}
+          transition={{ duration: 0.15 }}
+          className="grid grid-cols-7 gap-1"
+        >
         {days.map((day, index) => {
           if (!day) {
             return <div key={`empty-${index}`} className="aspect-square" />;
@@ -285,7 +355,8 @@ export function Calendar() {
             </button>
           );
         })}
-      </div>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Click outside to close pickers */}
       {(showMonthPicker || showYearPicker) && (
