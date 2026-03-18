@@ -240,6 +240,14 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
     const currentDragState = dragStateRef.current;
     if (!currentDragState) return;
     
+    // Очищаем Map от удалённых упражнений
+    const currentIds = new Set(workout.exercises.map(e => e.id));
+    exerciseRefsRef.current.forEach((_, id) => {
+      if (!currentIds.has(id)) {
+        exerciseRefsRef.current.delete(id);
+      }
+    });
+    
     // Update currentY for animation (account for scroll changes)
     const scrollDelta = window.scrollY - currentDragState.startScrollY;
     setDragState(prev => prev ? { ...prev, currentY: currentY } : null);
@@ -494,7 +502,13 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             <motion.div
               key={exercise.id}
               layout
-              transition={suppressLayoutAnimation ? { duration: 0 } : { duration: 0.35, ease: 'easeOut' }}
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 100, opacity: 0 }}
+              transition={{
+                layout: { duration: suppressLayoutAnimation ? 0 : 0.35, ease: 'easeOut' },
+                default: { duration: 0.35, ease: 'easeOut' }
+              }}
               ref={(el) => {
                 if (el) exerciseRefsRef.current.set(exercise.id, el);
               }}
