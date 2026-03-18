@@ -393,8 +393,8 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       >
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">{WORKOUT_TYPE_ICONS[workout.type]}</span>
+            <div className="flex items-center gap-4">
+              <div className="w-9 h-9 shrink-0" style={{ backgroundColor: colors.border }} />
               <h2 className="text-xl font-bold" style={{ color: colors.text }}>
                 {WORKOUT_TYPE_NAMES[workout.type]}
               </h2>

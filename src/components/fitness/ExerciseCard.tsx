@@ -494,7 +494,7 @@ export function ExerciseCard({
                   ref={isHighlighted ? highlightedSetRef : null}
                   className={cn(
                     'flex items-center gap-3 transition-all duration-500',
-                    editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg relative z-20' : '',
+                    editingSetId === set.id ? 'bg-zinc-700/30 -mx-2 px-2 rounded-lg relative z-[10000]' : '',
                     isHighlighted ? 'bg-amber-500/20 -mx-2 px-2 rounded-lg ring-1 ring-amber-500/50' : ''
                   )}
                 >
@@ -607,16 +607,19 @@ export function ExerciseCard({
               );})}
               </div>
 
-              {/* Add set form */}
+              {/* Overlay to block clicks while editing or adding set */}
+              {(editingSetId || isAddingSet) && (
+                <div className="fixed inset-0 z-[9999] bg-black/50" />
+              )}
               {isAddingSet ? (
-                <div className="pt-4 relative z-20">
+                <div className="pt-4 relative z-[10000]">
                   {/* Toggle tags */}
                   <div className="flex gap-2 flex-wrap items-center mb-2">
                     {!exercise.sets.some(s => s.isWarmup) && (
                       <div
                         onClick={() => setIsWarmup(!isWarmup)}
                         className={cn(
-                          'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
+                          'flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer transition-colors',
                           isWarmup ? 'bg-amber-600/20 border border-amber-500/50' : 'bg-zinc-700/50 border border-zinc-600'
                         )}
                       >
@@ -628,7 +631,7 @@ export function ExerciseCard({
                     <div
                       onClick={() => setUseBodyweight(!useBodyweight)}
                       className={cn(
-                        'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
+                        'flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer transition-colors',
                         useBodyweight ? 'bg-emerald-600/20 border border-emerald-500/50' : 'bg-zinc-700/50 border border-zinc-600'
                       )}
                     >
@@ -639,7 +642,7 @@ export function ExerciseCard({
                     <div
                       onClick={() => setUseReps(!useReps)}
                       className={cn(
-                        'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
+                        'flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer transition-colors',
                         useReps ? 'bg-red-600/20 border border-red-500/50' : 'bg-zinc-700/50 border border-zinc-600'
                       )}
                     >
@@ -650,7 +653,7 @@ export function ExerciseCard({
                     <div
                       onClick={() => setUseTime(!useTime)}
                       className={cn(
-                        'flex items-center gap-1 px-2 py-1 rounded cursor-pointer transition-colors',
+                        'flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer transition-colors',
                         useTime ? 'bg-purple-600/20 border border-purple-500/50' : 'bg-zinc-700/50 border border-zinc-600'
                       )}
                     >
@@ -738,23 +741,31 @@ export function ExerciseCard({
                             {!useBodyweight && (
                               <div className="w-14 text-center">
                                 {prevData.isBodyweight ? (
-                                  <span className="text-emerald-400">св.вес</span>
+                                  <span>Собст. вес</span>
                                 ) : prevData.weight > 0 ? (
                                   <span>{prevData.weight} кг</span>
                                 ) : null}
                               </div>
                             )}
-                            {useReps && prevData.reps > 0 && (
-                              <>
-                                {!useBodyweight && <span className="absolute left-1/2 -translate-x-1/2 text-center">×</span>}
-                                <div className="w-14 text-center">{prevData.reps} повт.</div>
-                              </>
+                            {!useBodyweight && useReps && (
+                              <span className="absolute left-1/2 -translate-x-1/2 text-center">×</span>
+                            )}
+                            {useReps && (
+                              <div className="w-14 text-center">
+                                {prevData.reps > 0 ? `${prevData.reps} повт.` : ''}
+                              </div>
                             )}
                           </div>
                         )}
-                        {useTime && prevData.time > 0 && (
-                          <div className="flex items-center gap-3 relative text-purple-400">
-                            <div className="w-14 text-center">{formatTime(prevData.time)}</div>
+                        {useTime && (
+                          <div className="flex items-center gap-3 relative">
+                            <div className="w-14 text-center">
+                              {prevData.time > 0 ? Math.floor(prevData.time / 60) : ''}
+                            </div>
+                            <span className="absolute left-1/2 -translate-x-1/2 text-xs">:</span>
+                            <div className="w-14 text-center">
+                              {prevData.time > 0 ? (prevData.time % 60).toString().padStart(2, '0') : ''}
+                            </div>
                           </div>
                         )}
                       </div>
