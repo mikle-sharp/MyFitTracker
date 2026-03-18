@@ -94,7 +94,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
     };
   }, [dragState]);
   
-  const { addExercise, removeExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes } = useFitnessStore();
+  const { addExercise, removeExercise, replaceExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes } = useFitnessStore();
 
   const colors = WORKOUT_TYPE_COLORS[workout.type];
 
@@ -186,10 +186,8 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
   const confirmReplace = () => {
     if (replacingExerciseId && pendingReplaceName) {
-      // Удаляем старое упражнение
-      removeExercise(workout.id, replacingExerciseId);
-      // Добавляем новое с правильным типом
-      addExercise(workout.id, pendingReplaceName, getExerciseType(pendingReplaceName));
+      // Заменяем упражнение (сохраняет позицию)
+      replaceExercise(workout.id, replacingExerciseId, pendingReplaceName, getExerciseType(pendingReplaceName));
       setIsReplaceExerciseOpen(false);
       setReplacingExerciseId(null);
       setReplacingExerciseName('');
@@ -531,7 +529,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           </button>
         </DialogTrigger>
         <DialogContent 
-          className="bg-zinc-800 border max-h-[80vh] !p-0 !gap-0 flex flex-col"
+          className="bg-zinc-800 border h-[70vh] !top-[15vh] !translate-y-0 !p-0 !gap-0 flex flex-col"
           style={{ borderColor: colors.border }}
           showCloseButton={false}
         >
@@ -768,7 +766,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         }
       }}>
         <DialogContent
-          className="bg-zinc-800 border max-h-[80vh] !p-0 !gap-0 flex flex-col"
+          className="bg-zinc-800 border h-[70vh] !top-[15vh] !translate-y-0 !p-0 !gap-0 flex flex-col"
           style={{ borderColor: EXERCISE_TYPE_COLORS[getExerciseType(replacingExerciseName)]?.border || colors.border }}
           showCloseButton={false}
         >
@@ -842,14 +840,15 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                   const exerciseMarker = EXERCISE_TYPE_MARKERS[exerciseType];
                   const isSelected = selectedReplaceExercise === exerciseName;
                   const isCurrent = exerciseName === replacingExerciseName;
+                  const isAlreadyAdded = addedExerciseNames.has(exerciseName) && !isCurrent;
                   return (
                     <button
                       key={exerciseName}
-                      onClick={() => !isCurrent && setSelectedReplaceExercise(isSelected ? null : exerciseName)}
-                      disabled={isCurrent}
+                      onClick={() => !isCurrent && !isAlreadyAdded && setSelectedReplaceExercise(isSelected ? null : exerciseName)}
+                      disabled={isCurrent || isAlreadyAdded}
                       className={cn(
                         "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2",
-                        isCurrent
+                        (isCurrent || isAlreadyAdded)
                           ? "opacity-40 cursor-not-allowed text-zinc-500"
                           : isSelected
                             ? "bg-zinc-600 text-white"
@@ -864,6 +863,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                       </span>
                       <span className="flex-1">{exerciseName}</span>
                       {isCurrent && <span className="text-xs">текущее</span>}
+                      {isAlreadyAdded && <span className="text-xs">✓</span>}
                     </button>
                   );
                 })

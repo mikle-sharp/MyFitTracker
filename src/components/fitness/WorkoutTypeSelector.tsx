@@ -3,7 +3,6 @@
 import { Dumbbell, Heart, Target, Zap } from 'lucide-react';
 import { WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 
 interface WorkoutTypeSelectorProps {
   selectedType: WorkoutType | null;
@@ -34,15 +33,14 @@ export function WorkoutTypeSelector({ selectedType, onSelect }: WorkoutTypeSelec
         const isSelected = selectedType === type;
 
         return (
-          <motion.button
+          <button
             key={type}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
             onClick={() => onSelect(type)}
             className={cn(
-              'relative p-4 rounded-lg border-2 transition-all duration-300',
+              'relative p-4 rounded-lg border-2 transition-all duration-200',
               'flex flex-col items-center gap-2',
               'min-h-[100px]',
+              'hover:scale-[1.02] active:scale-95',
               isSelected
                 ? ''
                 : 'bg-zinc-800/50 border-zinc-700 text-zinc-300 hover:border-zinc-500'
@@ -63,7 +61,7 @@ export function WorkoutTypeSelector({ selectedType, onSelect }: WorkoutTypeSelec
               <div className="font-semibold text-sm">{WORKOUT_TYPE_NAMES[type]}</div>
               <div className="text-xs opacity-70 mt-0.5">{typeDescriptions[type]}</div>
             </div>
-          </motion.button>
+          </button>
         );
       })}
     </div>

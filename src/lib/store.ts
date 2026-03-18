@@ -19,6 +19,7 @@ interface FitnessStore {
   updateWorkoutNotes: (workoutId: string, notes: string) => void;
   deleteWorkout: (id: string) => void;
   addExercise: (workoutId: string, name: string, exerciseType?: ExerciseType) => Exercise | null;
+  replaceExercise: (workoutId: string, oldExerciseId: string, newName: string, exerciseType?: ExerciseType) => Exercise | null;
   removeExercise: (workoutId: string, exerciseId: string) => void;
   moveExerciseUp: (workoutId: string, exerciseId: string) => void;
   moveExerciseDown: (workoutId: string, exerciseId: string) => void;
@@ -105,6 +106,17 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   // Добавление упражнения
   addExercise: (workoutId: string, name: string, exerciseType?: ExerciseType) => {
     const exercise = storage.addExerciseToWorkout(workoutId, name, exerciseType);
+    if (exercise) {
+      const workouts = storage.getWorkouts();
+      const currentWorkout = workouts.find(w => w.id === workoutId) || null;
+      set({ workouts, currentWorkout });
+    }
+    return exercise;
+  },
+
+  // Замена упражнения (сохраняет позицию)
+  replaceExercise: (workoutId: string, oldExerciseId: string, newName: string, exerciseType?: ExerciseType) => {
+    const exercise = storage.replaceExerciseInWorkout(workoutId, oldExerciseId, newName, exerciseType);
     if (exercise) {
       const workouts = storage.getWorkouts();
       const currentWorkout = workouts.find(w => w.id === workoutId) || null;

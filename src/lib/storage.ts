@@ -233,6 +233,41 @@ export const removeExerciseFromWorkout = (
   saveWorkouts(workouts);
 };
 
+// Замена упражнения в тренировке (сохраняет позицию)
+export const replaceExerciseInWorkout = (
+  workoutId: string,
+  oldExerciseId: string,
+  newExerciseName: string,
+  exerciseType?: ExerciseType
+): Exercise | null => {
+  const workouts = getWorkouts();
+  const workout = workouts.find(w => w.id === workoutId);
+  
+  if (!workout) return null;
+
+  const index = workout.exercises.findIndex(e => e.id === oldExerciseId);
+  if (index === -1) return null;
+
+  const newExercise: Exercise = {
+    id: generateId(),
+    name: newExerciseName,
+    sets: [],
+    isCustom: true,
+    exerciseType: exerciseType,
+  };
+
+  // Заменяем упражнение на той же позиции
+  workout.exercises[index] = newExercise;
+  workout.updatedAt = new Date().toISOString();
+  
+  // Сохраняем упражнение для данного типа тренировки
+  addCustomExerciseForType(workout.type, newExerciseName);
+  
+  saveWorkouts(workouts);
+
+  return newExercise;
+};
+
 // Перемещение упражнения вверх
 export const moveExerciseUp = (
   workoutId: string,
