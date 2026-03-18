@@ -391,13 +391,13 @@ export function ExerciseCard({
   return (
     <>
       <div
-        className="rounded-lg overflow-hidden bg-zinc-800 border-t border-r border-b relative"
+        className="rounded-lg overflow-hidden bg-zinc-800 relative"
         style={{
-          borderTopColor: exerciseColors.border,
-          borderRightColor: exerciseColors.border,
-          borderBottomColor: exerciseColors.border,
-          borderLeftWidth: '8px',
+          borderLeftWidth: '4px',
           borderLeftColor: exerciseColors.border,
+          background: `linear-gradient(to right, ${exerciseColors.border}, transparent) top left / 100% 1px no-repeat,
+                      linear-gradient(to right, ${exerciseColors.border}, transparent) bottom left / 100% 1px no-repeat,
+                      #27272a`,
           userSelect: isDragging ? 'none' : undefined,
           WebkitUserSelect: isDragging ? 'none' : undefined,
           touchAction: isDragging ? 'none' : undefined,
@@ -422,7 +422,7 @@ export function ExerciseCard({
         <div className="flex">
           <div className="flex-1 min-w-0">
             {/* Header */}
-            <div className="flex items-center justify-between py-2 pl-2 pr-4 border-b" style={{ borderColor: exerciseColors.border }}>
+            <div className="flex items-center justify-between py-2 pl-2 pr-4" style={{ background: `linear-gradient(to right, ${exerciseColors.border}, transparent) bottom left / 100% 1px no-repeat` }}>
               <div className="flex items-center gap-2">
                 {/* Move buttons / Drag handle */}
                 {currentWorkout && (
@@ -637,11 +637,12 @@ export function ExerciseCard({
                         onClick={() => setIsWarmup(!isWarmup)}
                         className={cn(
                           'flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer transition-colors',
-                          isWarmup ? 'bg-amber-600/20 border border-amber-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                          isWarmup ? '' : 'bg-zinc-700/50'
                         )}
+                        style={isWarmup ? { backgroundColor: '#734200' } : undefined}
                       >
-                        <Zap className="w-3 h-3 text-amber-400" />
-                        <span className="text-[10px] text-zinc-300">Разм.</span>
+                        <Zap className="w-3 h-3" style={{ color: isWarmup ? '#ffb900' : '#a1a1aa' }} />
+                        <span className="text-[11px] text-zinc-300">Разм.</span>
                       </div>
                     )}
 
@@ -649,33 +650,36 @@ export function ExerciseCard({
                       onClick={() => setUseBodyweight(!useBodyweight)}
                       className={cn(
                         'flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer transition-colors',
-                        useBodyweight ? 'bg-emerald-600/20 border border-emerald-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                        useBodyweight ? '' : 'bg-zinc-700/50'
                       )}
+                      style={useBodyweight ? { backgroundColor: '#072f18' } : undefined}
                     >
-                      <User className="w-3 h-3 text-emerald-400" />
-                      <span className="text-[10px] text-zinc-300">Собст. вес</span>
+                      <User className="w-3 h-3" style={{ color: useBodyweight ? '#19a655' : '#a1a1aa' }} />
+                      <span className="text-[11px] text-zinc-300">Собст. вес</span>
                     </div>
 
                     <div
                       onClick={() => setUseReps(!useReps)}
                       className={cn(
                         'flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer transition-colors',
-                        useReps ? 'bg-red-600/20 border border-red-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                        useReps ? '' : 'bg-zinc-700/50'
                       )}
+                      style={useReps ? { backgroundColor: '#391013' } : undefined}
                     >
-                      <Repeat2 className="w-3 h-3 text-red-400" />
-                      <span className="text-[10px] text-zinc-300">Повт.</span>
+                      <Repeat2 className="w-3 h-3" style={{ color: useReps ? '#c93843' : '#a1a1aa' }} />
+                      <span className="text-[11px] text-zinc-300">Повт.</span>
                     </div>
 
                     <div
                       onClick={() => setUseTime(!useTime)}
                       className={cn(
                         'flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer transition-colors',
-                        useTime ? 'bg-purple-600/20 border border-purple-500/50' : 'bg-zinc-700/50 border border-zinc-600'
+                        useTime ? '' : 'bg-zinc-700/50'
                       )}
+                      style={useTime ? { backgroundColor: '#2a153c' } : undefined}
                     >
-                      <Clock className="w-3 h-3 text-purple-400" />
-                      <span className="text-[10px] text-zinc-300">Вр.</span>
+                      <Clock className="w-3 h-3" style={{ color: useTime ? '#944ad4' : '#a1a1aa' }} />
+                      <span className="text-[11px] text-zinc-300">Вр.</span>
                     </div>
                   </div>
 
@@ -751,7 +755,7 @@ export function ExerciseCard({
                     if (!prevData) return null;
 
                     return (
-                      <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-3">
+                      <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-2">
                         <div className="w-7 text-center">Было</div>
                         {(!useBodyweight || useReps) && (
                           <div className="flex items-center gap-3 relative">
