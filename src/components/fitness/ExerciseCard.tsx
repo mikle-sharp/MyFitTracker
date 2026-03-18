@@ -169,6 +169,91 @@ export function ExerciseCard({
     };
   }, [isDragging]);
   
+  // Автозаполнение данных при открытии диалога добавления подхода
+  const autofillSetData = useCallback((forWarmup: boolean) => {
+    // Если есть подходы того же типа в текущем упражнении - берём из последнего
+    const sameTypeSets = exercise.sets.filter(s => forWarmup ? s.isWarmup : !s.isWarmup);
+    if (sameTypeSets.length > 0) {
+      const lastSet = sameTypeSets[sameTypeSets.length - 1];
+      if (lastSet.weight === 0) {
+        setUseBodyweight(true);
+        setNewWeight('');
+      } else {
+        setUseBodyweight(false);
+        setNewWeight(String(lastSet.weight));
+      }
+      setNewReps(String(lastSet.reps));
+      if (lastSet.time && lastSet.time > 0) {
+        setUseTime(true);
+        const mins = Math.floor(lastSet.time / 60);
+        const secs = lastSet.time % 60;
+        setNewTimeMinutes(String(mins));
+        setNewTimeSeconds(String(secs));
+      } else {
+        setUseTime(false);
+        setNewTimeMinutes('');
+        setNewTimeSeconds('');
+      }
+      setUseReps(lastSet.reps > 0);
+      return;
+    }
+    
+    // Иначе ищем в предыдущих тренировках
+    const setNumber = sameTypeSets.length + 1;
+    const prevData = getPreviousSetData(exercise.name, setNumber, forWarmup);
+    if (prevData) {
+      if (prevData.isBodyweight) {
+        setUseBodyweight(true);
+        setNewWeight('');
+      } else {
+        setUseBodyweight(false);
+        setNewWeight(prevData.weight > 0 ? String(prevData.weight) : '');
+      }
+      setNewReps(prevData.reps > 0 ? String(prevData.reps) : '');
+      if (prevData.time > 0) {
+        setUseTime(true);
+        const mins = Math.floor(prevData.time / 60);
+        const secs = prevData.time % 60;
+        setNewTimeMinutes(String(mins));
+        setNewTimeSeconds(String(secs));
+      } else {
+        setUseTime(false);
+        setNewTimeMinutes('');
+        setNewTimeSeconds('');
+      }
+      setUseReps(prevData.reps > 0);
+      return;
+    }
+    
+    // Если данных нет - оставляем пустыми
+    setNewReps('');
+    setNewWeight('');
+    setNewTimeMinutes('');
+    setNewTimeSeconds('');
+    setUseBodyweight(false);
+    setUseReps(true);
+    setUseTime(false);
+  }, [exercise.sets, exercise.name]);
+  
+  // Автозаполнение при переключении типа подхода (разминочный/рабочий)
+  useEffect(() => {
+    if (isAddingSet) {
+      autofillSetData(isWarmup);
+    }
+  }, [isWarmup, isAddingSet, autofillSetData]);
+  
+  // Начать добавление подхода с автозаполнением
+  const handleStartAddingSet = useCallback(() => {
+    // По умолчанию добавляем рабочий подход
+    const defaultIsWarmup = false;
+    setIsWarmup(defaultIsWarmup);
+    
+    // Автозаполняем данные
+    autofillSetData(defaultIsWarmup);
+    
+    setIsAddingSet(true);
+  }, [autofillSetData]);
+  
   // Drag handlers for touch
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     // Prevent default to avoid iOS gesture interference
@@ -261,9 +346,8 @@ export function ExerciseCard({
   const VOLUME_RECORD_COLOR = '#cd7f32';
 
   // Определение типа рекорда для подхода
-  const getSetRecordType = (weight: number, reps: number, setIndex: number): 'weight' | 'volume' | null => {
-    if (weight <= 0 || reps <= 0) return null;
-    return getRecordType(exercise.name, weight, reps, setIndex, workoutId);
+  const getSetRecordType = (weight: number, reps: number, setId: string, time?: number): 'weight' | 'volume' | null => {
+    return getRecordType(exercise.name, weight, reps, setId, workoutId, time);
   };
 
   const handleAddSet = () => {
@@ -340,7 +424,7 @@ export function ExerciseCard({
     const isBodyweight = set.weight === 0;
     const hasReps = set.reps > 0;
     const hasTime = set.time && set.time > 0;
-    const recordType = getSetRecordType(set.weight, set.reps, setIndex);
+    const recordType = getSetRecordType(set.weight, set.reps, set.id, set.time);
     const isTimeOnly = hasTime && !hasReps;
 
     // Определяем цвет для рекорда
@@ -384,6 +468,18 @@ export function ExerciseCard({
         >
           {isTimeOnly ? formatTime(set.time!) : hasReps ? set.reps : ''}
         </span>
+
+        {/* Столбец 5: Время (если есть и повторения, и время) */}
+        {hasReps && hasTime && (
+          <>
+            <span className="inline-flex w-4 h-7 items-center justify-center text-sm" style={{ color: '#71717a' }}>
+              <Clock className="w-2 h-2" />
+            </span>
+            <span className="inline-block font-medium text-sm" style={{ color: '#944ad4' }}>
+              {formatTime(set.time!)}
+            </span>
+          </>
+        )}
       </div>
     );
   };
@@ -779,7 +875,7 @@ export function ExerciseCard({
                           </div>
                         )}
                         {useTime && (
-                          <div className="flex items-center gap-3 relative">
+                          <div className="flex items-center gap-3 relative ml-1">
                             <div className="w-14 text-center">
                               {prevData.time > 0 ? Math.floor(prevData.time / 60) : ''}
                             </div>
@@ -827,7 +923,7 @@ export function ExerciseCard({
               ) : (
                 <div className={cn("flex justify-end", exercise.sets.length > 0 && "mt-4")}>
                   <button
-                    onClick={() => setIsAddingSet(true)}
+                    onClick={handleStartAddingSet}
                     className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90"
                     style={{ backgroundColor: '#19a655' }}
                   >

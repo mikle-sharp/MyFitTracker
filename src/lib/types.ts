@@ -51,9 +51,10 @@ export interface Workout {
 export interface RecordData {
   value: number;        // вес для weight рекорда, объём для volume рекорда
   reps: number;         // повторения
+  time?: number;        // время в секундах (для упражнений на время)
   date: string;         // дата установки рекорда
   workoutId: string;    // ID тренировки
-  setIndex: number;     // номер подхода (0-indexed)
+  setId: string;        // ID подхода (уникальный идентификатор)
 }
 
 // Личный рекорд

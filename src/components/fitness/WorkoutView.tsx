@@ -17,7 +17,7 @@ import { getAllExercisesForType, getAllExercises } from '@/lib/storage';
 
 interface WorkoutViewProps {
   workout: Workout;
-  highlightExercise?: { name: string; setIndex: number } | null;
+  highlightExercise?: { name: string; setId: string } | null;
 }
 
 export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
@@ -528,7 +528,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
-              highlightSetIndex={highlightExercise?.name === exercise.name ? highlightExercise.setIndex : undefined}
+                highlightSetIndex={highlightExercise?.name === exercise.name ? exercise.sets.findIndex(s => s.id === highlightExercise.setId) : undefined}
               />
             </motion.div>
           );

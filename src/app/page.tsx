@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function Home() {
   const [activeTab, setActiveTab] = useState('workout');
   const [mounted, setMounted] = useState(false);
-  const [highlightExercise, setHighlightExercise] = useState<{ name: string; setIndex: number } | null>(null);
+  const [highlightExercise, setHighlightExercise] = useState<{ name: string; setId: string } | null>(null);
   
   const {
     init,
@@ -26,13 +26,13 @@ export default function Home() {
   } = useFitnessStore();
 
   // Навигация к тренировке с рекордом
-  const handleNavigateToWorkout = (date: string, exerciseName: string, setIndex: number) => {
+  const handleNavigateToWorkout = (date: string, exerciseName: string, setId: string) => {
     // Переключаемся на вкладку тренировок
     setActiveTab('workout');
     // Загружаем тренировку для указанной даты
     loadWorkoutForDate(date);
     // Устанавливаем подсветку упражнения
-    setHighlightExercise({ name: exerciseName, setIndex });
+    setHighlightExercise({ name: exerciseName, setId });
     // Сбрасываем подсветку через 2 секунды
     setTimeout(() => setHighlightExercise(null), 2000);
   };
