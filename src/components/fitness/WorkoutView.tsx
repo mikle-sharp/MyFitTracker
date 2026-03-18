@@ -48,6 +48,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
     currentY: number;
     startScrollY: number;
   } | null>(null);
+  const [suppressLayoutAnimation, setSuppressLayoutAnimation] = useState(false);
   const [, forceUpdate] = useReducer(x => x + 1, 0);
   const dragStateRef = useRef<typeof dragState>(null);
   const exerciseRefsRef = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -311,8 +312,15 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
     }
     
     const currentDragState = dragStateRef.current;
+    
+    // Отключаем layout анимацию при drag
+    setSuppressLayoutAnimation(true);
+    
+    // Сбрасываем dragState
+    setDragState(null);
+    
+    // Перемещаем карточку
     if (currentDragState && currentDragState.currentIndex !== currentDragState.draggedIndex) {
-      // Move exercise to new position
       const moves = currentDragState.currentIndex - currentDragState.draggedIndex;
       const exerciseId = currentDragState.draggedId;
       
@@ -327,7 +335,10 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       }
     }
     
-    setDragState(null);
+    // Включаем анимацию обратно после рендера
+    requestAnimationFrame(() => {
+      setSuppressLayoutAnimation(false);
+    });
   }, [workout.id, moveExerciseUp, moveExerciseDown]);
 
   const totalVolume = workout.exercises.reduce((sum, ex) => {
@@ -483,7 +494,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             <motion.div
               key={exercise.id}
               layout
-              transition={{ duration: 0.35, ease: 'easeOut' }}
+              transition={suppressLayoutAnimation ? { duration: 0 } : { duration: 0.35, ease: 'easeOut' }}
               ref={(el) => {
                 if (el) exerciseRefsRef.current.set(exercise.id, el);
               }}

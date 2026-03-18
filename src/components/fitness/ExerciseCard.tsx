@@ -409,9 +409,7 @@ export function ExerciseCard({
               ? `translateY(${shiftDirection === 'down' ? 80 : -80}px)`
               : undefined,
           transformOrigin: 'center top',
-          transition: isDragging
-            ? 'none'
-            : 'transform 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          transition: isDragging ? 'none' : undefined,
           willChange: isDragging || shiftDirection ? 'transform' : undefined,
           zIndex: isDragging ? 1000 : shiftDirection ? 1 : undefined,
           opacity: 1,
