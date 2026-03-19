@@ -584,33 +584,24 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             </div>
 
             {/* Type filter tags */}
-            <div className="flex gap-1">
+            <div className="flex gap-3">
               {(['chest', 'back', 'legs', 'common'] as ExerciseType[]).map((type) => {
                 const typeColors = EXERCISE_TYPE_COLORS[type];
-                const typeMarker = EXERCISE_TYPE_MARKERS[type];
                 const isSelected = exerciseTypeFilter === type;
                 return (
                   <button
                     key={type}
                     type="button"
                     onClick={() => setExerciseTypeFilter(isSelected ? null : type)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border flex-1 justify-center"
+                    className="flex items-center justify-center px-2 py-1 rounded-lg text-sm font-medium transition-colors flex-1"
                     style={isSelected ? {
                       backgroundColor: typeColors.bg,
                       color: typeColors.text,
-                      borderColor: typeColors.border
                     } : {
-                      backgroundColor: '#27272a',
-                      color: '#a1a1aa',
-                      borderColor: 'transparent'
+                      backgroundColor: 'rgb(63 63 70 / 0.5)',
+                      color: '#d4d4d8',
                     }}
                   >
-                    <span
-                      className="w-3.5 h-3.5 rounded text-[9px] font-bold flex items-center justify-center"
-                      style={{ backgroundColor: isSelected ? typeColors.bg : '#3f3f46', color: typeColors.text }}
-                    >
-                      {typeMarker}
-                    </span>
                     <span className="truncate">{EXERCISE_TYPE_NAMES[type]}</span>
                   </button>
                 );
@@ -730,33 +721,24 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             )}
 
             {/* Type tags */}
-            <div className="flex gap-1">
+            <div className="flex gap-3">
               {(['chest', 'back', 'legs', 'common'] as ExerciseType[]).map((type) => {
                 const typeColors = EXERCISE_TYPE_COLORS[type];
-                const typeMarker = EXERCISE_TYPE_MARKERS[type];
                 const isSelected = newExerciseType === type;
                 return (
                   <button
                     key={type}
                     type="button"
                     onClick={() => setNewExerciseType(type)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border flex-1 justify-center"
+                    className="flex items-center justify-center px-2 py-1 rounded-lg text-sm font-medium transition-colors flex-1"
                     style={isSelected ? {
                       backgroundColor: typeColors.bg,
                       color: typeColors.text,
-                      borderColor: typeColors.border
                     } : {
-                      backgroundColor: '#27272a',
-                      color: '#a1a1aa',
-                      borderColor: 'transparent'
+                      backgroundColor: 'rgb(63 63 70 / 0.5)',
+                      color: '#d4d4d8',
                     }}
                   >
-                    <span
-                      className="w-3.5 h-3.5 rounded text-[9px] font-bold flex items-center justify-center"
-                      style={{ backgroundColor: isSelected ? typeColors.bg : '#3f3f46', color: typeColors.text }}
-                    >
-                      {typeMarker}
-                    </span>
                     <span className="truncate">{EXERCISE_TYPE_NAMES[type]}</span>
                   </button>
                 );
@@ -823,33 +805,24 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             </div>
 
             {/* Type filter tags */}
-            <div className="flex gap-1">
+            <div className="flex gap-3">
               {(['chest', 'back', 'legs', 'common'] as ExerciseType[]).map((type) => {
                 const typeColors = EXERCISE_TYPE_COLORS[type];
-                const typeMarker = EXERCISE_TYPE_MARKERS[type];
                 const isSelected = exerciseTypeFilter === type;
                 return (
                   <button
                     key={type}
                     type="button"
                     onClick={() => setExerciseTypeFilter(isSelected ? null : type)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all border flex-1 justify-center"
+                    className="flex items-center justify-center px-2 py-1 rounded-lg text-sm font-medium transition-colors flex-1"
                     style={isSelected ? {
                       backgroundColor: typeColors.bg,
                       color: typeColors.text,
-                      borderColor: typeColors.border
                     } : {
-                      backgroundColor: '#27272a',
-                      color: '#a1a1aa',
-                      borderColor: 'transparent'
+                      backgroundColor: 'rgb(63 63 70 / 0.5)',
+                      color: '#d4d4d8',
                     }}
                   >
-                    <span
-                      className="w-3.5 h-3.5 rounded text-[9px] font-bold flex items-center justify-center"
-                      style={{ backgroundColor: isSelected ? typeColors.bg : '#3f3f46', color: typeColors.text }}
-                    >
-                      {typeMarker}
-                    </span>
                     <span className="truncate">{EXERCISE_TYPE_NAMES[type]}</span>
                   </button>
                 );

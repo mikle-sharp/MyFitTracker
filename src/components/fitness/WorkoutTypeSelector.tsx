@@ -17,9 +17,9 @@ const typeIcons: Record<WorkoutType, React.ReactNode> = {
 };
 
 const typeDescriptions: Record<WorkoutType, string> = {
-  chest: 'Жим, разводка, отжимания',
-  back: 'Тяги, подтягивания',
-  legs: 'Приседания, выпады',
+  chest: 'Жимы, сведения, разведения',
+  back: 'Тяги, подтягивания, шраги',
+  legs: 'Приседания, сгибания, разгибания',
   fullbody: 'Комплексная тренировка',
 };
 
