@@ -199,6 +199,20 @@ export function ExerciseCard({
         setNewTimeSeconds('');
       }
       setUseReps(lastSet.reps > 0);
+      
+      // Наследуем теги снаряда и хвата от последнего подхода
+      // Снаряд наследуем только если не bodyweight
+      if (lastSet.weight !== 0 && lastSet.equipmentType) {
+        setSelectedEquipment(lastSet.equipmentType);
+      } else {
+        setSelectedEquipment(null);
+      }
+      // Хват наследуем только если не time-only
+      if (!lastSet.time && lastSet.gripType) {
+        setSelectedGrip(lastSet.gripType);
+      } else {
+        setSelectedGrip(null);
+      }
       return;
     }
     
@@ -226,6 +240,9 @@ export function ExerciseCard({
         setNewTimeSeconds('');
       }
       setUseReps(prevData.reps > 0);
+      // Теги не наследуем из предыдущих тренировок
+      setSelectedEquipment(null);
+      setSelectedGrip(null);
       return;
     }
     
@@ -237,6 +254,8 @@ export function ExerciseCard({
     setUseBodyweight(false);
     setUseReps(true);
     setUseTime(false);
+    setSelectedEquipment(null);
+    setSelectedGrip(null);
   }, [exercise.sets, exercise.name]);
   
   // Автозаполнение при переключении типа подхода (разминочный/рабочий)
@@ -716,13 +735,13 @@ export function ExerciseCard({
                       {/* Equipment and grip tags */}
                       <div className="flex items-center gap-1 mr-1">
                         {set.equipmentType && (
-                          <div className="h-7 min-w-[28px] px-1.5 rounded-lg text-[10px] font-medium flex items-center justify-center text-primary-foreground"
+                          <div className="h-7 w-10 rounded-lg text-[11px] font-medium flex items-center justify-center text-primary-foreground"
                                style={{ backgroundColor: exerciseColors.border }}>
                             {EQUIPMENT_TYPES[set.equipmentType].short}
                           </div>
                         )}
                         {set.gripType && (
-                          <div className="h-7 min-w-[28px] px-1.5 rounded-lg text-[10px] font-medium flex items-center justify-center text-primary-foreground"
+                          <div className="h-7 w-10 rounded-lg text-[11px] font-medium flex items-center justify-center text-primary-foreground"
                                style={{ backgroundColor: exerciseColors.border }}>
                             {GRIP_TYPES[set.gripType].short}
                           </div>
