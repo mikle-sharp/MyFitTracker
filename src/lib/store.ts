@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Workout, WorkoutType, WorkoutSet, Exercise, ExerciseType } from './types';
+import { Workout, WorkoutType, WorkoutSet, Exercise, ExerciseType, EquipmentType, GripType } from './types';
 import * as storage from './storage';
 
 interface FitnessStore {
@@ -23,8 +23,8 @@ interface FitnessStore {
   removeExercise: (workoutId: string, exerciseId: string) => void;
   moveExerciseUp: (workoutId: string, exerciseId: string) => void;
   moveExerciseDown: (workoutId: string, exerciseId: string) => void;
-  addSet: (workoutId: string, exerciseId: string, reps: number, weight: number, time?: number, isWarmup?: boolean) => WorkoutSet | null;
-  updateSet: (workoutId: string, exerciseId: string, setId: string, reps: number, weight: number, time?: number) => void;
+  addSet: (workoutId: string, exerciseId: string, reps: number, weight: number, time?: number, isWarmup?: boolean, equipmentType?: EquipmentType, gripType?: GripType) => WorkoutSet | null;
+  updateSet: (workoutId: string, exerciseId: string, setId: string, reps: number, weight: number, time?: number, equipmentType?: EquipmentType, gripType?: GripType) => void;
   removeSet: (workoutId: string, exerciseId: string, setId: string) => void;
   refreshWorkouts: () => void;
   importData: (data: string, format: 'json' | 'csv') => { success: boolean; message: string };
@@ -150,8 +150,8 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   },
 
   // Добавление подхода
-  addSet: (workoutId: string, exerciseId: string, reps: number, weight: number, time?: number, isWarmup?: boolean) => {
-    const workoutSet = storage.addSetToExercise(workoutId, exerciseId, reps, weight, time, isWarmup);
+  addSet: (workoutId: string, exerciseId: string, reps: number, weight: number, time?: number, isWarmup?: boolean, equipmentType?: EquipmentType, gripType?: GripType) => {
+    const workoutSet = storage.addSetToExercise(workoutId, exerciseId, reps, weight, time, isWarmup, equipmentType, gripType);
     if (workoutSet) {
       const workouts = storage.getWorkouts();
       const currentWorkout = workouts.find(w => w.id === workoutId) || null;
@@ -161,8 +161,8 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   },
 
   // Обновление подхода
-  updateSet: (workoutId: string, exerciseId: string, setId: string, reps: number, weight: number, time?: number) => {
-    storage.updateSet(workoutId, exerciseId, setId, reps, weight, time);
+  updateSet: (workoutId: string, exerciseId: string, setId: string, reps: number, weight: number, time?: number, equipmentType?: EquipmentType, gripType?: GripType) => {
+    storage.updateSet(workoutId, exerciseId, setId, reps, weight, time, equipmentType, gripType);
     const workouts = storage.getWorkouts();
     const currentWorkout = workouts.find(w => w.id === workoutId) || null;
     set({ workouts, currentWorkout });

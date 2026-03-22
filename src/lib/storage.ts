@@ -1,4 +1,4 @@
-import { Workout, Exercise, WorkoutSet, WorkoutType, DEFAULT_EXERCISES, isAbsExercise, ExerciseType } from './types';
+import { Workout, Exercise, WorkoutSet, WorkoutType, DEFAULT_EXERCISES, isAbsExercise, ExerciseType, EquipmentType, GripType } from './types';
 
 const STORAGE_KEY = 'fitness-journal-workouts';
 const CUSTOM_EXERCISES_KEY = 'fitness-journal-custom-exercises-by-type';
@@ -317,7 +317,9 @@ export const addSetToExercise = (
   reps: number,
   weight: number,
   time?: number,
-  isWarmup?: boolean
+  isWarmup?: boolean,
+  equipmentType?: EquipmentType,
+  gripType?: GripType
 ): WorkoutSet | null => {
   const workouts = getWorkouts();
   const workout = workouts.find(w => w.id === workoutId);
@@ -334,6 +336,8 @@ export const addSetToExercise = (
     time,
     isWarmup,
     timestamp: new Date().toISOString(),
+    equipmentType,
+    gripType,
   };
 
   // Разминочные подходы добавляем в начало списка
@@ -355,7 +359,9 @@ export const updateSet = (
   setId: string,
   reps: number,
   weight: number,
-  time?: number
+  time?: number,
+  equipmentType?: EquipmentType,
+  gripType?: GripType
 ): void => {
   const workouts = getWorkouts();
   const workout = workouts.find(w => w.id === workoutId);
@@ -372,6 +378,12 @@ export const updateSet = (
   set.weight = weight;
   if (time !== undefined) {
     set.time = time;
+  }
+  if (equipmentType !== undefined) {
+    set.equipmentType = equipmentType;
+  }
+  if (gripType !== undefined) {
+    set.gripType = gripType;
   }
   workout.updatedAt = new Date().toISOString();
   saveWorkouts(workouts);

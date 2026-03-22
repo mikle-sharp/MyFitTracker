@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Trash2, Plus, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap, Repeat2 } from 'lucide-react';
-import { Exercise, WorkoutSet, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType } from '@/lib/types';
+import { Exercise, WorkoutSet, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EquipmentType, GripType, EQUIPMENT_TYPES, GRIP_TYPES } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -98,6 +98,10 @@ export function ExerciseCard({
   const [useBodyweight, setUseBodyweight] = useState(false);
   const [useReps, setUseReps] = useState(true);
   const [useTime, setUseTime] = useState(false);
+  
+  // State for equipment and grip tags
+  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
+  const [selectedGrip, setSelectedGrip] = useState<GripType | null>(null);
   
   // State for delete confirmation
   const [showDeleteExerciseConfirm, setShowDeleteExerciseConfirm] = useState(false);
@@ -361,7 +365,7 @@ export function ExerciseCard({
     if (!useBodyweight && useReps && weight <= 0 && !useTime) return;
     if (useTime && time <= 0 && !useReps) return;
 
-    addSet(workoutId, exercise.id, reps, weight, time > 0 ? time : undefined, isWarmup);
+    addSet(workoutId, exercise.id, reps, weight, time > 0 ? time : undefined, isWarmup, selectedEquipment ?? undefined, selectedGrip ?? undefined);
     
     // Reset form
     setNewReps('');
@@ -370,6 +374,8 @@ export function ExerciseCard({
     setNewTimeSeconds('');
     setIsAddingSet(false);
     setIsWarmup(false);
+    setSelectedEquipment(null);
+    setSelectedGrip(null);
   };
 
   const handleUpdateSet = (setId: string, originalSet: WorkoutSet) => {
@@ -707,6 +713,22 @@ export function ExerciseCard({
                         {renderSetDisplay(set, setIndex)}
                       </div>
                       
+                      {/* Equipment and grip tags */}
+                      <div className="flex items-center gap-1 mr-1">
+                        {set.equipmentType && (
+                          <div className="h-7 min-w-[28px] px-1.5 rounded-lg text-[10px] font-medium flex items-center justify-center text-primary-foreground"
+                               style={{ backgroundColor: exerciseColors.border }}>
+                            {EQUIPMENT_TYPES[set.equipmentType].short}
+                          </div>
+                        )}
+                        {set.gripType && (
+                          <div className="h-7 min-w-[28px] px-1.5 rounded-lg text-[10px] font-medium flex items-center justify-center text-primary-foreground"
+                               style={{ backgroundColor: exerciseColors.border }}>
+                            {GRIP_TYPES[set.gripType].short}
+                          </div>
+                        )}
+                      </div>
+                      
                       <Button
                         variant="ghost"
                         onClick={() => handleRemoveSet(set.id)}
@@ -738,7 +760,7 @@ export function ExerciseCard({
                         style={isWarmup ? { backgroundColor: '#734200' } : undefined}
                       >
                         <Zap className="w-3 h-3" style={{ color: isWarmup ? '#ffb900' : '#a1a1aa' }} />
-                        <span className="text-[11px] text-zinc-300">Разм.</span>
+                        <span className="text-[11px]" style={{ color: isWarmup ? '#ffb900' : '#d4d4d8' }}>Разм.</span>
                       </div>
                     )}
 
@@ -751,7 +773,7 @@ export function ExerciseCard({
                       style={useBodyweight ? { backgroundColor: '#072f18' } : undefined}
                     >
                       <User className="w-3 h-3" style={{ color: useBodyweight ? '#19a655' : '#a1a1aa' }} />
-                      <span className="text-[11px] text-zinc-300">Собст. вес</span>
+                      <span className="text-[11px]" style={{ color: useBodyweight ? '#19a655' : '#d4d4d8' }}>Собст. вес</span>
                     </div>
 
                     <div
@@ -763,7 +785,7 @@ export function ExerciseCard({
                       style={useReps ? { backgroundColor: '#391013' } : undefined}
                     >
                       <Repeat2 className="w-3 h-3" style={{ color: useReps ? '#c93843' : '#a1a1aa' }} />
-                      <span className="text-[11px] text-zinc-300">Повт.</span>
+                      <span className="text-[11px]" style={{ color: useReps ? '#c93843' : '#d4d4d8' }}>Повт.</span>
                     </div>
 
                     <div
@@ -775,7 +797,7 @@ export function ExerciseCard({
                       style={useTime ? { backgroundColor: '#2a153c' } : undefined}
                     >
                       <Clock className="w-3 h-3" style={{ color: useTime ? '#944ad4' : '#a1a1aa' }} />
-                      <span className="text-[11px] text-zinc-300">Вр.</span>
+                      <span className="text-[11px]" style={{ color: useTime ? '#944ad4' : '#d4d4d8' }}>Вр.</span>
                     </div>
                   </div>
 
@@ -851,7 +873,7 @@ export function ExerciseCard({
                     if (!prevData) return null;
 
                     return (
-                      <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-2">
+                      <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-2 mb-2">
                         <div className="w-7 text-center">Было</div>
                         {(!useBodyweight || useReps) && (
                           <div className="flex items-center gap-3 relative">
@@ -889,6 +911,57 @@ export function ExerciseCard({
                     );
                   })()}
 
+                  {/* Equipment and grip selection tags */}
+                  {!useBodyweight && (
+                    <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-2 mb-2">
+                      <div className="w-7 text-center">Гриф</div>
+                      <div className="flex gap-2 flex-wrap items-center">
+                        {(Object.keys(EQUIPMENT_TYPES) as EquipmentType[]).map((type) => {
+                          const isSelected = selectedEquipment === type;
+                          return (
+                            <div
+                              key={type}
+                              onClick={() => setSelectedEquipment(isSelected ? null : type)}
+                              className={cn(
+                                'w-10 py-1 rounded-lg text-[11px] font-medium flex items-center justify-center cursor-pointer transition-colors',
+                                !isSelected && 'bg-zinc-700/50 text-zinc-400',
+                                isSelected && 'text-primary-foreground'
+                              )}
+                              style={isSelected ? { backgroundColor: exerciseColors.border } : undefined}
+                            >
+                              {EQUIPMENT_TYPES[type].short}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!useTime && (
+                    <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-2">
+                      <div className="w-7 text-center">Хват</div>
+                      <div className="flex gap-2 flex-wrap items-center">
+                        {(Object.keys(GRIP_TYPES) as GripType[]).map((type) => {
+                          const isSelected = selectedGrip === type;
+                          return (
+                            <div
+                              key={type}
+                              onClick={() => setSelectedGrip(isSelected ? null : type)}
+                              className={cn(
+                                'w-10 py-1 rounded-lg text-[11px] font-medium flex items-center justify-center cursor-pointer transition-colors',
+                                !isSelected && 'bg-zinc-700/50 text-zinc-400',
+                                isSelected && 'text-primary-foreground'
+                              )}
+                              style={isSelected ? { backgroundColor: exerciseColors.border } : undefined}
+                            >
+                              {GRIP_TYPES[type].short}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Buttons */}
                   <div className="flex justify-end items-center gap-2 pt-4">
                     <button
@@ -901,6 +974,8 @@ export function ExerciseCard({
                         setUseBodyweight(false);
                         setUseReps(true);
                         setIsWarmup(false);
+                        setSelectedEquipment(null);
+                        setSelectedGrip(null);
                       }}
                       className="py-2 px-4 rounded-lg bg-zinc-700 text-zinc-300 text-sm font-medium border-0 hover:bg-zinc-700 hover:text-zinc-300"
                     >

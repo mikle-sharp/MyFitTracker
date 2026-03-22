@@ -15,6 +15,12 @@ export type ExerciseInputType =
   | 'reps'             // только повторения
   | 'time';            // только время
 
+// Типы снаряда
+export type EquipmentType = 'barbell_20' | 'barbell_10' | 'trap_bar' | 'ez_small' | 'ez_large';
+
+// Типы хвата
+export type GripType = 'wide' | 'narrow' | 'parallel' | 'cross' | 'reverse';
+
 // Подход
 export interface WorkoutSet {
   id: string;
@@ -24,7 +30,27 @@ export interface WorkoutSet {
   inputType?: ExerciseInputType; // тип ввода для этого подхода
   isWarmup?: boolean; // разминочный подход
   timestamp?: string; // время добавления подхода (ISO string)
+  equipmentType?: EquipmentType; // тип снаряда
+  gripType?: GripType; // тип хвата
 }
+
+// Константы для типов снаряда
+export const EQUIPMENT_TYPES: Record<EquipmentType, { short: string; full: string }> = {
+  barbell_20: { short: 'ш-20', full: 'Гриф 20 кг' },
+  barbell_10: { short: 'ш-10', full: 'Гриф 10 кг' },
+  trap_bar: { short: 'т-ш', full: 'Трэп гриф' },
+  ez_small: { short: 'ez-м', full: 'EZ-гриф маленький' },
+  ez_large: { short: 'ez-б', full: 'EZ-гриф большой' },
+};
+
+// Константы для типов хвата
+export const GRIP_TYPES: Record<GripType, { short: string; full: string }> = {
+  wide: { short: 'шир.', full: 'Широкий хват' },
+  narrow: { short: 'узк.', full: 'Узкий хват' },
+  parallel: { short: 'пар.', full: 'Параллельный хват' },
+  cross: { short: 'пер.', full: 'Перекрестный хват' },
+  reverse: { short: 'обр.', full: 'Обратный хват' },
+};
 
 // Упражнение
 export interface Exercise {
