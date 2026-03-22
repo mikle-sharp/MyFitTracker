@@ -643,7 +643,7 @@ export function SettingsPanel() {
           </DialogClose>
         </div>
 
-        <div className="px-4 pt-4 space-y-4">
+        <div className="px-4 pt-4 pb-4 flex flex-col gap-4">
           {/* Google Account Section */}
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
@@ -767,7 +767,7 @@ export function SettingsPanel() {
           </div>
 
           {/* Import/Export section */}
-          <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700 mb-4">
+          <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
               <FileSpreadsheet className="w-4 h-4" style={{ color: '#1d4fa0' }} />
               <h4 className="text-sm font-medium text-white">Восстановление / Резервное копирование</h4>
@@ -863,7 +863,10 @@ export function SettingsPanel() {
 
           {/* Test data section */}
           <div
-            className="grid transition-all duration-300 ease-in-out !mt-0"
+            className={cn(
+              "grid transition-all duration-300 ease-in-out",
+              !showTestDataSection && "-mt-4"
+            )}
             style={{ gridTemplateRows: showTestDataSection ? '1fr' : '0fr' }}
           >
             <div className="overflow-hidden">
