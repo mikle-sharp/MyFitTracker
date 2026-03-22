@@ -1,528 +1,719 @@
 {
   "workouts": [
     {
-      "id": "1773169362744-py2fkhssf",
-      "date": "2026-03-08",
+      "id": "1773836521734-oqdqgddx4",
+      "date": "2026-03-16",
       "type": "chest",
       "exercises": [
         {
-          "id": "1773169362744-0yopr4yj8",
-          "name": "Жим лежа",
-          "sets": [
-            {
-              "id": "1773169465092-h3fsxnofs",
-              "reps": 10,
-              "weight": 60,
-              "isWarmup": true
-            },
-            {
-              "id": "1773169481224-f187zeiiw",
-              "reps": 6,
-              "weight": 80,
-              "isWarmup": false
-            },
-            {
-              "id": "1773169489306-1clw0qbzk",
-              "reps": 5,
-              "weight": 85,
-              "isWarmup": false
-            },
-            {
-              "id": "1773169498664-okrwevfr4",
-              "reps": 3,
-              "weight": 90,
-              "isWarmup": false
-            }
-          ],
-          "isCustom": false
-        },
-        {
-          "id": "1773169362744-bwtqra8jg",
+          "id": "1773836521734-nhdx1qe48",
           "name": "Жим на наклонной",
           "sets": [
             {
-              "id": "1773169635842-mldkxtfnj",
+              "id": "1773836588259-px8qusa9b",
               "reps": 10,
               "weight": 40,
-              "isWarmup": false
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:23:08.259Z"
             },
             {
-              "id": "1773169641843-ncmyc4kk7",
+              "id": "1773836594173-v3mflcl14",
               "reps": 10,
               "weight": 50,
-              "isWarmup": false
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:23:14.173Z"
             },
             {
-              "id": "1773169647360-t7v8ar8vx",
+              "id": "1773836600761-f1zaod7xv",
               "reps": 10,
               "weight": 60,
-              "isWarmup": false
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:23:20.761Z"
             },
             {
-              "id": "1773169654459-lw4wdkdk3",
-              "reps": 6,
-              "weight": 70,
-              "isWarmup": false
+              "id": "1773836606967-v79w7kdgx",
+              "reps": 3,
+              "weight": 75,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:23:26.967Z"
             }
           ],
-          "isCustom": false
+          "isCustom": false,
+          "exerciseType": "chest"
         },
         {
-          "id": "1773169362744-ohs0htxai",
+          "id": "1773836521734-whca4ecgp",
+          "name": "Жим лежа",
+          "sets": [
+            {
+              "id": "1773836544987-h41rv3eog",
+              "reps": 10,
+              "weight": 60,
+              "isWarmup": true,
+              "timestamp": "2026-03-18T12:22:24.987Z"
+            },
+            {
+              "id": "1773836552297-qyp1hheh0",
+              "reps": 10,
+              "weight": 70,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:22:32.297Z"
+            },
+            {
+              "id": "1773836558024-x2cw91cxb",
+              "reps": 6,
+              "weight": 80,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:22:38.024Z"
+            },
+            {
+              "id": "1773836562319-dbzcld6cn",
+              "reps": 3,
+              "weight": 90,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:22:42.319Z"
+            },
+            {
+              "id": "1773836568930-awnabm54r",
+              "reps": 2,
+              "weight": 100,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:22:48.930Z"
+            },
+            {
+              "id": "1773869370460-bh52subwz",
+              "reps": 3,
+              "weight": 44,
+              "time": 243,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T21:29:30.460Z"
+            },
+            {
+              "id": "1773872205233-cdsk66whe",
+              "reps": 3,
+              "weight": 0,
+              "time": 122,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T22:16:45.233Z"
+            }
+          ],
+          "isCustom": false,
+          "exerciseType": "chest"
+        },
+        {
+          "id": "1773836521734-nt5x83ow2",
           "name": "Разводка гантелей",
           "sets": [
             {
-              "id": "1773169666503-xzunbjuxf",
+              "id": "1773836612172-rnusqfidn",
               "reps": 10,
               "weight": 12,
-              "isWarmup": false
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:23:32.172Z"
             },
             {
-              "id": "1773169672547-129jo7vlp",
+              "id": "1773836616724-t2ueq0kxp",
               "reps": 10,
-              "weight": 14,
-              "isWarmup": false
+              "weight": 12,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:23:36.724Z"
             },
             {
-              "id": "1773169677190-f6zmird4a",
+              "id": "1773836620587-gs9aogrvs",
               "reps": 10,
-              "weight": 16,
-              "isWarmup": false
+              "weight": 12,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:23:40.587Z"
             }
           ],
-          "isCustom": false
+          "isCustom": false,
+          "exerciseType": "chest"
         },
         {
-          "id": "1773169362744-j5dlsipi9",
+          "id": "1773836521734-dyqctycy6",
+          "name": "Кроссовер",
+          "sets": [
+            {
+              "id": "1773836680364-7iwuwkhhk",
+              "reps": 10,
+              "weight": 20,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:24:40.364Z"
+            },
+            {
+              "id": "1773837252845-v6dynhfx1",
+              "reps": 10,
+              "weight": 20,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:34:12.845Z"
+            },
+            {
+              "id": "1773837258303-qtf168h3x",
+              "reps": 10,
+              "weight": 20,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:34:18.303Z"
+            }
+          ],
+          "isCustom": false,
+          "exerciseType": "chest"
+        },
+        {
+          "id": "1773837984031-v7o5pm90t",
+          "name": "Подтягивания",
+          "sets": [],
+          "isCustom": true,
+          "exerciseType": "back"
+        },
+        {
+          "id": "1773836521734-mk2v03i5g",
           "name": "Отжимания",
           "sets": [
             {
-              "id": "1773169716147-qqmo7tor5",
+              "id": "1773837266589-4f8et4iic",
               "reps": 15,
               "weight": 0,
-              "isWarmup": false
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:34:26.589Z"
             },
             {
-              "id": "1773169726244-mm2zq41pc",
+              "id": "1773837271369-ybklt1nos",
               "reps": 15,
               "weight": 0,
-              "isWarmup": false
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:34:31.369Z"
             },
             {
-              "id": "1773169730481-xrgt2n5p7",
+              "id": "1773837275036-qe7jd8jl1",
               "reps": 15,
               "weight": 0,
-              "isWarmup": false
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:34:35.036Z"
             }
           ],
-          "isCustom": false
+          "isCustom": false,
+          "exerciseType": "chest"
         },
         {
-          "id": "1773169767479-bs8tjw2fd",
-          "name": "Пресс подъём ног в висе",
-          "sets": [
-            {
-              "id": "1773169772944-i9lr8jueq",
-              "reps": 15,
-              "weight": 0,
-              "isWarmup": false
-            },
-            {
-              "id": "1773169776099-amjrd0ydl",
-              "reps": 15,
-              "weight": 0,
-              "isWarmup": false
-            },
-            {
-              "id": "1773169779663-0xjvp4qks",
-              "reps": 15,
-              "weight": 0,
-              "isWarmup": false
-            },
-            {
-              "id": "1773189863343-0rjamfl6c",
-              "reps": 0,
-              "weight": 0,
-              "time": 100,
-              "isWarmup": false
-            }
-          ],
+          "id": "1773839087485-5e14x5e02",
+          "name": "Тестовое слово жопа",
+          "sets": [],
           "isCustom": true,
           "exerciseType": "common"
         }
       ],
-      "createdAt": "2026-03-10T19:02:42.744Z",
-      "updatedAt": "2026-03-12T22:33:15.126Z",
-      "notes": "это коммент"
+      "createdAt": "2026-03-18T12:22:01.734Z",
+      "updatedAt": "2026-03-18T22:24:22.245Z",
+      "notes": "Это заметка"
     },
     {
-      "id": "1773169983093-m24kkunf5",
-      "date": "2026-03-15",
+      "id": "1773837330070-jrxl2lsv9",
+      "date": "2026-03-23",
       "type": "chest",
       "exercises": [
         {
-          "id": "1773169983093-mgsq2jiwj",
+          "id": "1773837330070-w7o6g0i4s",
           "name": "Жим лежа",
+          "sets": [
+            {
+              "id": "1773837342909-y4vpkoe1i",
+              "reps": 10,
+              "weight": 60,
+              "isWarmup": true,
+              "timestamp": "2026-03-18T12:35:42.909Z"
+            },
+            {
+              "id": "1773869403411-b51n95pbe",
+              "reps": 3,
+              "weight": 23,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T21:30:03.411Z"
+            },
+            {
+              "id": "1773869406229-1oe3s5zx4",
+              "reps": 40,
+              "weight": 80,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T21:30:06.229Z"
+            },
+            {
+              "id": "1773869409389-yv7wk0vhh",
+              "reps": 3,
+              "weight": 3,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T21:30:09.389Z"
+            },
+            {
+              "id": "1773869412087-fm2zpksdy",
+              "reps": 3,
+              "weight": 3,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T21:30:12.087Z"
+            }
+          ],
+          "isCustom": false,
+          "exerciseType": "chest"
+        },
+        {
+          "id": "1773869775369-peqsh7mh8",
+          "name": "Жим на наклонной",
+          "sets": [],
+          "isCustom": true,
+          "exerciseType": "chest"
+        },
+        {
+          "id": "1773837330070-0tmululof",
+          "name": "Отжимания",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "chest"
+        }
+      ],
+      "createdAt": "2026-03-18T12:35:30.070Z",
+      "updatedAt": "2026-03-18T23:16:30.050Z",
+      "notes": "Это очень длинная тестовая надпись. Это очень длинная тестовая надпись. Это очень длинная тестовая надпись. Это очень длинная тестовая надпись. Это очень длинная тестовая надпись. Это очень длинная тестовая надпись. Это очень длинная тестовая надпись. Это очень длинная тестовая надпись. Это очень длинная тестовая надпись. Это очень длинная тестовая надпись. "
+    },
+    {
+      "id": "1773837513142-3u9gl6yq1",
+      "date": "2026-03-18",
+      "type": "back",
+      "exercises": [
+        {
+          "id": "1773837513142-h7yicka58",
+          "name": "Становая тяга",
+          "sets": [
+            {
+              "id": "1773837524145-v7n9m12q1",
+              "reps": 3,
+              "weight": 123,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:38:44.145Z"
+            },
+            {
+              "id": "1773837531715-aio599t77",
+              "reps": 8,
+              "weight": 123,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:38:51.715Z"
+            },
+            {
+              "id": "1773840391896-lzx7dwyf5",
+              "reps": 20,
+              "weight": 80,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T13:26:31.896Z"
+            }
+          ],
+          "isCustom": false,
+          "exerciseType": "back"
+        },
+        {
+          "id": "1773839512232-fphwww50t",
+          "name": "Тяга гантели",
+          "sets": [],
+          "isCustom": true,
+          "exerciseType": "back"
+        },
+        {
+          "id": "1773837513142-pynqbntcr",
+          "name": "Тяга штанги в наклоне",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "back"
+        },
+        {
+          "id": "1773837513142-bevn6di9w",
+          "name": "Подтягивания",
+          "sets": [
+            {
+              "id": "1773837565730-otn3x0iup",
+              "reps": 10,
+              "weight": 0,
+              "isWarmup": true,
+              "timestamp": "2026-03-18T12:39:25.730Z"
+            },
+            {
+              "id": "1773837571844-l6s7f34rb",
+              "reps": 4,
+              "weight": 32,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:39:31.844Z"
+            },
+            {
+              "id": "1773837574873-5dfk71b8d",
+              "reps": 4,
+              "weight": 32,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:39:34.873Z"
+            }
+          ],
+          "isCustom": false,
+          "exerciseType": "back"
+        },
+        {
+          "id": "1773837513142-gx1a4iqfw",
+          "name": "Горизонтальная тяга",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "back"
+        },
+        {
+          "id": "1773840415566-06ks5p102",
+          "name": "Очень длинное название упражнения для проверки flex контейнера рекордов",
+          "sets": [
+            {
+              "id": "1773840426243-ejdy912rc",
+              "reps": 1,
+              "weight": 200,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T13:27:06.243Z"
+            }
+          ],
+          "isCustom": true,
+          "exerciseType": "common"
+        },
+        {
+          "id": "1773842669255-ino6pmmgm",
+          "name": "Кроссовер",
+          "sets": [],
+          "isCustom": true,
+          "exerciseType": "chest"
+        }
+      ],
+      "createdAt": "2026-03-18T12:38:33.142Z",
+      "updatedAt": "2026-03-18T14:40:17.645Z",
+      "notes": "123"
+    },
+    {
+      "id": "1773837589711-wz3hb7vpt",
+      "date": "2026-03-20",
+      "type": "legs",
+      "exercises": [
+        {
+          "id": "1773837589711-jtz7be4yv",
+          "name": "Приседания",
+          "sets": [
+            {
+              "id": "1773837596271-thytuxa4o",
+              "reps": 12,
+              "weight": 60,
+              "isWarmup": true,
+              "timestamp": "2026-03-18T12:39:56.271Z"
+            },
+            {
+              "id": "1773837601504-q88gdqh2v",
+              "reps": 10,
+              "weight": 80,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T12:40:01.504Z"
+            }
+          ],
+          "isCustom": false,
+          "exerciseType": "legs"
+        },
+        {
+          "id": "1773837589711-hh9d0f9en",
+          "name": "Жим ногами",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "legs"
+        },
+        {
+          "id": "1773837589711-1u4tuh77a",
+          "name": "Выпады",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "legs"
+        },
+        {
+          "id": "1773837589711-8u1wy6q7l",
+          "name": "Разгибание ног",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "legs"
+        },
+        {
+          "id": "1773837589711-cavofttud",
+          "name": "Сгибание ног",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "legs"
+        }
+      ],
+      "createdAt": "2026-03-18T12:39:49.711Z",
+      "updatedAt": "2026-03-18T12:40:01.504Z"
+    },
+    {
+      "id": "1773837656614-jcgwphabm",
+      "date": "2026-03-26",
+      "type": "fullbody",
+      "exercises": [
+        {
+          "id": "1773837656614-lupi3y9i1",
+          "name": "Жим лежа",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "chest"
+        },
+        {
+          "id": "1773837656614-ygvxgxpl7",
+          "name": "Жим на наклонной",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "chest"
+        },
+        {
+          "id": "1773837656614-equqajw7c",
+          "name": "Становая тяга",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "back"
+        },
+        {
+          "id": "1773837656614-zmu2vgq6b",
+          "name": "Тяга штанги в наклоне",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "back"
+        },
+        {
+          "id": "1773837656614-3s17qr2f5",
+          "name": "Приседания",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "legs"
+        },
+        {
+          "id": "1773837656614-ebhmcl4y9",
+          "name": "Жим ногами",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "legs"
+        },
+        {
+          "id": "1773837656614-nccvg3n05",
+          "name": "Планка",
+          "sets": [
+            {
+              "id": "1773877827084-8q9s14sor",
+              "reps": 0,
+              "weight": 0,
+              "time": 90,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T23:50:27.084Z"
+            }
+          ],
+          "isCustom": false,
+          "exerciseType": "common"
+        }
+      ],
+      "createdAt": "2026-03-18T12:40:56.614Z",
+      "updatedAt": "2026-03-18T23:50:27.084Z"
+    },
+    {
+      "id": "1773837957175-wrik66w5d",
+      "date": "2026-03-30",
+      "type": "chest",
+      "exercises": [
+        {
+          "id": "1773837957175-82p1ua3qq",
+          "name": "Жим лежа",
+          "sets": [
+            {
+              "id": "1774187214681-7ulj548zn",
+              "reps": 3,
+              "weight": 23,
+              "isWarmup": false,
+              "timestamp": "2026-03-22T13:46:54.681Z",
+              "equipmentType": "barbell_20",
+              "gripType": "wide"
+            },
+            {
+              "id": "1774189669736-3k1keautu",
+              "reps": 3,
+              "weight": 23,
+              "isWarmup": false,
+              "timestamp": "2026-03-22T14:27:49.736Z",
+              "equipmentType": "barbell_10",
+              "gripType": "wide"
+            }
+          ],
+          "isCustom": false,
+          "exerciseType": "chest"
+        },
+        {
+          "id": "1773837957175-xpjq4l3fb",
+          "name": "Жим на наклонной",
+          "sets": [
+            {
+              "id": "1773875767816-ijt5cw5ro",
+              "reps": 10,
+              "weight": 70,
+              "isWarmup": false,
+              "timestamp": "2026-03-18T23:16:07.816Z"
+            }
+          ],
+          "isCustom": false,
+          "exerciseType": "chest"
+        },
+        {
+          "id": "1773837957175-ht2v5ii0v",
+          "name": "Разводка гантелей",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "chest"
+        },
+        {
+          "id": "1773837957175-pmi4f14op",
+          "name": "Кроссовер",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "chest"
+        },
+        {
+          "id": "1773837957175-x2e0zi29f",
+          "name": "Отжимания",
+          "sets": [],
+          "isCustom": false,
+          "exerciseType": "chest"
+        }
+      ],
+      "createdAt": "2026-03-18T12:45:57.175Z",
+      "updatedAt": "2026-03-22T14:27:49.736Z"
+    },
+    {
+      "id": "1773841202012-jit1fwtj3",
+      "date": "2026-03-25",
+      "type": "back",
+      "exercises": [
+        {
+          "id": "1773841202012-qfk5zqlri",
+          "name": "Становая тяга",
+          "sets": [
+            {
+              "id": "1774189683456-idsjml6rr",
+              "reps": 3,
+              "weight": 123,
+              "isWarmup": false,
+              "timestamp": "2026-03-22T14:28:03.456Z",
+              "gripType": "wide"
+            }
+          ],
+          "isCustom": false
+        },
+        {
+          "id": "1773841202012-r8w07hinr",
+          "name": "Тяга штанги в наклоне",
           "sets": [],
           "isCustom": false
         },
         {
-          "id": "1773169983093-gm8h1996z",
+          "id": "1773841202012-d29gm4rtc",
+          "name": "Подтягивания",
+          "sets": [],
+          "isCustom": false
+        },
+        {
+          "id": "1773841202012-akfhebr2c",
+          "name": "Тяга гантели",
+          "sets": [],
+          "isCustom": false
+        },
+        {
+          "id": "1773841202012-7avmw3d7q",
+          "name": "Горизонтальная тяга",
+          "sets": [],
+          "isCustom": false
+        }
+      ],
+      "createdAt": "2026-03-18T13:40:02.012Z",
+      "updatedAt": "2026-03-22T14:28:03.456Z"
+    },
+    {
+      "id": "1774201161915-34btfge4a",
+      "date": "2026-03-22",
+      "type": "chest",
+      "exercises": [
+        {
+          "id": "1774201161915-ebnuk9gyx",
+          "name": "Жим лежа",
+          "sets": [
+            {
+              "id": "1774201165074-neyjrukwf",
+              "reps": 3,
+              "weight": 23,
+              "isWarmup": false,
+              "timestamp": "2026-03-22T17:39:25.074Z"
+            },
+            {
+              "id": "1774201661037-9314w5375",
+              "reps": 3,
+              "weight": 23,
+              "isWarmup": false,
+              "timestamp": "2026-03-22T17:47:41.037Z"
+            }
+          ],
+          "isCustom": false
+        },
+        {
+          "id": "1774201161915-obst5y96p",
           "name": "Жим на наклонной",
           "sets": [],
           "isCustom": false
         },
         {
-          "id": "1773169983093-zlrp6mnp2",
+          "id": "1774201161915-bbhbu4op2",
           "name": "Разводка гантелей",
           "sets": [],
           "isCustom": false
         },
         {
-          "id": "1773169983093-funfk4iie",
+          "id": "1774201161915-yrppiw9eh",
           "name": "Кроссовер",
           "sets": [],
           "isCustom": false
         },
         {
-          "id": "1773169983093-w93y4y22t",
+          "id": "1774201161915-wumtc6x1v",
           "name": "Отжимания",
           "sets": [],
           "isCustom": false
         }
       ],
-      "createdAt": "2026-03-10T19:13:03.093Z",
-      "updatedAt": "2026-03-10T19:13:03.093Z"
-    },
-    {
-      "id": "1773171015778-qig9wfs2r",
-      "date": "2026-03-10",
-      "type": "back",
-      "exercises": [
-        {
-          "id": "1773171015778-nvxxnlms8",
-          "name": "Подтягивания",
-          "sets": [
-            {
-              "id": "1773171107909-y0syd9964",
-              "reps": 10,
-              "weight": 0,
-              "isWarmup": true
-            },
-            {
-              "id": "1773171119553-wt2grgkit",
-              "reps": 4,
-              "weight": 32,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171543129-lgdn8hou5",
-              "reps": 3,
-              "weight": 32,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171564604-hfa3vpiku",
-              "reps": 2,
-              "weight": 32,
-              "isWarmup": false
-            },
-            {
-              "id": "1773176135677-gb94y3lla",
-              "reps": 19,
-              "weight": 0,
-              "isWarmup": false
-            },
-            {
-              "id": "1773189938504-kp3tqzopb",
-              "reps": 4,
-              "weight": 32,
-              "isWarmup": false
-            }
-          ],
-          "isCustom": false
-        },
-        {
-          "id": "1773171015778-jqe1cmmwm",
-          "name": "Становая тяга",
-          "sets": [
-            {
-              "id": "1773171586488-riwto2qew",
-              "reps": 10,
-              "weight": 60,
-              "isWarmup": true
-            },
-            {
-              "id": "1773171594034-wuzjs2r8g",
-              "reps": 6,
-              "weight": 120,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171600356-d53a2kyu0",
-              "reps": 6,
-              "weight": 120,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171609544-csgmtr5qu",
-              "reps": 5,
-              "weight": 130,
-              "isWarmup": false
-            }
-          ],
-          "isCustom": false
-        },
-        {
-          "id": "1773171015778-h5w123v2b",
-          "name": "Тяга штанги в наклоне",
-          "sets": [
-            {
-              "id": "1773171824984-lbuleoth5",
-              "reps": 10,
-              "weight": 60,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171829903-ncq10ifub",
-              "reps": 10,
-              "weight": 60,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171836046-sppsczm0g",
-              "reps": 10,
-              "weight": 60,
-              "isWarmup": false
-            }
-          ],
-          "isCustom": false
-        },
-        {
-          "id": "1773171015778-j6pfio5qh",
-          "name": "Тяга гантели",
-          "sets": [
-            {
-              "id": "1773171854328-kwxhgmdc8",
-              "reps": 8,
-              "weight": 12,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171860522-j2dy5mulm",
-              "reps": 8,
-              "weight": 12,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171865497-whzvfki0c",
-              "reps": 8,
-              "weight": 12,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171870413-o1pw05s04",
-              "reps": 8,
-              "weight": 12,
-              "isWarmup": false
-            }
-          ],
-          "isCustom": false
-        },
-        {
-          "id": "1773171879701-9saqgrzsv",
-          "name": "пресс планка",
-          "sets": [
-            {
-              "id": "1773171892034-copnxv5tj",
-              "reps": 0,
-              "weight": 0,
-              "time": 90,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171915478-eczpqnx3f",
-              "reps": 0,
-              "weight": 0,
-              "time": 90,
-              "isWarmup": false
-            },
-            {
-              "id": "1773171926709-cfliq0051",
-              "reps": 0,
-              "weight": 0,
-              "time": 90,
-              "isWarmup": false
-            }
-          ],
-          "isCustom": true
-        }
-      ],
-      "createdAt": "2026-03-10T19:30:15.778Z",
-      "updatedAt": "2026-03-11T00:45:38.504Z",
-      "notes": "ещё заметка"
-    },
-    {
-      "id": "1773173166399-l0hzy9a7q",
-      "date": "2026-03-17",
-      "type": "back",
-      "exercises": [
-        {
-          "id": "1773173166399-wj9pajbs9",
-          "name": "Становая тяга",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773173166399-a5hdnf87p",
-          "name": "Тяга штанги в наклоне",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773173166399-qsur64s9p",
-          "name": "Подтягивания",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773173166399-isu2525uj",
-          "name": "Тяга гантели",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773173172356-0y56czkqx",
-          "name": "пресс планка",
-          "sets": [
-            {
-              "id": "1773173201598-q0xmhini1",
-              "reps": 0,
-              "weight": 0,
-              "time": 90,
-              "isWarmup": false
-            }
-          ],
-          "isCustom": true
-        }
-      ],
-      "createdAt": "2026-03-10T20:06:06.399Z",
-      "updatedAt": "2026-03-10T20:06:41.598Z"
-    },
-    {
-      "id": "1773176301714-5ho5b0cjr",
-      "date": "2026-03-13",
-      "type": "fullbody",
-      "exercises": [
-        {
-          "id": "1773176301714-fi71iabg2",
-          "name": "Жим лежа",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773176301714-ieaz07c5u",
-          "name": "Жим на наклонной",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773176301714-qwyeetrhs",
-          "name": "Становая тяга",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773176301714-7hdby9vl8",
-          "name": "Тяга штанги в наклоне",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773176301714-hj7zok5gp",
-          "name": "Приседания",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773176301714-fgo42gor0",
-          "name": "Жим ногами",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773176301714-s4c2fw08y",
-          "name": "Планка",
-          "sets": [],
-          "isCustom": false
-        }
-      ],
-      "createdAt": "2026-03-10T20:58:21.713Z",
-      "updatedAt": "2026-03-10T20:58:21.713Z"
-    },
-    {
-      "id": "1773217035976-njybwsmsf",
-      "date": "2026-03-11",
-      "type": "legs",
-      "exercises": [
-        {
-          "id": "1773217035976-0ou7cil8d",
-          "name": "Приседания",
-          "sets": [
-            {
-              "id": "1773217637129-te5ozqzj4",
-              "reps": 10,
-              "weight": 60,
-              "isWarmup": true
-            }
-          ],
-          "isCustom": false
-        },
-        {
-          "id": "1773217035976-dlzs0b3ny",
-          "name": "Жим ногами",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773217035976-hiv9l0s1d",
-          "name": "Выпады",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773217035976-flzaedf4z",
-          "name": "Разгибание ног",
-          "sets": [],
-          "isCustom": false
-        },
-        {
-          "id": "1773217035976-r5uu0t594",
-          "name": "Сгибание ног",
-          "sets": [],
-          "isCustom": false
-        }
-      ],
-      "createdAt": "2026-03-11T08:17:15.976Z",
-      "updatedAt": "2026-03-11T08:27:17.129Z",
-      "notes": "123"
+      "createdAt": "2026-03-22T17:39:21.915Z",
+      "updatedAt": "2026-03-22T17:47:41.037Z"
     }
   ],
   "customExercisesByType": {
     "chest": [
       "пресс планка",
       "Отжимания",
-      "Пресс подъём ног в висе"
+      "Пресс подъём ног в висе",
+      "Становая тяга",
+      "Подтягивания",
+      "Кроссовер",
+      "Тестовое слово жопа",
+      "Жим на наклонной"
     ],
     "back": [
+      "пресс планка",
+      "Тестовое слово жопа",
+      "123",
+      "Горизонтальная тяга",
+      "Тяга гантели",
+      "Очень длинное название упражнения для проверки flex контейнера рекордов",
+      "Отжимания",
+      "Кроссовер"
+    ],
+    "legs": [
+      "Очень длинное название упражнения для проверки flex контейнера рекордов",
       "пресс планка"
     ],
-    "legs": [],
     "fullbody": [
       "пресс планка",
       "Жим на наклонной"
     ]
   },
-  "exportDate": "2026-03-12T23:52:22.457Z",
+  "exportDate": "2026-03-22T19:10:44.064Z",
   "version": "1.0"
 }
