@@ -34,6 +34,9 @@ export function SettingsPanel() {
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
   const [spreadsheetUrl, setSpreadsheetUrl] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
+  const [showTestDataSection, setShowTestDataSection] = useState(false);
+  const [tapCount, setTapCount] = useState(0);
+  const [lastTapTime, setLastTapTime] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { importData, refreshWorkouts } = useFitnessStore();
 
@@ -580,6 +583,28 @@ export function SettingsPanel() {
     setTestDataStatus({ type: 'success', message: 'Данные очищены' });
   };
 
+  // Handle secret tap on header left area
+  const handleSecretTap = () => {
+    const now = Date.now();
+    const timeDiff = now - lastTapTime;
+    
+    if (timeDiff < 500) {
+      // Quick tap within 500ms
+      const newCount = tapCount + 1;
+      setTapCount(newCount);
+      setLastTapTime(now);
+      
+      if (newCount >= 3) {
+        setShowTestDataSection(true);
+        setTapCount(0);
+      }
+    } else {
+      // Reset count if too slow
+      setTapCount(1);
+      setLastTapTime(now);
+    }
+  };
+
   // Load credentials on first open
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -588,6 +613,8 @@ export function SettingsPanel() {
       setImportStatus(null);
       setTestDataStatus(null);
       setSyncStatus(null);
+      setShowTestDataSection(false);
+      setTapCount(0);
     }
   };
 
@@ -605,13 +632,18 @@ export function SettingsPanel() {
       <DialogContent className="bg-zinc-900 border-zinc-700 max-h-[90vh] overflow-y-auto p-0 gap-0" showCloseButton={false}>
         {/* Header with title and close button */}
         <div className="flex items-center justify-center px-4 pt-4 pb-0 relative">
+          {/* Secret tap area on the left */}
+          <div 
+            className="absolute left-4 w-12 h-8 cursor-default"
+            onClick={handleSecretTap}
+          />
           <DialogTitle className="text-lg font-semibold text-white m-0">Инструменты</DialogTitle>
           <DialogClose className="absolute right-4 rounded-lg opacity-70 transition-opacity hover:opacity-100 focus:outline-none text-zinc-400 hover:text-white">
             <XIcon className="w-4 h-4" />
           </DialogClose>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="px-4 pt-4 space-y-4">
           {/* Google Account Section */}
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
@@ -735,7 +767,7 @@ export function SettingsPanel() {
           </div>
 
           {/* Import/Export section */}
-          <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
+          <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700 mb-4">
             <div className="flex items-center gap-2 mb-4">
               <FileSpreadsheet className="w-4 h-4" style={{ color: '#1d4fa0' }} />
               <h4 className="text-sm font-medium text-white">Восстановление / Резервное копирование</h4>
@@ -756,7 +788,7 @@ export function SettingsPanel() {
                   variant="outline"
                   className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col"
                 >
-                  <Upload className="w-5 h-5 mb-1" />
+                  <Download className="w-5 h-5 mb-1" />
                   <span className="text-sm">Импорт</span>
                   <span className="text-xs text-zinc-500">CSV / JSON</span>
                 </Button>
@@ -776,7 +808,7 @@ export function SettingsPanel() {
                   variant="outline"
                   className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col"
                 >
-                  <Download className="w-5 h-5 mb-1" />
+                  <Upload className="w-5 h-5 mb-1" />
                   <span className="text-sm">Экспорт</span>
                   <span className="text-xs text-zinc-500">CSV / JSON</span>
                 </Button>
@@ -830,42 +862,49 @@ export function SettingsPanel() {
           </div>
 
           {/* Test data section */}
-          <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
-            <div className="flex flex-col gap-4">
-              <Button
-                onClick={handleLoadTestData}
-                variant="outline"
-                className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
-              >
-                Загрузить тестовые данные
-              </Button>
-              <Button
-                onClick={handleClearTestData}
-                variant="outline"
-                className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
-              >
-                Очистить данные календаря
-              </Button>
-            </div>
+          <div
+            className="grid transition-all duration-300 ease-in-out !mt-0"
+            style={{ gridTemplateRows: showTestDataSection ? '1fr' : '0fr' }}
+          >
+            <div className="overflow-hidden">
+              <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
+                <div className="flex flex-col gap-4">
+                  <Button
+                    onClick={handleLoadTestData}
+                    variant="outline"
+                    className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
+                  >
+                    Загрузить тестовые данные
+                  </Button>
+                  <Button
+                    onClick={handleClearTestData}
+                    variant="outline"
+                    className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
+                  >
+                    Очистить данные календаря
+                  </Button>
+                </div>
 
-            {testDataStatus && (
-              <div className={cn(
-                'mt-4 p-3 rounded-lg flex items-center gap-2',
-                testDataStatus.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-red-500/10 border border-red-500/30'
-              )}>
-                {testDataStatus.type === 'success' ? (
-                  <Check className="w-4 h-4 text-emerald-400" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 text-red-400" />
+                {testDataStatus && (
+                  <div className={cn(
+                    'mt-4 p-3 rounded-lg flex items-center gap-2',
+                    testDataStatus.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-red-500/10 border border-red-500/30'
+                  )}>
+                    {testDataStatus.type === 'success' ? (
+                      <Check className="w-4 h-4 text-emerald-400" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-red-400" />
+                    )}
+                    <span className={cn(
+                      'text-sm',
+                      testDataStatus.type === 'success' ? 'text-emerald-400' : 'text-red-400'
+                    )}>
+                      {testDataStatus.message}
+                    </span>
+                  </div>
                 )}
-                <span className={cn(
-                  'text-sm',
-                  testDataStatus.type === 'success' ? 'text-emerald-400' : 'text-red-400'
-                )}>
-                  {testDataStatus.message}
-                </span>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </DialogContent>

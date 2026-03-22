@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Workout, WorkoutType, WorkoutSet, Exercise, ExerciseType, EquipmentType, GripType } from './types';
+import { Workout, WorkoutType, WorkoutSet, Exercise, ExerciseType, EquipmentType, GripType, WorkoutTemplate } from './types';
 import * as storage from './storage';
 
 interface FitnessStore {
@@ -28,6 +28,11 @@ interface FitnessStore {
   removeSet: (workoutId: string, exerciseId: string, setId: string) => void;
   refreshWorkouts: () => void;
   importData: (data: string, format: 'json' | 'csv') => { success: boolean; message: string };
+  // Шаблоны
+  getTemplates: (workoutType: WorkoutType) => WorkoutTemplate[];
+  saveTemplate: (name: string, workoutType: WorkoutType, exerciseNames: string[]) => void;
+  loadTemplate: (workoutId: string, templateId: string) => Workout | null;
+  deleteTemplate: (templateId: string) => void;
 }
 
 // Получить сегодняшнюю дату в формате YYYY-MM-DD
@@ -194,5 +199,27 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
     }
     
     return result;
+  },
+  
+  // Шаблоны
+  getTemplates: (workoutType: WorkoutType) => {
+    return storage.getTemplatesByType(workoutType);
+  },
+  
+  saveTemplate: (name: string, workoutType: WorkoutType, exerciseNames: string[]) => {
+    storage.saveTemplate(name, workoutType, exerciseNames);
+  },
+  
+  loadTemplate: (workoutId: string, templateId: string) => {
+    const workout = storage.loadTemplateToWorkout(workoutId, templateId);
+    if (workout) {
+      const workouts = storage.getWorkouts();
+      set({ workouts, currentWorkout: workout });
+    }
+    return workout;
+  },
+  
+  deleteTemplate: (templateId: string) => {
+    storage.deleteTemplate(templateId);
   },
 }));

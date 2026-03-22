@@ -1,7 +1,8 @@
-import { Workout, Exercise, WorkoutSet, WorkoutType, DEFAULT_EXERCISES, isAbsExercise, ExerciseType, EquipmentType, GripType } from './types';
+import { Workout, Exercise, WorkoutSet, WorkoutType, DEFAULT_EXERCISES, isAbsExercise, ExerciseType, EquipmentType, GripType, WorkoutTemplate } from './types';
 
 const STORAGE_KEY = 'fitness-journal-workouts';
 const CUSTOM_EXERCISES_KEY = 'fitness-journal-custom-exercises-by-type';
+const TEMPLATES_KEY = 'fitness-journal-templates';
 
 // Генерация уникального ID
 export const generateId = (): string => {
@@ -633,4 +634,74 @@ export const getPreviousSetData = (
   }
   
   return null;
+};
+
+// === ШАБЛОНЫ ТРЕНИРОВОК ===
+
+// Получение всех шаблонов
+export const getTemplates = (): WorkoutTemplate[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(TEMPLATES_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Получение шаблонов по типу тренировки
+export const getTemplatesByType = (workoutType: WorkoutType): WorkoutTemplate[] => {
+  const templates = getTemplates();
+  return templates.filter(t => t.workoutType === workoutType);
+};
+
+// Сохранение шаблона
+export const saveTemplate = (name: string, workoutType: WorkoutType, exerciseNames: string[]): WorkoutTemplate => {
+  const templates = getTemplates();
+  
+  const newTemplate: WorkoutTemplate = {
+    id: generateId(),
+    name,
+    workoutType,
+    exerciseNames,
+    createdAt: new Date().toISOString(),
+  };
+  
+  templates.push(newTemplate);
+  localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+  
+  return newTemplate;
+};
+
+// Удаление шаблона
+export const deleteTemplate = (templateId: string): void => {
+  const templates = getTemplates();
+  const filtered = templates.filter(t => t.id !== templateId);
+  localStorage.setItem(TEMPLATES_KEY, JSON.stringify(filtered));
+};
+
+// Загрузка шаблона в тренировку (заменяет упражнения)
+export const loadTemplateToWorkout = (workoutId: string, templateId: string): Workout | null => {
+  const templates = getTemplates();
+  const template = templates.find(t => t.id === templateId);
+  if (!template) return null;
+  
+  const workouts = getWorkouts();
+  const workoutIndex = workouts.findIndex(w => w.id === workoutId);
+  if (workoutIndex === -1) return null;
+  
+  const workout = workouts[workoutIndex];
+  
+  // Заменяем упражнения на упражнения из шаблона (без весов, подходов, тегов)
+  workout.exercises = template.exerciseNames.map(name => ({
+    id: generateId(),
+    name,
+    sets: [],
+    isCustom: true,
+  }));
+  
+  workout.updatedAt = new Date().toISOString();
+  saveWorkouts(workouts);
+  
+  return workout;
 };

@@ -260,3 +260,12 @@ export const getExerciseType = (exerciseName: string): ExerciseType => {
   // По умолчанию - общие
   return 'common';
 };
+
+// Шаблон тренировки
+export interface WorkoutTemplate {
+  id: string;
+  name: string;
+  workoutType: WorkoutType;
+  exerciseNames: string[]; // только названия упражнений, без весов и подходов
+  createdAt: string;
+}

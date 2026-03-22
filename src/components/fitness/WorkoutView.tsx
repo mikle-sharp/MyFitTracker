@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo, useRef, useCallback, useEffect, useReducer } from 'react';
-import { Trash2, Calendar, Clock, Search, RefreshCw, Pencil, X } from 'lucide-react';
-import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType } from '@/lib/types';
+import { Trash2, Calendar, Clock, Search, RefreshCw, Pencil, X, Copy, Bookmark } from 'lucide-react';
+import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType, WorkoutTemplate } from '@/lib/types';
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +38,13 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   const [pendingReplaceName, setPendingReplaceName] = useState('');
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [notesValue, setNotesValue] = useState(workout.notes || '');
+  
+  // Template modal state
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<WorkoutTemplate | null>(null);
+  const [templateName, setTemplateName] = useState('');
+  const [showNoExercisesError, setShowNoExercisesError] = useState(false);
+  const [showNoTemplatesError, setShowNoTemplatesError] = useState(false);
   
   // Drag-and-drop state
   const [dragState, setDragState] = useState<{
@@ -95,9 +102,12 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
     };
   }, [dragState]);
   
-  const { addExercise, removeExercise, replaceExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes } = useFitnessStore();
+  const { addExercise, removeExercise, replaceExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes, getTemplates, saveTemplate, loadTemplate, deleteTemplate } = useFitnessStore();
 
   const colors = WORKOUT_TYPE_COLORS[workout.type];
+  
+  // Шаблоны для текущего типа тренировки
+  const templates = getTemplates(workout.type);
 
   // Получаем ВСЕ упражнения из базы (стандартные + пользовательские всех типов)
   const allExercisesList = useMemo(() => {
@@ -221,6 +231,32 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
     if (notesTextareaRef.current) {
       notesTextareaRef.current.style.height = 'auto';
       notesTextareaRef.current.style.height = notesTextareaRef.current.scrollHeight + 'px';
+    }
+  };
+
+  // Template handlers
+  const handleSaveTemplate = () => {
+    if (workout.exercises.length === 0) {
+      setShowNoExercisesError(true);
+      return;
+    }
+    if (templateName.trim()) {
+      const exerciseNames = workout.exercises.map(e => e.name);
+      saveTemplate(templateName.trim(), workout.type, exerciseNames);
+      setTemplateName('');
+      setIsTemplatesOpen(false);
+    }
+  };
+
+  const handleLoadTemplate = () => {
+    if (templates.length === 0) {
+      setShowNoTemplatesError(true);
+      return;
+    }
+    if (selectedTemplate) {
+      loadTemplate(workout.id, selectedTemplate.id);
+      setSelectedTemplate(null);
+      setIsTemplatesOpen(false);
     }
   };
 
@@ -449,12 +485,29 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
         {/* Stats */}
         <div className="flex justify-between mt-4">
-          <div className="ml-10">
+          <div className="flex items-center gap-4">
+            {/* Template icon button */}
+            <div className="w-9 flex justify-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setSelectedTemplate(null);
+                  setTemplateName('');
+                  setIsTemplatesOpen(true);
+                }}
+                className="h-9 w-9 shrink-0 text-zinc-500 hover:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent"
+                title="Шаблоны тренировок"
+              >
+                <Bookmark className="w-5 h-5" />
+              </Button>
+            </div>
+            
             {workoutDuration !== null && (
-              <>
+              <div>
                 <div className="text-2xl font-bold text-white">{formatDuration(workoutDuration)}</div>
                 <div className="text-xs text-zinc-500">Затрачено (чч:мм)</div>
-              </>
+              </div>
             )}
           </div>
           <div className="flex gap-6">
@@ -953,6 +1006,130 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         onConfirm={handleDeleteWorkout}
         borderColor={colors.border}
       />
+
+      {/* Templates dialog */}
+      <Dialog open={isTemplatesOpen} onOpenChange={(open) => {
+        setIsTemplatesOpen(open);
+        if (!open) {
+          setSelectedTemplate(null);
+          setTemplateName('');
+        }
+      }}>
+        <DialogContent 
+          className="bg-zinc-800 border !p-0 !gap-0"
+          style={{ borderColor: colors.border }}
+          showCloseButton={false}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-4">
+            <DialogTitle className="text-white font-medium text-base">Шаблоны тренировок</DialogTitle>
+            <button
+              onClick={() => setIsTemplatesOpen(false)}
+              className="text-zinc-500 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Template list & input */}
+          <div className="p-4 space-y-4">
+            {templates.length > 0 ? (
+              <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                {templates.map((template) => (
+                  <button
+                    key={template.id}
+                    onClick={() => setSelectedTemplate(selectedTemplate?.id === template.id ? null : template)}
+                    className={cn(
+                      "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between",
+                      selectedTemplate?.id === template.id 
+                        ? "bg-zinc-600 text-white" 
+                        : "hover:bg-zinc-700/50 text-zinc-300 hover:text-white"
+                    )}
+                  >
+                    <span>{template.name}</span>
+                    <span className="text-xs text-zinc-500">{template.exerciseNames.length} упр.</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-zinc-500">Нет сохранённых шаблонов</p>
+            )}
+
+            {/* Template name input for save */}
+            <Input
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder="Имя шаблона"
+              className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500"
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Buttons */}
+          <div className="flex justify-between px-4 pb-4">
+            <button
+              onClick={handleSaveTemplate}
+              disabled={!templateName.trim()}
+              className="py-2 px-4 rounded-lg text-sm font-medium text-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#ffae00' }}
+            >
+              Сохранить
+            </button>
+            <button
+              onClick={handleLoadTemplate}
+              disabled={!selectedTemplate}
+              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#19a655' }}
+            >
+              Загрузить
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* No exercises error dialog */}
+      <Dialog open={showNoExercisesError} onOpenChange={setShowNoExercisesError}>
+        <DialogContent 
+          className="bg-zinc-800 border !p-0 !gap-0"
+          style={{ borderColor: colors.border }}
+          showCloseButton={false}
+        >
+          <div className="p-6 text-center">
+            <p className="text-zinc-300">Сначала добавьте упражнения в текущую дату</p>
+          </div>
+          <div className="flex justify-center pb-4">
+            <button
+              onClick={() => setShowNoExercisesError(false)}
+              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90"
+              style={{ backgroundColor: '#19a655' }}
+            >
+              Хорошо
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* No templates error dialog */}
+      <Dialog open={showNoTemplatesError} onOpenChange={setShowNoTemplatesError}>
+        <DialogContent 
+          className="bg-zinc-800 border !p-0 !gap-0"
+          style={{ borderColor: colors.border }}
+          showCloseButton={false}
+        >
+          <div className="p-6 text-center">
+            <p className="text-zinc-300">Сначала сохраните хотя бы один шаблон</p>
+          </div>
+          <div className="flex justify-center pb-4">
+            <button
+              onClick={() => setShowNoTemplatesError(false)}
+              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90"
+              style={{ backgroundColor: '#19a655' }}
+            >
+              Хорошо
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
