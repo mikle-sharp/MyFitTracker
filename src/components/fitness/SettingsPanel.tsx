@@ -29,7 +29,7 @@ interface GoogleUser {
 // Доступные шрифты с их настройками
 const AVAILABLE_FONTS = [
   { id: 'inter', name: 'Inter', family: 'var(--font-inter)', isDefault: true },
-  { id: 'minecraft', name: 'Minecraft', family: 'Minecraft', isDefault: false },
+  { id: 'retro', name: 'Retro', family: 'Minecraft', isDefault: false, isRetro: true },
   { id: 'supercar', name: 'Supercar', family: 'Supercar', isDefault: false },
   { id: 'ibmmda', name: 'IBM MDA', family: 'IBMMDA', isDefault: false },
 ] as const;
@@ -433,6 +433,13 @@ export function SettingsPanel() {
     const font = AVAILABLE_FONTS.find(f => f.id === fontId);
     if (font) {
       document.body.style.fontFamily = font.family;
+      
+      // Toggle retro mode class
+      if (font.isRetro) {
+        document.body.classList.add('retro-mode');
+      } else {
+        document.body.classList.remove('retro-mode');
+      }
     }
   };
 

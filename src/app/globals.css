@@ -173,3 +173,42 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ============================================
+   RETRO MODE - 8-BIT STYLE
+   ============================================ */
+
+body.retro-mode {
+  /* Отключаем сглаживание для пиксельного вида */
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+}
+
+/* Пиксельные иконки */
+body.retro-mode svg {
+  image-rendering: pixelated;
+}
+
+/* Прямые углы везде */
+body.retro-mode *,
+body.retro-mode .rounded-lg,
+body.retro-mode .rounded-md,
+body.retro-mode .rounded-xl,
+body.retro-mode .rounded-sm,
+body.retro-mode .rounded-full {
+  border-radius: 0 !important;
+}
+
+/* Minecraft-стиль кнопок (только shadcn Button с data-slot="button") */
+body.retro-mode button[data-slot="button"] {
+  border: 2px solid !important;
+  border-color: rgba(255,255,255,0.25) rgba(0,0,0,0.25) rgba(0,0,0,0.4) rgba(255,255,255,0.15) !important;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.15), inset -1px -1px 0 rgba(0,0,0,0.15) !important;
+  transition: none !important;
+}
+
+body.retro-mode button[data-slot="button"]:active {
+  transform: translate(1px, 1px);
+  box-shadow: inset 1px 1px 0 rgba(0,0,0,0.15), inset -1px -1px 0 rgba(255,255,255,0.1) !important;
+}
