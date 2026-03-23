@@ -1,11 +1,18 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { 
   FileJson, FileSpreadsheet, Settings, Download, Upload, 
   LogIn, LogOut, Check, AlertCircle, RefreshCw, ExternalLink,
-  Sheet, XIcon
+  Sheet, XIcon, Type
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogClose, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
 import { exportToCSV, exportToJSON, getWorkouts, saveWorkouts } from '@/lib/storage';
@@ -18,6 +25,16 @@ interface GoogleUser {
   email: string;
   picture?: string;
 }
+
+// Доступные шрифты с их настройками
+const AVAILABLE_FONTS = [
+  { id: 'inter', name: 'Inter', family: 'var(--font-inter)', isDefault: true },
+  { id: 'minecraft', name: 'Minecraft', family: 'Minecraft', isDefault: false },
+  { id: 'supercar', name: 'Supercar', family: 'Supercar', isDefault: false },
+  { id: 'ibmmda', name: 'IBM MDA', family: 'IBMMDA', isDefault: false },
+] as const;
+
+type FontId = typeof AVAILABLE_FONTS[number]['id'];
 
 interface SyncStatus {
   type: 'success' | 'error' | 'loading';
@@ -37,6 +54,7 @@ export function SettingsPanel() {
   const [showTestDataSection, setShowTestDataSection] = useState(false);
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
+  const [selectedFont, setSelectedFont] = useState<FontId>('inter');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { importData, refreshWorkouts } = useFitnessStore();
 
@@ -401,6 +419,31 @@ export function SettingsPanel() {
     }
   };
 
+  // Load saved font on mount
+  useEffect(() => {
+    const savedFont = localStorage.getItem('app-font') as FontId | null;
+    if (savedFont && AVAILABLE_FONTS.some(f => f.id === savedFont)) {
+      setSelectedFont(savedFont);
+      applyFont(savedFont);
+    }
+  }, []);
+
+  // Apply font to body
+  const applyFont = (fontId: FontId) => {
+    const font = AVAILABLE_FONTS.find(f => f.id === fontId);
+    if (font) {
+      document.body.style.fontFamily = font.family;
+    }
+  };
+
+  // Handle font change
+  const handleFontChange = (fontId: string) => {
+    const typedFontId = fontId as FontId;
+    setSelectedFont(typedFontId);
+    localStorage.setItem('app-font', fontId);
+    applyFont(typedFontId);
+  };
+
   // Load credentials on first open
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -440,6 +483,45 @@ export function SettingsPanel() {
         </div>
 
         <div className="px-4 pt-4 pb-4 flex flex-col gap-4">
+          {/* Font Selection Section */}
+          <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
+            <div className="flex items-center gap-2 mb-4">
+              <Type className="w-4 h-4 text-purple-400" />
+              <h4 className="text-sm font-medium text-white">Шрифт приложения</h4>
+            </div>
+            
+            <Select value={selectedFont} onValueChange={handleFontChange}>
+              <SelectTrigger className="w-full border-zinc-600 bg-zinc-800 text-white">
+                <SelectValue placeholder="Выберите шрифт" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-800 border-zinc-600">
+                {AVAILABLE_FONTS.map((font) => (
+                  <SelectItem 
+                    key={font.id} 
+                    value={font.id}
+                    className="text-white focus:bg-zinc-700"
+                  >
+                    <span style={{ fontFamily: font.family }}>{font.name}</span>
+                    {font.isDefault && (
+                      <span className="ml-2 text-xs text-zinc-400">(по умолчанию)</span>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Font Preview */}
+            <div className="mt-4 p-3 bg-zinc-700/50 rounded-lg">
+              <p className="text-xs text-zinc-400 mb-2">Предпросмотр:</p>
+              <p 
+                className="text-white text-lg"
+                style={{ fontFamily: AVAILABLE_FONTS.find(f => f.id === selectedFont)?.family }}
+              >
+                Аа Бб Вв 123 Тренировка
+              </p>
+            </div>
+          </div>
+
           {/* Google Account Section */}
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">

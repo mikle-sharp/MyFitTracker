@@ -1,13 +1,49 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Подключение кастомного шрифта */
+/*
+ * ============================================
+ * ШРИФТЫ ПРИЛОЖЕНИЯ
+ * ============================================
+ * Inter - базовый шрифт (100%)
+ * Minecraft - пиксельный (75%)
+ * Supercar - гоночный (85%)
+ * IBM MDA - моноширинный (90%)
+ *
+ * size-adjust подбирается под высоту Inter
+ * ============================================
+ */
+
+/* Inter - загружается через next/font/google в layout.tsx */
+
+/* Minecraft - пиксельный шрифт */
 @font-face {
-  font-family: 'CustomFont';
-  src: url('/fonts/MyFont.ttf') format('truetype');
+  font-family: 'Minecraft';
+  src: url('/fonts/minecraft.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
+  size-adjust: 80%;
+}
+
+/* Supercar - гоночный шрифт */
+@font-face {
+  font-family: 'Supercar';
+  src: url('/fonts/supercar_c.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 85%;
+}
+
+/* IBM MDA - моноширинный шрифт */
+@font-face {
+  font-family: 'IBMMDA';
+  src: url('/fonts/web_ibm_mda.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 90%;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -135,6 +171,5 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'CustomFont', var(--font-sans), sans-serif;
   }
 }
