@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { Trash2, Plus, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap, Repeat2 } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { Trash2, Plus, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap, Repeat2, TrendingUp } from 'lucide-react';
 import { Exercise, WorkoutSet, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EquipmentType, GripType, EQUIPMENT_TYPES, GRIP_TYPES } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getPersonalRecord, getRecordType } from '@/lib/pr';
 import { useFitnessStore } from '@/lib/store';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { getPreviousSetData } from '@/lib/storage';
 
 // Компонент для названия упражнения с авто-размером шрифта
@@ -30,6 +31,418 @@ function ExerciseNameHeader({ name }: { name: string }) {
 
   return (
     <h3 ref={ref} className={`font-semibold text-white ${fontSize}`}>{name}</h3>
+  );
+}
+
+// Компонент графика статистики упражнения
+interface ExerciseStatsChartProps {
+  data: { date: string; maxWeight: number; workoutId: string }[];
+  color: string;
+  currentWorkoutId: string;
+}
+
+const DEFAULT_VISIBLE_COUNT = 9;
+
+function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChartProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  
+  // Состояние для диапазона отображаемых данных
+  // Показываем последние N тренировок по умолчанию
+  const [rangeStart, setRangeStart] = useState(Math.max(0, data.length - DEFAULT_VISIBLE_COUNT));
+  const [rangeEnd, setRangeEnd] = useState(data.length);
+  
+  // Refs для pinch-to-zoom
+  const lastPinchDistanceRef = useRef<number | null>(null);
+  const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
+  
+  // Видимые данные на основе диапазона
+  const visibleData = data.slice(rangeStart, rangeEnd);
+  const visibleCount = rangeEnd - rangeStart;
+  
+  // Находим индекс текущей тренировки в видимых данных
+  const currentVisibleIndex = visibleData.findIndex(d => d.workoutId === currentWorkoutId);
+  
+  // Инициализируем выбранный индекс
+  useEffect(() => {
+    if (visibleData.length > 0 && selectedIndex === null) {
+      // Если текущая тренировка в видимом диапазоне - выбираем её
+      if (currentVisibleIndex >= 0) {
+        setSelectedIndex(currentVisibleIndex);
+      } else {
+        // Иначе выбираем последнюю точку
+        setSelectedIndex(visibleData.length - 1);
+      }
+    }
+  }, [visibleData.length, currentVisibleIndex, selectedIndex]);
+  
+  // Сброс selectedIndex при изменении видимого диапазона
+  useEffect(() => {
+    if (selectedIndex !== null && selectedIndex >= visibleData.length) {
+      setSelectedIndex(Math.max(0, visibleData.length - 1));
+    }
+  }, [visibleData.length, selectedIndex]);
+  
+  if (data.length === 0) {
+    return (
+      <div className="text-center py-8 text-zinc-500">
+        Нет данных для отображения
+      </div>
+    );
+  }
+
+  // Расчёт весов для видимых данных
+  const minWeight = Math.min(...visibleData.map(d => d.maxWeight));
+  const maxWeight = Math.max(...visibleData.map(d => d.maxWeight));
+  const weightRange = maxWeight - minWeight || 1;
+  const padding = weightRange * 0.1;
+  const chartMinWeight = Math.max(0, minWeight - padding);
+  const chartMaxWeight = maxWeight + padding;
+  const chartRange = chartMaxWeight - chartMinWeight;
+
+  const formatDisplayDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  };
+
+  // Расчёт расстояния между двумя касаниями
+  const getPinchDistance = (touches: React.TouchList): number => {
+    if (touches.length < 2) return 0;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      // Начинаем pinch-to-zoom
+      lastPinchDistanceRef.current = getPinchDistance(e.touches);
+      setIsDragging(false);
+    } else if (e.touches.length === 1) {
+      // Начинаем drag для выбора точки
+      setIsDragging(true);
+      touchStartPosRef.current = { 
+        x: e.touches[0].clientX, 
+        y: e.touches[0].clientY 
+      };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && lastPinchDistanceRef.current !== null) {
+      // Pinch-to-zoom
+      const currentDistance = getPinchDistance(e.touches);
+      const scale = lastPinchDistanceRef.current / currentDistance;
+      lastPinchDistanceRef.current = currentDistance;
+      
+      // Вычисляем новый размер видимого диапазона
+      const newCount = Math.round(visibleCount * scale);
+      const clampedCount = Math.max(3, Math.min(data.length, newCount));
+      
+      if (clampedCount !== visibleCount) {
+        // Центрируем zoom вокруг текущей позиции
+        const centerIndex = rangeStart + Math.floor(visibleCount / 2);
+        let newStart = Math.round(centerIndex - clampedCount / 2);
+        newStart = Math.max(0, Math.min(data.length - clampedCount, newStart));
+        
+        setRangeStart(newStart);
+        setRangeEnd(newStart + clampedCount);
+      }
+    } else if (isDragging && e.touches.length === 1 && containerRef.current) {
+      // Перемещение точки
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const width = rect.width;
+      
+      const relativeX = Math.max(0, Math.min(1, x / width));
+      const newIndex = Math.round(relativeX * (visibleData.length - 1));
+      setSelectedIndex(newIndex);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    lastPinchDistanceRef.current = null;
+    touchStartPosRef.current = null;
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const width = rect.width;
+    
+    const relativeX = Math.max(0, Math.min(1, x / width));
+    const newIndex = Math.round(relativeX * (visibleData.length - 1));
+    setSelectedIndex(newIndex);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  // Обработка колёсика мыши для zoom
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    
+    const delta = e.deltaY > 0 ? 1 : -1;
+    const newCount = Math.max(3, Math.min(data.length, visibleCount + delta));
+    
+    if (newCount !== visibleCount) {
+      // Центрируем zoom
+      const centerIndex = rangeStart + Math.floor(visibleCount / 2);
+      let newStart = Math.round(centerIndex - newCount / 2);
+      newStart = Math.max(0, Math.min(data.length - newCount, newStart));
+      
+      setRangeStart(newStart);
+      setRangeEnd(newStart + newCount);
+    }
+  };
+
+  // Вычисляем позицию точки с отступами 5% от краёв
+  const selectedData = selectedIndex !== null ? visibleData[selectedIndex] : null;
+  const pointX = selectedIndex !== null && visibleData.length > 1 
+    ? `${5 + (selectedIndex / (visibleData.length - 1)) * 90}%` 
+    : '50%';
+  const pointY = selectedData 
+    ? `${100 - ((selectedData.maxWeight - chartMinWeight) / chartRange) * 100}%` 
+    : '50%';
+
+  // Генерируем точки для линии графика с отступами 5% от краёв
+  const linePoints = visibleData.map((d, i) => {
+    const x = visibleData.length > 1 ? 5 + (i / (visibleData.length - 1)) * 90 : 50;
+    const y = 100 - ((d.maxWeight - chartMinWeight) / chartRange) * 100;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Информация о выбранной точке */}
+      {selectedData && (
+        <div className="flex justify-between items-center px-2">
+          <div className="text-sm text-zinc-400">{formatDisplayDate(selectedData.date)}</div>
+          <div className="text-lg font-bold text-white">{selectedData.maxWeight} кг</div>
+        </div>
+      )}
+
+      {/* График */}
+      <div className="flex">
+        {/* Ось Y с делениями весов */}
+        <div className="flex flex-col justify-between h-48 pr-2 text-xs text-zinc-500">
+          <span>{chartMaxWeight.toFixed(0)} кг</span>
+          <span>{((chartMaxWeight + chartMinWeight) / 2).toFixed(0)} кг</span>
+          <span>{chartMinWeight.toFixed(0)} кг</span>
+        </div>
+        
+        <div 
+          ref={containerRef}
+          className="relative flex-1 h-48 bg-zinc-800/50 rounded-lg overflow-hidden touch-none select-none"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onWheel={handleWheel}
+        >
+          <svg 
+            viewBox="0 0 100 100" 
+            preserveAspectRatio="none"
+            className="absolute inset-0 w-full h-full"
+          >
+            {/* Линия графика - всегда белая */}
+            <polyline
+              points={linePoints}
+              fill="none"
+              stroke="white"
+              strokeWidth="0.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity="0.7"
+            />
+            
+            {/* Точки на графике - с отступом 5% от краёв */}
+            {visibleData.map((d, i) => {
+              const x = visibleData.length > 1 ? 5 + (i / (visibleData.length - 1)) * 90 : 50;
+              const y = 100 - ((d.maxWeight - chartMinWeight) / chartRange) * 100;
+              const isSelected = i === selectedIndex;
+              const isCurrent = d.workoutId === currentWorkoutId;
+              
+              return (
+                <circle
+                  key={i}
+                  cx={x}
+                  cy={y}
+                  r={isSelected ? 1.2 : 0.6}
+                  fill={isSelected || isCurrent ? color : '#71717a'}
+                  className="transition-all duration-150"
+                />
+              );
+            })}
+          </svg>
+
+          {/* Выбранная точка - плоский цвет с аутлайном цветом фона */}
+          {selectedIndex !== null && (
+            <div
+              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150"
+              style={{
+                left: pointX,
+                top: pointY,
+                backgroundColor: color,
+                border: '3px solid #27272a',
+              }}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Даты по оси X - выровнены с графиком */}
+      <div className="flex">
+        <div className="pr-2" style={{ visibility: 'hidden' }}>
+          <span className="text-xs">100 кг</span>
+        </div>
+        <div className="flex-1 flex justify-between text-xs text-zinc-500">
+          {visibleData.length > 0 && (
+            <>
+              <span>{formatDisplayDate(visibleData[0].date)}</span>
+              <span>{formatDisplayDate(visibleData[visibleData.length - 1].date)}</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Слайдер для выбора диапазона */}
+      {data.length > visibleCount && (
+        <div className="flex">
+          <div className="pr-2" style={{ visibility: 'hidden' }}>
+            <span className="text-xs">100 кг</span>
+          </div>
+          <div className="flex-1 relative bg-zinc-800 rounded-lg py-3 px-2">
+            <div className="relative w-full h-2 bg-zinc-700 rounded">
+              {/* Выбранный диапазон */}
+              <div 
+                className="absolute h-full rounded"
+                style={{ 
+                  left: `${(rangeStart / data.length) * 100}%`,
+                  width: `${((rangeEnd - rangeStart) / data.length) * 100}%`,
+                  backgroundColor: color,
+                  opacity: 0.5
+                }}
+              />
+              
+              {/* Левый ползунок */}
+              <div 
+                className="absolute top-1/2 -translate-y-1/2 w-5 h-8 rounded-md"
+                style={{ 
+                  left: `calc(${(rangeStart / data.length) * 100}% - 10px)`,
+                  backgroundColor: color 
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  const startX = e.touches[0].clientX;
+                  const startRange = rangeStart;
+                  const sliderRect = (e.target as HTMLElement).parentElement!.getBoundingClientRect();
+                  
+                  const handleMove = (moveE: TouchEvent) => {
+                    const delta = ((moveE.touches[0].clientX - startX) / sliderRect.width) * data.length;
+                    const newStart = Math.min(Math.round(startRange + delta), rangeEnd - 3);
+                    setRangeStart(Math.max(0, newStart));
+                  };
+                  
+                  const handleEnd = () => {
+                    document.removeEventListener('touchmove', handleMove);
+                    document.removeEventListener('touchend', handleEnd);
+                  };
+                  
+                  document.addEventListener('touchmove', handleMove, { passive: false });
+                  document.addEventListener('touchend', handleEnd);
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  const startX = e.clientX;
+                  const startRange = rangeStart;
+                  const sliderRect = (e.target as HTMLElement).parentElement!.getBoundingClientRect();
+                  
+                  const handleMove = (moveE: MouseEvent) => {
+                    const delta = ((moveE.clientX - startX) / sliderRect.width) * data.length;
+                    const newStart = Math.min(Math.round(startRange + delta), rangeEnd - 3);
+                    setRangeStart(Math.max(0, newStart));
+                  };
+                  
+                  const handleUp = () => {
+                    document.removeEventListener('mousemove', handleMove);
+                    document.removeEventListener('mouseup', handleUp);
+                  };
+                  
+                  document.addEventListener('mousemove', handleMove);
+                  document.addEventListener('mouseup', handleUp);
+                }}
+              />
+              
+              {/* Правый ползунок */}
+              <div 
+                className="absolute top-1/2 -translate-y-1/2 w-5 h-8 rounded-md"
+                style={{ 
+                  left: `calc(${(rangeEnd / data.length) * 100}% - 10px)`,
+                  backgroundColor: color 
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  const startX = e.touches[0].clientX;
+                  const startRange = rangeEnd;
+                  const sliderRect = (e.target as HTMLElement).parentElement!.getBoundingClientRect();
+                  
+                  const handleMove = (moveE: TouchEvent) => {
+                    const delta = ((moveE.touches[0].clientX - startX) / sliderRect.width) * data.length;
+                    const newEnd = Math.max(Math.round(startRange + delta), rangeStart + 3);
+                    setRangeEnd(Math.min(data.length, newEnd));
+                  };
+                  
+                  const handleEnd = () => {
+                    document.removeEventListener('touchmove', handleMove);
+                    document.removeEventListener('touchend', handleEnd);
+                  };
+                  
+                  document.addEventListener('touchmove', handleMove, { passive: false });
+                  document.addEventListener('touchend', handleEnd);
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  const startX = e.clientX;
+                  const startRange = rangeEnd;
+                  const sliderRect = (e.target as HTMLElement).parentElement!.getBoundingClientRect();
+                  
+                  const handleMove = (moveE: MouseEvent) => {
+                    const delta = ((moveE.clientX - startX) / sliderRect.width) * data.length;
+                    const newEnd = Math.max(Math.round(startRange + delta), rangeStart + 3);
+                    setRangeEnd(Math.min(data.length, newEnd));
+                  };
+                  
+                  const handleUp = () => {
+                    document.removeEventListener('mousemove', handleMove);
+                    document.removeEventListener('mouseup', handleUp);
+                  };
+                  
+                  document.addEventListener('mousemove', handleMove);
+                  document.addEventListener('mouseup', handleUp);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -107,6 +520,9 @@ export function ExerciseCard({
   const [showDeleteExerciseConfirm, setShowDeleteExerciseConfirm] = useState(false);
   const [showDeleteSetConfirm, setShowDeleteSetConfirm] = useState(false);
   const [setToDelete, setSetToDelete] = useState<string | null>(null);
+  
+  // State for statistics modal
+  const [showStats, setShowStats] = useState(false);
 
   // Drag-and-drop state
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -152,8 +568,34 @@ export function ExerciseCard({
     return () => clearInterval(interval);
   }, [highlightSetIndex]);
 
-  const { addSet, removeSet, updateSet, removeExercise, currentWorkout } = useFitnessStore();
+  const { addSet, removeSet, updateSet, removeExercise, currentWorkout, workouts } = useFitnessStore();
   const pr = getPersonalRecord(exercise.name);
+  
+  // История упражнения для графика
+  const exerciseHistory = useMemo(() => {
+    if (!workouts) return [];
+    
+    const history: { date: string; maxWeight: number; workoutId: string }[] = [];
+    
+    workouts.forEach(w => {
+      const exerciseInWorkout = w.exercises.find(e => e.name === exercise.name);
+      if (exerciseInWorkout && exerciseInWorkout.sets.length > 0) {
+        // Находим максимальный вес среди рабочих подходов (не разминочных)
+        const workingSets = exerciseInWorkout.sets.filter(s => !s.isWarmup && s.weight > 0);
+        if (workingSets.length > 0) {
+          const maxWeight = Math.max(...workingSets.map(s => s.weight));
+          history.push({
+            date: w.date,
+            maxWeight,
+            workoutId: w.id
+          });
+        }
+      }
+    });
+    
+    // Сортируем по дате
+    return history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [workouts, exercise.name]);
   
   // Disable text selection on iOS during drag
   useEffect(() => {
@@ -590,6 +1032,17 @@ export function ExerciseCard({
 
               {currentWorkout && (
                 <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowStats(true)}
+                    className="text-zinc-500 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 p-0"
+                    title="Статистика упражнения"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                  </Button>
+                  
+                  <div className="w-9" />
+                  
                   {onReplace && (
                     <Button
                       variant="ghost"
@@ -1089,6 +1542,39 @@ export function ExerciseCard({
         onConfirm={confirmDeleteSet}
         borderColor={exerciseColors.border}
       />
+
+      {/* Exercise statistics modal */}
+      <Dialog open={showStats} onOpenChange={setShowStats}>
+        <DialogContent 
+          className="bg-zinc-900 border !p-0 !gap-0 max-w-[95vw]"
+          style={{ borderColor: exerciseColors.border }}
+          showCloseButton={false}
+        >
+          <div className="flex items-center justify-between px-4 pt-4">
+            <DialogTitle className="text-white font-medium text-base">Динамика весов упражнения</DialogTitle>
+            <button
+              onClick={() => setShowStats(false)}
+              className="text-zinc-500 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="p-4">
+            {exerciseHistory.length > 0 ? (
+              <ExerciseStatsChart 
+                data={exerciseHistory} 
+                color={exerciseColors.border}
+                currentWorkoutId={workoutId}
+              />
+            ) : (
+              <div className="text-center py-8 text-zinc-500">
+                Нет данных для отображения
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
