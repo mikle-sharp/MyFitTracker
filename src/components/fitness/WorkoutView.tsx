@@ -1055,6 +1055,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
               disabled={!templateName.trim()}
               className="py-2 px-4 rounded-lg text-sm font-medium text-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#ffae00' }}
+              data-slot="button"
             >
               Сохранить
             </button>
@@ -1063,6 +1064,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
               disabled={!selectedTemplate}
               className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#19a655' }}
+              data-slot="button"
             >
               Загрузить
             </button>

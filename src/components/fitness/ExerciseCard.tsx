@@ -1171,7 +1171,7 @@ export function ExerciseCard({
                       <Button
                         variant="ghost"
                         onClick={() => setEditingSetId(null)}
-                        className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 shrink-0 p-0"
+                        className="text-zinc-500 hover:text-white hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 shrink-0 p-0"
                       >
                         <X className="w-4 h-4" />
                       </Button>
@@ -1551,15 +1551,14 @@ export function ExerciseCard({
         >
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Динамика весов упражнения</DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
+            <button
+              type="button"
               onClick={() => setShowStats(false)}
-              className="text-zinc-500 hover:text-white h-8 w-8"
+              className="text-zinc-500 hover:text-white transition-colors p-1"
               data-slot="dialog-close"
             >
               <X className="w-5 h-5" />
-            </Button>
+            </button>
           </div>
           
           <div className="p-4">
