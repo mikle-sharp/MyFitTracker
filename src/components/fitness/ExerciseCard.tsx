@@ -246,7 +246,7 @@ function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChar
         
         <div 
           ref={containerRef}
-          className="relative flex-1 h-48 bg-zinc-800/50 rounded-lg overflow-hidden touch-none select-none"
+          className="relative flex-1 h-48 bg-zinc-800 rounded-lg overflow-hidden touch-none select-none"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -1436,7 +1436,8 @@ export function ExerciseCard({
 
                   {/* Buttons */}
                   <div className="flex justify-end items-center gap-2 pt-4">
-                    <button
+                    <Button
+                      variant="outline"
                       onClick={() => {
                         setIsAddingSet(false);
                         setNewReps('');
@@ -1449,33 +1450,31 @@ export function ExerciseCard({
                         setSelectedEquipment(null);
                         setSelectedGrip(null);
                       }}
-                      className="py-2 px-4 rounded-lg bg-zinc-700 text-zinc-300 text-sm font-medium border-0 hover:bg-zinc-700 hover:text-zinc-300"
+                      className="border-zinc-600 bg-zinc-700 text-zinc-300 hover:text-zinc-300 hover:bg-zinc-700"
                     >
                       Отмена
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={handleAddSet}
                       disabled={
                         (useReps && !newReps) || 
                         (!useBodyweight && useReps && !newWeight) ||
                         (!useReps && !newTimeMinutes && !newTimeSeconds)
                       }
-                      className="py-2 px-4 rounded-lg text-primary-foreground text-sm font-medium border-0 hover:opacity-90 disabled:opacity-50"
                       style={{ backgroundColor: '#19a655' }}
                     >
                       Добавить
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
                 <div className={cn("flex justify-end", exercise.sets.length > 0 && "mt-4")}>
-                  <button
+                  <Button
                     onClick={handleStartAddingSet}
-                    className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90"
                     style={{ backgroundColor: '#19a655' }}
                   >
                     Добавить подход
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -1552,12 +1551,15 @@ export function ExerciseCard({
         >
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Динамика весов упражнения</DialogTitle>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setShowStats(false)}
-              className="text-zinc-500 hover:text-white transition-colors"
+              className="text-zinc-500 hover:text-white h-8 w-8"
+              data-slot="dialog-close"
             >
               <X className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
           
           <div className="p-4">

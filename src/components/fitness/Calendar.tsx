@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, isSameMonth, subMonths, addMonths } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { ChevronDown, Circle } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFitnessStore } from '@/lib/store';
 import { WORKOUT_TYPE_COLORS, WorkoutType } from '@/lib/types';
@@ -202,12 +202,12 @@ export function Calendar() {
                 exit={{ opacity: 0, y: -10 }}
                 className="absolute top-full right-0 mt-2 bg-zinc-800 rounded-lg border border-zinc-700 shadow-xl z-50 overflow-hidden"
               >
-                <div className="grid grid-cols-3 gap-1 p-2 min-w-[200px]">
+                <div className="grid grid-cols-3 gap-1 p-2 min-w-[240px]">
                   {MONTHS.map((month, index) => (
                     <button
                       key={month}
                       onClick={() => goToMonth(index)}
-                      className="px-2 py-1.5 text-xs rounded-lg transition-colors text-zinc-300 hover:bg-zinc-700"
+                      className="px-2 py-1.5 text-xs rounded-lg transition-colors text-zinc-300 hover:bg-zinc-700 text-center whitespace-nowrap"
                       style={currentMonthIndex === index ? {
                         backgroundColor: '#072f18',
                         color: '#fff'
@@ -346,12 +346,24 @@ export function Calendar() {
                   {marker}
                 </span>
               )}
-              {/* Индикатор заметки - слева вверху, цветом типа тренировки */}
+              {/* Индикатор заметки - кружок (обычный стиль) или пиксельный крестик (retro) */}
               {hasNotes && (
-                <Circle
-                  className="absolute top-1 left-1 w-1.5 h-1.5 fill-current"
-                  style={{ color: colors?.text || '#a1a1aa' }}
-                />
+                <>
+                  {/* Кружок для обычного стиля */}
+                  <div
+                    className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full note-marker-circle"
+                    style={{ backgroundColor: colors?.text || '#a1a1aa' }}
+                  />
+                  {/* Пиксельный крестик для retro стиля */}
+                  <svg
+                    className="absolute top-1 left-1 w-1.5 h-1.5 hidden note-marker-cross"
+                    viewBox="0 0 6 6"
+                    style={{ color: colors?.text || '#a1a1aa' }}
+                  >
+                    <rect x="2" y="0" width="2" height="6" fill="currentColor" />
+                    <rect x="0" y="2" width="6" height="2" fill="currentColor" />
+                  </svg>
+                </>
               )}
             </button>
           );

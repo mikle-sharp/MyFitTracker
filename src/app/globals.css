@@ -200,15 +200,56 @@ body.retro-mode .rounded-full {
   border-radius: 0 !important;
 }
 
-/* Minecraft-стиль кнопок (только shadcn Button с data-slot="button") */
-body.retro-mode button[data-slot="button"] {
+/* Minecraft-стиль кнопок (shadcn Button и DialogTrigger) */
+body.retro-mode button[data-slot="button"],
+body.retro-mode button[data-slot="dialog-trigger"] {
   border: 2px solid !important;
   border-color: rgba(255,255,255,0.25) rgba(0,0,0,0.25) rgba(0,0,0,0.4) rgba(255,255,255,0.15) !important;
-  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.15), inset -1px -1px 0 rgba(0,0,0,0.15) !important;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.2), inset -2px -2px 0 rgba(0,0,0,0.25) !important;
   transition: none !important;
+  outline: none !important;
 }
 
-body.retro-mode button[data-slot="button"]:active {
-  transform: translate(1px, 1px);
-  box-shadow: inset 1px 1px 0 rgba(0,0,0,0.15), inset -1px -1px 0 rgba(255,255,255,0.1) !important;
+body.retro-mode button[data-slot="button"]:active,
+body.retro-mode button[data-slot="dialog-trigger"]:active {
+  border: 2px solid !important;
+  border-color: rgba(0,0,0,0.4) rgba(255,255,255,0.15) rgba(255,255,255,0.25) rgba(0,0,0,0.25) !important;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.25), inset -2px -2px 0 rgba(255,255,255,0.1) !important;
+}
+
+/* Кнопка закрыть X в диалогах */
+body.retro-mode button[data-slot="dialog-close"] {
+  border: 2px solid !important;
+  border-color: rgba(255,255,255,0.25) rgba(0,0,0,0.25) rgba(0,0,0,0.4) rgba(255,255,255,0.15) !important;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.2), inset -2px -2px 0 rgba(0,0,0,0.25) !important;
+  transition: none !important;
+  padding: 4px !important;
+}
+
+body.retro-mode button[data-slot="dialog-close"]:active {
+  border: 2px solid !important;
+  border-color: rgba(0,0,0,0.4) rgba(255,255,255,0.15) rgba(255,255,255,0.25) rgba(0,0,0,0.25) !important;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.25), inset -2px -2px 0 rgba(255,255,255,0.1) !important;
+}
+
+/* Выпадающий список месяцев в календаре */
+body.retro-mode .rdp-dropdown_root,
+body.retro-mode [data-slot="calendar"] [class*="dropdown_root"] {
+  min-width: 140px !important;
+}
+
+body.retro-mode .rdp-dropdown,
+body.retro-mode [data-slot="calendar"] [class*="dropdown"] {
+  text-align: center !important;
+  padding-left: 8px !important;
+  padding-right: 20px !important;
+}
+
+/* Маркер заметки в календаре - крестик в retro режиме */
+body.retro-mode .note-marker-circle {
+  display: none !important;
+}
+
+body.retro-mode .note-marker-cross {
+  display: block !important;
 }

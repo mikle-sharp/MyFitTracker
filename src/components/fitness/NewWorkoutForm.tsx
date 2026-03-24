@@ -5,6 +5,7 @@ import { WorkoutType } from '@/lib/types';
 import { WorkoutTypeSelector } from './WorkoutTypeSelector';
 import { motion } from 'framer-motion';
 import { useFitnessStore } from '@/lib/store';
+import { Button } from '@/components/ui/button';
 
 interface NewWorkoutFormProps {
   date: string;
@@ -43,14 +44,14 @@ export function NewWorkoutForm({ date, onCreated }: NewWorkoutFormProps) {
         </div>
 
         <div className="mt-4 flex justify-center">
-          <button
+          <Button
             onClick={handleCreate}
             disabled={!selectedType}
-            className="w-1/2 py-2 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-1/2"
             style={{ backgroundColor: '#19a655' }}
           >
             Начать
-          </button>
+          </Button>
         </div>
       </div>
     </motion.div>

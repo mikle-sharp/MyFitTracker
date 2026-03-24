@@ -26,12 +26,10 @@ interface GoogleUser {
   picture?: string;
 }
 
-// Доступные шрифты с их настройками
+// Доступные стили приложения
 const AVAILABLE_FONTS = [
-  { id: 'inter', name: 'Inter', family: 'var(--font-inter)', isDefault: true },
+  { id: 'inter', name: 'По умолчанию', family: 'var(--font-inter)', isDefault: true },
   { id: 'retro', name: 'Retro', family: 'Minecraft', isDefault: false, isRetro: true },
-  { id: 'supercar', name: 'Supercar', family: 'Supercar', isDefault: false },
-  { id: 'ibmmda', name: 'IBM MDA', family: 'IBMMDA', isDefault: false },
 ] as const;
 
 type FontId = typeof AVAILABLE_FONTS[number]['id'];
@@ -494,12 +492,12 @@ export function SettingsPanel() {
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
               <Type className="w-4 h-4 text-purple-400" />
-              <h4 className="text-sm font-medium text-white">Шрифт приложения</h4>
+              <h4 className="text-sm font-medium text-white">Стиль приложения</h4>
             </div>
             
             <Select value={selectedFont} onValueChange={handleFontChange}>
               <SelectTrigger className="w-full border-zinc-600 bg-zinc-800 text-white">
-                <SelectValue placeholder="Выберите шрифт" />
+                <SelectValue placeholder="Выберите стиль" />
               </SelectTrigger>
               <SelectContent className="bg-zinc-800 border-zinc-600">
                 {AVAILABLE_FONTS.map((font) => (
@@ -508,25 +506,11 @@ export function SettingsPanel() {
                     value={font.id}
                     className="text-white focus:bg-zinc-700"
                   >
-                    <span style={{ fontFamily: font.family }}>{font.name}</span>
-                    {font.isDefault && (
-                      <span className="ml-2 text-xs text-zinc-400">(по умолчанию)</span>
-                    )}
+                    {font.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-
-            {/* Font Preview */}
-            <div className="mt-4 p-3 bg-zinc-700/50 rounded-lg">
-              <p className="text-xs text-zinc-400 mb-2">Предпросмотр:</p>
-              <p 
-                className="text-white text-lg"
-                style={{ fontFamily: AVAILABLE_FONTS.find(f => f.id === selectedFont)?.family }}
-              >
-                Аа Бб Вв 123 Тренировка
-              </p>
-            </div>
           </div>
 
           {/* Google Account Section */}

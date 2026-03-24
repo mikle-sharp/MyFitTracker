@@ -6,7 +6,7 @@ import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
@@ -599,12 +599,12 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         }
       }}>
         <DialogTrigger asChild>
-          <button
-            className="w-full py-2 rounded-lg text-sm font-medium text-primary-foreground"
+          <Button
+            className="w-full"
             style={{ backgroundColor: '#19a655' }}
           >
             Добавить упражнение
-          </button>
+          </Button>
         </DialogTrigger>
         <DialogContent 
           className="bg-zinc-800 border h-[70vh] !top-[15vh] !translate-y-0 !p-0 !gap-0 flex flex-col"
@@ -614,12 +614,9 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4 shrink-0">
             <DialogTitle className="text-white font-medium text-base">Добавить упражнение</DialogTitle>
-            <button
-              onClick={() => setIsAddExerciseOpen(false)}
-              className="text-zinc-500 hover:text-white transition-colors"
-            >
+            <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
               <X className="w-5 h-5" />
-            </button>
+            </DialogClose>
           </div>
 
           <div className="flex flex-col min-h-0 p-4 gap-4 flex-1">
@@ -703,24 +700,23 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
           {/* Bottom buttons */}
           <div className="flex items-center justify-between px-4 pb-4 shrink-0">
-            <button
+            <Button
               onClick={() => {
                 setIsAddExerciseOpen(false);
                 setIsCreateCustomOpen(true);
               }}
-              className="py-2 px-4 rounded-lg text-sm font-medium text-black hover:opacity-90"
               style={{ backgroundColor: '#ffae00' }}
+              className="text-black"
             >
               Создать своё
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleAddSelectedExercise}
               disabled={!selectedExercise}
-              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#19a655' }}
             >
               Добавить
-            </button>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -742,12 +738,9 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Введите название упражнения</DialogTitle>
-            <button
-              onClick={() => setIsCreateCustomOpen(false)}
-              className="text-zinc-500 hover:text-white transition-colors"
-            >
+            <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
               <X className="w-5 h-5" />
-            </button>
+            </DialogClose>
           </div>
 
           <div className="p-4 space-y-4">
@@ -801,14 +794,14 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
           {/* Create button */}
           <div className="flex justify-end px-4 pb-4">
-            <button
+            <Button
               onClick={handleAddCustomExercise}
               disabled={!newExerciseName.trim()}
-              className="py-2 px-4 rounded-lg text-sm font-medium text-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#ffae00' }}
+              className="text-black"
             >
               Создать
-            </button>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -835,12 +828,9 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             <DialogTitle className="text-white font-medium text-base">
               Заменить <span className="text-zinc-400">{replacingExerciseName}</span> на
             </DialogTitle>
-            <button
-              onClick={() => setIsReplaceExerciseOpen(false)}
-              className="text-zinc-500 hover:text-white transition-colors"
-            >
+            <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
               <X className="w-5 h-5" />
-            </button>
+            </DialogClose>
           </div>
 
           <div className="flex flex-col min-h-0 p-4 gap-4 flex-1">
@@ -926,14 +916,13 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
           {/* Replace button */}
           <div className="flex justify-end px-4 pb-4 shrink-0">
-            <button
+            <Button
               onClick={() => selectedReplaceExercise && handleConfirmReplace(selectedReplaceExercise)}
               disabled={!selectedReplaceExercise}
-              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#19a655' }}
             >
               Заменить
-            </button>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -948,12 +937,9 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           {/* Header row: title + close button */}
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Заметки к тренировке</DialogTitle>
-            <button
-              onClick={() => setIsNotesOpen(false)}
-              className="text-zinc-500 hover:text-white transition-colors"
-            >
+            <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
               <X className="w-5 h-5" />
-            </button>
+            </DialogClose>
           </div>
           
           {/* Textarea */}
@@ -968,14 +954,14 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
           {/* Buttons */}
           <div className="flex justify-end px-4 pt-4 pb-4">
-            <button
+            <Button
               onClick={handleSaveNotes}
               disabled={!notesValue.trim()}
-              className="py-2 px-4 rounded-lg text-primary-foreground text-sm font-medium min-w-[100px] disabled:opacity-50 disabled:pointer-events-none"
+              className="min-w-[100px]"
               style={{ backgroundColor: '#19a655' }}
             >
               Сохранить
-            </button>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -1023,12 +1009,9 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Шаблоны тренировок</DialogTitle>
-            <button
-              onClick={() => setIsTemplatesOpen(false)}
-              className="text-zinc-500 hover:text-white transition-colors"
-            >
+            <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
               <X className="w-5 h-5" />
-            </button>
+            </DialogClose>
           </div>
 
           {/* Template list & input */}
