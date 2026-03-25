@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useCallback, useEffect, useReducer } from 'react';
-import { Trash2, Calendar, Clock, Search, RefreshCw, Pencil, X, Copy, Bookmark } from 'lucide-react';
+import { Trash2Icon, CalendarIcon, ClockIcon, SearchIcon, RefreshCwIcon, PencilIcon, XIcon, CopyIcon, BookmarkIcon, DumbbellIcon, TargetIcon, LegsIcon, HeartIcon } from '@/components/icons/Icons';
 import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType, WorkoutTemplate } from '@/lib/types';
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useFitnessStore } from '@/lib/store';
 import { getAllExercisesForType, getAllExercises } from '@/lib/storage';
 
+// Компонент иконки типа тренировки
+function WorkoutTypeIcon({ type, color, isDefaultStyle }: { type: WorkoutType; color: string; isDefaultStyle: boolean }) {
+  const iconStyle = { stroke: color };
+  
+  if (isDefaultStyle) {
+    switch (type) {
+      case 'chest': return <DumbbellIcon className="w-6 h-6" style={iconStyle} />;
+      case 'back': return <TargetIcon className="w-6 h-6" style={iconStyle} />;
+      case 'legs': return <LegsIcon className="w-6 h-6" style={iconStyle} />;
+      case 'fullbody': return <HeartIcon className="w-6 h-6" style={iconStyle} />;
+    }
+  }
+  // Fallback для не-дефолтного стиля - пустой div с цветом
+  return <div className="w-6 h-6" style={{ backgroundColor: color }} />;
+}
+
 interface WorkoutViewProps {
   workout: Workout;
   highlightExercise?: { name: string; setId: string } | null;
@@ -22,6 +38,7 @@ interface WorkoutViewProps {
 
 export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
+  const [isDefaultStyle, setIsDefaultStyle] = useState(true);
   const [isCreateCustomOpen, setIsCreateCustomOpen] = useState(false);
   const [isReplaceExerciseOpen, setIsReplaceExerciseOpen] = useState(false);
   const [replacingExerciseId, setReplacingExerciseId] = useState<string | null>(null);
@@ -65,6 +82,12 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   
   // Keep ref in sync with state
   dragStateRef.current = dragState;
+
+  // Проверяем стиль при монтировании
+  useEffect(() => {
+    const savedFont = localStorage.getItem('app-font');
+    setIsDefaultStyle(!savedFont || savedFont === 'inter');
+  }, []);
 
   // Auto-resize notes textarea when dialog opens
   useEffect(() => {
@@ -447,7 +470,13 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-9 h-9 shrink-0" style={{ backgroundColor: colors.border }} />
+              {isDefaultStyle ? (
+                <div className="w-9 h-9 shrink-0 bg-zinc-950 rounded-lg flex items-center justify-center">
+                  <WorkoutTypeIcon type={workout.type} color={colors.border} isDefaultStyle={isDefaultStyle} />
+                </div>
+              ) : (
+                <div className="w-9 h-9 shrink-0" style={{ backgroundColor: colors.border }} />
+              )}
               <h2 className="text-xl font-bold" style={{ color: colors.text }}>
                 {WORKOUT_TYPE_NAMES[workout.type]}
               </h2>
@@ -461,7 +490,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 className="h-9 w-9 rounded-lg text-zinc-500 hover:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent"
                 title="Добавить заметку"
               >
-                <Pencil className="w-4 h-4" style={workout.notes ? { color: colors.text } : undefined} />
+                <PencilIcon className="w-4 h-4" style={workout.notes ? { color: colors.text } : undefined} />
               </Button>
             </div>
             <Button
@@ -470,7 +499,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
               onClick={() => setShowDeleteWorkoutConfirm(true)}
               className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent"
             >
-              <Trash2 className="w-5 h-5" />
+              <Trash2Icon className="w-5 h-5" />
             </Button>
           </div>
 
@@ -499,7 +528,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 className="h-9 w-9 shrink-0 text-zinc-500 hover:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent"
                 title="Шаблоны тренировок"
               >
-                <Bookmark className="w-5 h-5" />
+                <BookmarkIcon className="w-5 h-5" />
               </Button>
             </div>
             
@@ -615,14 +644,14 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           <div className="flex items-center justify-between px-4 pt-4 shrink-0">
             <DialogTitle className="text-white font-medium text-base">Добавить упражнение</DialogTitle>
             <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
-              <X className="w-5 h-5" />
+              <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
 
           <div className="flex flex-col min-h-0 p-4 gap-4 flex-1">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -739,7 +768,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Введите название упражнения</DialogTitle>
             <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
-              <X className="w-5 h-5" />
+              <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
 
@@ -829,14 +858,14 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
               Заменить <span className="text-zinc-400">{replacingExerciseName}</span> на
             </DialogTitle>
             <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
-              <X className="w-5 h-5" />
+              <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
 
           <div className="flex flex-col min-h-0 p-4 gap-4 flex-1">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -938,7 +967,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Заметки к тренировке</DialogTitle>
             <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
-              <X className="w-5 h-5" />
+              <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
           
@@ -1010,7 +1039,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Шаблоны тренировок</DialogTitle>
             <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
-              <X className="w-5 h-5" />
+              <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
 

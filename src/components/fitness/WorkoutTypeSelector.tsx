@@ -1,20 +1,14 @@
 'use client';
 
-import { Dumbbell, Heart, Target, Zap } from 'lucide-react';
+import { DumbbellIcon, HeartIcon, TargetIcon, LegsIcon } from '@/components/icons/Icons';
 import { WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 interface WorkoutTypeSelectorProps {
   selectedType: WorkoutType | null;
   onSelect: (type: WorkoutType) => void;
+  isDefaultStyle?: boolean;
 }
-
-const typeIcons: Record<WorkoutType, React.ReactNode> = {
-  chest: <Dumbbell className="w-6 h-6" />,
-  back: <Target className="w-6 h-6" />,
-  legs: <Zap className="w-6 h-6" />,
-  fullbody: <Heart className="w-6 h-6" />,
-};
 
 const typeDescriptions: Record<WorkoutType, string> = {
   chest: 'Жимы, сведения, разведения',
@@ -23,8 +17,18 @@ const typeDescriptions: Record<WorkoutType, string> = {
   fullbody: 'Комплексная тренировка',
 };
 
-export function WorkoutTypeSelector({ selectedType, onSelect }: WorkoutTypeSelectorProps) {
+export function WorkoutTypeSelector({ selectedType, onSelect, isDefaultStyle = true }: WorkoutTypeSelectorProps) {
   const types: WorkoutType[] = ['chest', 'back', 'legs', 'fullbody'];
+
+  // Иконки в зависимости от стиля
+  const getTypeIcon = (type: WorkoutType) => {
+    switch (type) {
+      case 'chest': return <DumbbellIcon className="w-6 h-6" />;
+      case 'back': return <TargetIcon className="w-6 h-6" />;
+      case 'legs': return <LegsIcon className="w-6 h-6" />;
+      case 'fullbody': return <HeartIcon className="w-6 h-6" />;
+    }
+  };
 
   return (
     <div className="grid grid-cols-2 gap-3">
@@ -55,7 +59,7 @@ export function WorkoutTypeSelector({ selectedType, onSelect }: WorkoutTypeSelec
               className="p-2 rounded-lg"
               style={isSelected ? { backgroundColor: colors.bg } : { backgroundColor: 'rgba(63, 63, 70, 0.5)' }}
             >
-              {typeIcons[type]}
+              {getTypeIcon(type)}
             </div>
             <div className="text-center">
               <div className="font-semibold text-sm">{WORKOUT_TYPE_NAMES[type]}</div>

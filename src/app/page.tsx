@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dumbbell, Trophy, Calendar as CalendarIcon } from 'lucide-react';
+import { MainIcon, TrophyIcon, CalendarIcon } from '@/components/icons/Icons';
 
 import { useFitnessStore } from '@/lib/store';
 import { Calendar } from '@/components/fitness/Calendar';
@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function Home() {
   const [activeTab, setActiveTab] = useState('workout');
   const [mounted, setMounted] = useState(false);
+  const [isDefaultStyle, setIsDefaultStyle] = useState(true);
   const [highlightExercise, setHighlightExercise] = useState<{ name: string; setId: string } | null>(null);
   
   const {
@@ -41,6 +42,9 @@ export default function Home() {
     if (!isInitialized) {
       init();
     }
+    // Проверяем текущий стиль
+    const savedFont = localStorage.getItem('app-font');
+    setIsDefaultStyle(!savedFont || savedFont === 'inter');
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, [init, isInitialized]);
@@ -64,7 +68,7 @@ export default function Home() {
           <div className="flex items-center">
             <div className="flex-1 flex justify-start">
               <div className="w-9 h-9 flex items-center justify-center">
-                <Dumbbell className="w-6 h-6" style={{ color: '#19a655' }} />
+                <MainIcon className="w-6 h-6" style={{ color: '#19a655' }} />
               </div>
             </div>
             <h1 className="text-lg font-bold text-white cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Мой журнал тренировок</h1>
@@ -95,7 +99,7 @@ export default function Home() {
               style={{ color: activeTab === 'records' ? '#1a1a1a' : '#ffae00' }}
             >
               <span className="flex items-center gap-2">
-                <Trophy className="w-4 h-4" />
+                <TrophyIcon className="w-4 h-4" />
                 Рекорды
               </span>
             </TabsTrigger>

@@ -2,10 +2,9 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { 
-  FileJson, FileSpreadsheet, Settings, Download, Upload, 
-  LogIn, LogOut, Check, AlertCircle, RefreshCw, ExternalLink,
-  Sheet, XIcon, Type
+  Type, LogIn, LogOut, AlertCircle, ExternalLink, Sheet
 } from 'lucide-react';
+import { SettingsIcon, XIcon, CheckIcon, RefreshCwIcon, StyleIcon, GoogleIcon, BackupIcon, ImportIcon, ExportIcon } from '@/components/icons/Icons';
 import {
   Select,
   SelectContent,
@@ -41,6 +40,7 @@ interface SyncStatus {
 
 export function SettingsPanel() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDefaultStyle, setIsDefaultStyle] = useState(true);
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [testDataStatus, setTestDataStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [googleUser, setGoogleUser] = useState<GoogleUser | null>(null);
@@ -424,6 +424,8 @@ export function SettingsPanel() {
       setSelectedFont(savedFont);
       applyFont(savedFont);
     }
+    // Проверяем, является ли стиль по умолчанию
+    setIsDefaultStyle(!savedFont || savedFont === 'inter');
   }, []);
 
   // Apply font to body
@@ -447,6 +449,7 @@ export function SettingsPanel() {
     setSelectedFont(typedFontId);
     localStorage.setItem('app-font', fontId);
     applyFont(typedFontId);
+    setIsDefaultStyle(fontId === 'inter');
   };
 
   // Load credentials on first open
@@ -470,7 +473,7 @@ export function SettingsPanel() {
           size="icon"
           className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
         >
-          <Settings className="w-6 h-6" />
+          <SettingsIcon className="w-6 h-6" />
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-zinc-900 border-zinc-700 max-h-[90vh] overflow-y-auto p-0 gap-0" showCloseButton={false}>
@@ -491,7 +494,11 @@ export function SettingsPanel() {
           {/* Font Selection Section */}
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
-              <Type className="w-4 h-4 text-purple-400" />
+              {isDefaultStyle ? (
+                <StyleIcon className="w-4 h-4" style={{ color: '#c93843' }} />
+              ) : (
+                <Type className="w-4 h-4 text-purple-400" />
+              )}
               <h4 className="text-sm font-medium text-white">Стиль приложения</h4>
             </div>
             
@@ -516,7 +523,11 @@ export function SettingsPanel() {
           {/* Google Account Section */}
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
-              <Sheet className="w-4 h-4" style={{ color: '#037b34' }} />
+              {isDefaultStyle ? (
+                <GoogleIcon className="w-4 h-4" style={{ color: '#19a655' }} />
+              ) : (
+                <Sheet className="w-4 h-4" style={{ color: '#037b34' }} />
+              )}
               <h4 className="text-sm font-medium text-white">Google Sheets</h4>
             </div>
             
@@ -570,7 +581,7 @@ export function SettingsPanel() {
                         disabled={syncStatus?.type === 'loading'}
                         className="bg-emerald-600 hover:bg-emerald-500"
                       >
-                        <RefreshCw className={cn(
+                        <RefreshCwIcon className={cn(
                           'w-4 h-4 mr-2',
                           syncStatus?.type === 'loading' && 'animate-spin'
                         )} />
@@ -581,7 +592,7 @@ export function SettingsPanel() {
                         variant="outline"
                         className="border-zinc-600 text-zinc-300 hover:text-white"
                       >
-                        <Download className="w-4 h-4 mr-2" />
+                        <ImportIcon className="w-4 h-4 mr-2" />
                         Импорт
                       </Button>
                     </div>
@@ -604,8 +615,8 @@ export function SettingsPanel() {
                     syncStatus.type === 'loading' ? 'bg-blue-500/10 border border-blue-500/30' :
                     'bg-red-500/10 border border-red-500/30'
                   )}>
-                    {syncStatus.type === 'success' && <Check className="w-4 h-4 text-emerald-400" />}
-                    {syncStatus.type === 'loading' && <RefreshCw className="w-4 h-4 text-blue-400 animate-spin" />}
+                    {syncStatus.type === 'success' && <CheckIcon className="w-4 h-4 text-emerald-400" />}
+                    {syncStatus.type === 'loading' && <RefreshCwIcon className="w-4 h-4 text-blue-400 animate-spin" />}
                     {syncStatus.type === 'error' && <AlertCircle className="w-4 h-4 text-red-400" />}
                     <span className={cn(
                       'text-sm',
@@ -638,7 +649,11 @@ export function SettingsPanel() {
           {/* Import/Export section */}
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
-              <FileSpreadsheet className="w-4 h-4" style={{ color: '#1d4fa0' }} />
+              {isDefaultStyle ? (
+                <BackupIcon className="w-4 h-4" style={{ color: '#3871d4' }} />
+              ) : (
+                <BackupIcon className="w-4 h-4" style={{ color: '#3871d4' }} />
+              )}
               <h4 className="text-sm font-medium text-white">Восстановление / Резервное копирование</h4>
             </div>
             
@@ -657,7 +672,11 @@ export function SettingsPanel() {
                   variant="outline"
                   className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col"
                 >
-                  <Download className="w-5 h-5 mb-1" />
+                  {isDefaultStyle ? (
+                    <ImportIcon className="w-5 h-5 mb-1" />
+                  ) : (
+                    <ImportIcon className="w-5 h-5 mb-1" />
+                  )}
                   <span className="text-sm">Импорт</span>
                   <span className="text-xs text-zinc-500">CSV / JSON</span>
                 </Button>
@@ -677,7 +696,11 @@ export function SettingsPanel() {
                   variant="outline"
                   className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col"
                 >
-                  <Upload className="w-5 h-5 mb-1" />
+                  {isDefaultStyle ? (
+                    <ExportIcon className="w-5 h-5 mb-1" />
+                  ) : (
+                    <ExportIcon className="w-5 h-5 mb-1" />
+                  )}
                   <span className="text-sm">Экспорт</span>
                   <span className="text-xs text-zinc-500">CSV / JSON</span>
                 </Button>
@@ -716,7 +739,7 @@ export function SettingsPanel() {
                 importStatus.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-red-500/10 border border-red-500/30'
               )}>
                 {importStatus.type === 'success' ? (
-                  <Check className="w-4 h-4 text-emerald-400" />
+                  <CheckIcon className="w-4 h-4 text-emerald-400" />
                 ) : (
                   <AlertCircle className="w-4 h-4 text-red-400" />
                 )}
@@ -763,7 +786,7 @@ export function SettingsPanel() {
                     testDataStatus.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-red-500/10 border border-red-500/30'
                   )}>
                     {testDataStatus.type === 'success' ? (
-                      <Check className="w-4 h-4 text-emerald-400" />
+                      <CheckIcon className="w-4 h-4 text-emerald-400" />
                     ) : (
                       <AlertCircle className="w-4 h-4 text-red-400" />
                     )}

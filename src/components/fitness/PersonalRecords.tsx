@@ -4,7 +4,24 @@ import { useMemo, useRef, useState, useEffect } from 'react';
 import { calculatePersonalRecords } from '@/lib/pr';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { getExerciseType, EXERCISE_TYPE_COLORS, WORKOUT_TYPE_ICONS } from '@/lib/types';
+import { getExerciseType, EXERCISE_TYPE_COLORS, WORKOUT_TYPE_ICONS, ExerciseType } from '@/lib/types';
+import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon } from '@/components/icons/Icons';
+
+// Компонент иконки типа упражнения
+function ExerciseTypeIcon({ type, color, isDefaultStyle }: { type: ExerciseType; color: string; isDefaultStyle: boolean }) {
+  const iconStyle = { stroke: color };
+  
+  if (isDefaultStyle) {
+    switch (type) {
+      case 'chest': return <DumbbellIcon className="w-6 h-6" style={iconStyle} />;
+      case 'back': return <TargetIcon className="w-6 h-6" style={iconStyle} />;
+      case 'legs': return <LegsIcon className="w-6 h-6" style={iconStyle} />;
+      case 'common': return <HeartIcon className="w-6 h-6" style={iconStyle} />;
+    }
+  }
+  // Fallback для не-дефолтного стиля - пустой div с цветом
+  return <div className="w-6 h-6" style={{ backgroundColor: color }} />;
+}
 
 // Компонент для названия упражнения с авто-размером шрифта
 function ExerciseName({ name }: { name: string }) {
@@ -36,6 +53,13 @@ interface PersonalRecordsProps {
 
 export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
   const records = useMemo(() => calculatePersonalRecords(), []);
+  const [isDefaultStyle, setIsDefaultStyle] = useState(true);
+
+  // Проверяем стиль при монтировании
+  useEffect(() => {
+    const savedFont = localStorage.getItem('app-font');
+    setIsDefaultStyle(!savedFont || savedFont === 'inter');
+  }, []);
 
   if (records.length === 0) {
     return (
@@ -71,7 +95,13 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
               >
                 {/* Столбец 1: Иконка и название упражнения (3/5) */}
                 <div className="flex items-center gap-3 px-3 py-3">
-                  <div className="w-9 h-9 shrink-0" style={{ backgroundColor: colors.border }} />
+                  {isDefaultStyle ? (
+                    <div className="w-9 h-9 shrink-0 bg-zinc-950 rounded-lg flex items-center justify-center">
+                      <ExerciseTypeIcon type={exerciseType} color={colors.border} isDefaultStyle={isDefaultStyle} />
+                    </div>
+                  ) : (
+                    <div className="w-9 h-9 shrink-0" style={{ backgroundColor: colors.border }} />
+                  )}
                   <ExerciseName name={record.exerciseName} />
                 </div>
                 

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, isSameMonth, subMonths, addMonths } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDownIcon } from '@/components/icons/Icons';
 import { cn } from '@/lib/utils';
 import { useFitnessStore } from '@/lib/store';
 import { WORKOUT_TYPE_COLORS, WorkoutType } from '@/lib/types';
@@ -188,7 +188,7 @@ export function Calendar() {
             )}
           >
             {MONTHS[currentMonthIndex]}
-            <ChevronDown className={cn(
+            <ChevronDownIcon className={cn(
               'w-3 h-3 transition-transform',
               showMonthPicker && 'rotate-180'
             )} />
@@ -236,7 +236,7 @@ export function Calendar() {
             )}
           >
             {currentYear}
-            <ChevronDown className={cn(
+            <ChevronDownIcon className={cn(
               'w-3 h-3 transition-transform',
               showYearPicker && 'rotate-180'
             )} />

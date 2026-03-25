@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { Trash2, Plus, Check, Clock, RefreshCw, User, Weight as WeightIcon, ChevronUp, ChevronDown, X, Zap, Repeat2, TrendingUp } from 'lucide-react';
+import { Trash2Icon, PlusIcon, CheckIcon, ClockIcon, RefreshCwIcon, UserIcon, WeightIcon, ChevronUpIcon, ChevronDownIcon, XIcon, ZapIcon, Repeat2Icon, TrendingUpIcon } from '@/components/icons/Icons';
 import { Exercise, WorkoutSet, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EquipmentType, GripType, EQUIPMENT_TYPES, GRIP_TYPES } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -906,7 +906,7 @@ export function ExerciseCard({
         {/* Столбец 1: Вес / Иконка User */}
         <span className="inline-block w-8 text-left font-medium text-sm">
           {isBodyweight ? (
-            <User className="w-4 h-4 inline" style={{ color: '#19a655' }} />
+            <UserIcon className="w-4 h-4 inline" style={{ color: '#19a655' }} />
           ) : (
             <span style={{ color: getRecordColor() }}>{set.weight}</span>
           )}
@@ -920,7 +920,7 @@ export function ExerciseCard({
         {/* Столбец 3: "×" / Иконка Clock */}
         <span className="inline-flex w-4 h-7 items-center justify-center text-sm" style={{ color: '#71717a' }}>
           {isTimeOnly ? (
-            <Clock className="w-2 h-2" />
+            <ClockIcon className="w-2 h-2" />
           ) : hasReps ? (
             '×'
           ) : (
@@ -940,7 +940,7 @@ export function ExerciseCard({
         {hasReps && hasTime && (
           <>
             <span className="inline-flex w-4 h-7 items-center justify-center text-sm" style={{ color: '#71717a' }}>
-              <Clock className="w-2 h-2" />
+              <ClockIcon className="w-2 h-2" />
             </span>
             <span className="inline-block font-medium text-sm" style={{ color: '#944ad4' }}>
               {formatTime(set.time!)}
@@ -1011,7 +1011,7 @@ export function ExerciseCard({
                       disabled={index === 0}
                       className="h-7 w-7 text-zinc-500 hover:text-white hover:bg-zinc-700 disabled:opacity-30"
                     >
-                      <ChevronUp className="w-4 h-4" />
+                      <ChevronUpIcon className="w-4 h-4" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -1020,7 +1020,7 @@ export function ExerciseCard({
                       disabled={index === totalExercises - 1}
                       className="h-7 w-7 text-zinc-500 hover:text-white hover:bg-zinc-700 disabled:opacity-30"
                     >
-                      <ChevronDown className="w-4 h-4" />
+                      <ChevronDownIcon className="w-4 h-4" />
                     </Button>
                   </div>
                 )}
@@ -1038,7 +1038,7 @@ export function ExerciseCard({
                     className="text-zinc-500 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 p-0"
                     title="Статистика упражнения"
                   >
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendingUpIcon className="w-4 h-4" />
                   </Button>
                   
                   <div className="w-9" />
@@ -1050,7 +1050,7 @@ export function ExerciseCard({
                       className="text-zinc-500 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 p-0"
                       title="Заменить упражнение"
                     >
-                      <RefreshCw className="w-4 h-4" />
+                      <RefreshCwIcon className="w-4 h-4" />
                     </Button>
                   )}
                   
@@ -1062,7 +1062,7 @@ export function ExerciseCard({
                     className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 p-0"
                     title="Удалить упражнение"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2Icon className="w-4 h-4" />
                   </Button>
                 </div>
               )}
@@ -1164,7 +1164,7 @@ export function ExerciseCard({
                           onClick={() => handleUpdateSet(set.id, set)}
                           className="h-7 w-7 p-0 flex items-center justify-center bg-[#19a655]"
                         >
-                          <Check className="w-3 h-3" />
+                          <CheckIcon className="w-3 h-3" />
                         </Button>
                       </div>
                       
@@ -1173,7 +1173,7 @@ export function ExerciseCard({
                         onClick={() => setEditingSetId(null)}
                         className="text-zinc-500 hover:text-white hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 shrink-0 p-0"
                       >
-                        <X className="w-4 h-4" />
+                        <XIcon className="w-4 h-4" />
                       </Button>
                     </>
                   ) : (
@@ -1206,7 +1206,7 @@ export function ExerciseCard({
                         onClick={() => handleRemoveSet(set.id)}
                         className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 shrink-0 p-0"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2Icon className="w-4 h-4" />
                       </Button>
                     </>
                   )}
@@ -1231,7 +1231,7 @@ export function ExerciseCard({
                         )}
                         style={isWarmup ? { backgroundColor: '#734200' } : undefined}
                       >
-                        <Zap className="w-3 h-3" style={{ color: isWarmup ? '#ffb900' : '#a1a1aa' }} />
+                        <ZapIcon className="w-3 h-3" style={{ color: isWarmup ? '#ffb900' : '#a1a1aa' }} />
                         <span className="text-[11px]" style={{ color: isWarmup ? '#ffb900' : '#d4d4d8' }}>Разм.</span>
                       </div>
                     )}
@@ -1244,7 +1244,7 @@ export function ExerciseCard({
                       )}
                       style={useBodyweight ? { backgroundColor: '#072f18' } : undefined}
                     >
-                      <User className="w-3 h-3" style={{ color: useBodyweight ? '#19a655' : '#a1a1aa' }} />
+                      <UserIcon className="w-3 h-3" style={{ color: useBodyweight ? '#19a655' : '#a1a1aa' }} />
                       <span className="text-[11px]" style={{ color: useBodyweight ? '#19a655' : '#d4d4d8' }}>Собст. вес</span>
                     </div>
 
@@ -1256,7 +1256,7 @@ export function ExerciseCard({
                       )}
                       style={useReps ? { backgroundColor: '#391013' } : undefined}
                     >
-                      <Repeat2 className="w-3 h-3" style={{ color: useReps ? '#c93843' : '#a1a1aa' }} />
+                      <Repeat2Icon className="w-3 h-3" style={{ color: useReps ? '#c93843' : '#a1a1aa' }} />
                       <span className="text-[11px]" style={{ color: useReps ? '#c93843' : '#d4d4d8' }}>Повт.</span>
                     </div>
 
@@ -1268,7 +1268,7 @@ export function ExerciseCard({
                       )}
                       style={useTime ? { backgroundColor: '#2a153c' } : undefined}
                     >
-                      <Clock className="w-3 h-3" style={{ color: useTime ? '#944ad4' : '#a1a1aa' }} />
+                      <ClockIcon className="w-3 h-3" style={{ color: useTime ? '#944ad4' : '#a1a1aa' }} />
                       <span className="text-[11px]" style={{ color: useTime ? '#944ad4' : '#d4d4d8' }}>Вр.</span>
                     </div>
                   </div>
@@ -1557,7 +1557,7 @@ export function ExerciseCard({
               className="text-zinc-500 hover:text-white transition-colors p-1"
               data-slot="dialog-close"
             >
-              <X className="w-5 h-5" />
+              <XIcon className="w-5 h-5" />
             </button>
           </div>
           
