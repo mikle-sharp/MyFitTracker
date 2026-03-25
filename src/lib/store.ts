@@ -17,6 +17,7 @@ interface FitnessStore {
   createWorkout: (date: string, type: WorkoutType) => Workout;
   updateWorkout: (workout: Workout) => void;
   updateWorkoutNotes: (workoutId: string, notes: string) => void;
+  updateWorkoutWeight: (workoutId: string, weight: number | undefined) => void;
   deleteWorkout: (id: string) => void;
   addExercise: (workoutId: string, name: string, exerciseType?: ExerciseType) => Exercise | null;
   replaceExercise: (workoutId: string, oldExerciseId: string, newName: string, exerciseType?: ExerciseType) => Exercise | null;
@@ -103,6 +104,14 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   // Обновление заметок к тренировке
   updateWorkoutNotes: (workoutId: string, notes: string) => {
     storage.updateWorkoutNotes(workoutId, notes);
+    const workouts = storage.getWorkouts();
+    const currentWorkout = workouts.find(w => w.id === workoutId) || null;
+    set({ workouts, currentWorkout });
+  },
+
+  // Обновление веса пользователя в тренировке
+  updateWorkoutWeight: (workoutId: string, weight: number | undefined) => {
+    storage.updateWorkoutWeight(workoutId, weight);
     const workouts = storage.getWorkouts();
     const currentWorkout = workouts.find(w => w.id === workoutId) || null;
     set({ workouts, currentWorkout });

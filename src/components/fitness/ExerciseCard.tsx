@@ -35,18 +35,49 @@ function ExerciseNameHeader({ name }: { name: string }) {
 }
 
 // Компонент графика статистики упражнения
+interface ChartDataPoint {
+  date: string;
+  maxWeight: number;
+  userWeight?: number;
+  totalVolume: number;
+  workoutId: string;
+}
+
 interface ExerciseStatsChartProps {
-  data: { date: string; maxWeight: number; workoutId: string }[];
+  data: ChartDataPoint[];
   color: string;
+  textColor: string;
   currentWorkoutId: string;
 }
 
 const DEFAULT_VISIBLE_COUNT = 9;
 
-function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChartProps) {
+// Цвета для графиков
+const CHART_COLORS = {
+  maxWeight: 'rgb(201, 56, 67)',     // красный
+  maxWeightMarker: 'rgb(57, 16, 19)', // тёмно-красный для маркера
+  userWeight: 'rgb(25, 166, 85)',    // зелёный
+  userWeightMarker: 'rgb(7, 47, 24)', // тёмно-зелёный для маркера
+  totalVolume: 'rgb(255, 185, 0)',   // жёлтый/оранжевый
+  totalVolumeMarker: 'rgb(115, 66, 0)', // коричневый для маркера
+};
+
+// Цвета для активных тэгов
+const TAG_ACTIVE_COLORS = {
+  userWeight: { bg: 'rgb(7, 47, 24)', text: 'rgb(25, 166, 85)' },
+  maxWeight: { bg: 'rgb(57, 16, 19)', text: 'rgb(201, 56, 67)' },
+  totalVolume: { bg: 'rgb(115, 66, 0)', text: 'rgb(255, 185, 0)' },
+};
+
+function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: ExerciseStatsChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Состояние видимости графиков
+  const [showMaxWeight, setShowMaxWeight] = useState(true);
+  const [showUserWeight, setShowUserWeight] = useState(false);
+  const [showTotalVolume, setShowTotalVolume] = useState(false);
   
   // Состояние для диапазона отображаемых данных
   // Показываем последние N тренировок по умолчанию
@@ -92,14 +123,22 @@ function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChar
     );
   }
 
-  // Расчёт весов для видимых данных
-  const minWeight = Math.min(...visibleData.map(d => d.maxWeight));
-  const maxWeight = Math.max(...visibleData.map(d => d.maxWeight));
-  const weightRange = maxWeight - minWeight || 1;
-  const padding = weightRange * 0.1;
-  const chartMinWeight = Math.max(0, minWeight - padding);
-  const chartMaxWeight = maxWeight + padding;
-  const chartRange = chartMaxWeight - chartMinWeight;
+  // Собираем все значения для расчёта масштаба
+  const allValues: number[] = [];
+  visibleData.forEach(d => {
+    if (showMaxWeight && d.maxWeight > 0) allValues.push(d.maxWeight);
+    if (showUserWeight && d.userWeight && d.userWeight > 0) allValues.push(d.userWeight);
+    if (showTotalVolume && d.totalVolume > 0) allValues.push(d.totalVolume);
+  });
+  
+  // Расчёт диапазона для видимых данных
+  const minValue = allValues.length > 0 ? Math.min(...allValues) : 0;
+  const maxValue = allValues.length > 0 ? Math.max(...allValues) : 100;
+  const valueRange = maxValue - minValue || 1;
+  const padding = valueRange * 0.1;
+  const chartMinValue = Math.max(0, minValue - padding);
+  const chartMaxValue = maxValue + padding;
+  const chartRange = chartMaxValue - chartMinValue;
 
   const formatDisplayDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -209,39 +248,62 @@ function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChar
     }
   };
 
-  // Вычисляем позицию точки с отступами 5% от краёв
+  // Выбранные данные
   const selectedData = selectedIndex !== null ? visibleData[selectedIndex] : null;
-  const pointX = selectedIndex !== null && visibleData.length > 1 
-    ? `${5 + (selectedIndex / (visibleData.length - 1)) * 90}%` 
-    : '50%';
-  const pointY = selectedData 
-    ? `${100 - ((selectedData.maxWeight - chartMinWeight) / chartRange) * 100}%` 
-    : '50%';
 
-  // Генерируем точки для линии графика с отступами 5% от краёв
-  const linePoints = visibleData.map((d, i) => {
-    const x = visibleData.length > 1 ? 5 + (i / (visibleData.length - 1)) * 90 : 50;
-    const y = 100 - ((d.maxWeight - chartMinWeight) / chartRange) * 100;
-    return `${x},${y}`;
-  }).join(' ');
+  // Функция для вычисления Y позиции
+  const getYPosition = (value: number) => {
+    return 100 - ((value - chartMinValue) / chartRange) * 100;
+  };
+
+  // Функция для вычисления X позиции
+  const getXPosition = (index: number) => {
+    return visibleData.length > 1 ? 5 + (index / (visibleData.length - 1)) * 90 : 50;
+  };
+
+  // Генерируем точки для линий графиков
+  const generateLinePoints = (getValue: (d: ChartDataPoint) => number, show: boolean) => {
+    if (!show) return '';
+    return visibleData.map((d, i) => {
+      const value = getValue(d);
+      if (value <= 0) return '';
+      const x = getXPosition(i);
+      const y = getYPosition(value);
+      return `${x},${y}`;
+    }).filter(p => p).join(' ');
+  };
+
+  const maxWeightPoints = generateLinePoints(d => d.maxWeight, showMaxWeight);
+  const userWeightPoints = generateLinePoints(d => d.userWeight || 0, showUserWeight);
+  const totalVolumePoints = generateLinePoints(d => d.totalVolume, showTotalVolume);
 
   return (
     <div className="flex flex-col gap-4">
       {/* Информация о выбранной точке */}
       {selectedData && (
-        <div className="flex justify-between items-center px-2">
+        <div className="flex flex-wrap justify-between items-center px-2 gap-2">
           <div className="text-sm text-zinc-400">{formatDisplayDate(selectedData.date)}</div>
-          <div className="text-lg font-bold text-white">{selectedData.maxWeight} кг</div>
+          <div className="flex gap-3 text-sm">
+            {showMaxWeight && selectedData.maxWeight > 0 && (
+              <span className="font-medium" style={{ color: CHART_COLORS.maxWeight }}>{selectedData.maxWeight} кг</span>
+            )}
+            {showUserWeight && selectedData.userWeight && selectedData.userWeight > 0 && (
+              <span className="font-medium" style={{ color: CHART_COLORS.userWeight }}>{selectedData.userWeight} кг</span>
+            )}
+            {showTotalVolume && selectedData.totalVolume > 0 && (
+              <span className="font-medium" style={{ color: CHART_COLORS.totalVolume }}>{selectedData.totalVolume} кг</span>
+            )}
+          </div>
         </div>
       )}
 
       {/* График */}
       <div className="flex">
-        {/* Ось Y с делениями весов */}
-        <div className="flex flex-col justify-between h-48 pr-2 text-xs text-zinc-500">
-          <span>{chartMaxWeight.toFixed(0)} кг</span>
-          <span>{((chartMaxWeight + chartMinWeight) / 2).toFixed(0)} кг</span>
-          <span>{chartMinWeight.toFixed(0)} кг</span>
+        {/* Ось Y с делениями - фиксированная ширина под 5-значное число */}
+        <div className="flex flex-col justify-between h-48 pr-2 text-xs text-zinc-500 w-[40px] items-end">
+          <span>{chartMaxValue.toFixed(0)}</span>
+          <span>{((chartMaxValue + chartMinValue) / 2).toFixed(0)}</span>
+          <span>{chartMinValue.toFixed(0)}</span>
         </div>
         
         <div 
@@ -261,45 +323,138 @@ function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChar
             preserveAspectRatio="none"
             className="absolute inset-0 w-full h-full"
           >
-            {/* Линия графика - всегда белая */}
-            <polyline
-              points={linePoints}
-              fill="none"
-              stroke="white"
-              strokeWidth="0.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              opacity="0.7"
-            />
+            {/* Линия общего объёма */}
+            {showTotalVolume && totalVolumePoints && (
+              <polyline
+                points={totalVolumePoints}
+                fill="none"
+                stroke={CHART_COLORS.totalVolume}
+                strokeWidth="0.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.7"
+              />
+            )}
             
-            {/* Точки на графике - с отступом 5% от краёв */}
-            {visibleData.map((d, i) => {
-              const x = visibleData.length > 1 ? 5 + (i / (visibleData.length - 1)) * 90 : 50;
-              const y = 100 - ((d.maxWeight - chartMinWeight) / chartRange) * 100;
+            {/* Линия веса пользователя */}
+            {showUserWeight && userWeightPoints && (
+              <polyline
+                points={userWeightPoints}
+                fill="none"
+                stroke={CHART_COLORS.userWeight}
+                strokeWidth="0.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.7"
+              />
+            )}
+            
+            {/* Линия максимального веса */}
+            {showMaxWeight && maxWeightPoints && (
+              <polyline
+                points={maxWeightPoints}
+                fill="none"
+                stroke={CHART_COLORS.maxWeight}
+                strokeWidth="0.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.7"
+              />
+            )}
+            
+            {/* Точки на графике - общий объём */}
+            {showTotalVolume && visibleData.map((d, i) => {
+              if (d.totalVolume <= 0) return null;
+              const x = getXPosition(i);
+              const y = getYPosition(d.totalVolume);
+              const isSelected = i === selectedIndex;
+              
+              return (
+                <circle
+                  key={`volume-${i}`}
+                  cx={x}
+                  cy={y}
+                  r={isSelected ? 1.2 : 0.6}
+                  fill={isSelected ? CHART_COLORS.totalVolumeMarker : '#71717a'}
+                  className="transition-all duration-150"
+                />
+              );
+            })}
+            
+            {/* Точки на графике - вес пользователя */}
+            {showUserWeight && visibleData.map((d, i) => {
+              if (!d.userWeight || d.userWeight <= 0) return null;
+              const x = getXPosition(i);
+              const y = getYPosition(d.userWeight);
+              const isSelected = i === selectedIndex;
+              
+              return (
+                <circle
+                  key={`userweight-${i}`}
+                  cx={x}
+                  cy={y}
+                  r={isSelected ? 1.2 : 0.6}
+                  fill={isSelected ? CHART_COLORS.userWeightMarker : '#71717a'}
+                  className="transition-all duration-150"
+                />
+              );
+            })}
+            
+            {/* Точки на графике - максимальный вес */}
+            {showMaxWeight && visibleData.map((d, i) => {
+              if (d.maxWeight <= 0) return null;
+              const x = getXPosition(i);
+              const y = getYPosition(d.maxWeight);
               const isSelected = i === selectedIndex;
               const isCurrent = d.workoutId === currentWorkoutId;
               
               return (
                 <circle
-                  key={i}
+                  key={`maxweight-${i}`}
                   cx={x}
                   cy={y}
                   r={isSelected ? 1.2 : 0.6}
-                  fill={isSelected || isCurrent ? color : '#71717a'}
+                  fill={isSelected || isCurrent ? CHART_COLORS.maxWeightMarker : '#71717a'}
                   className="transition-all duration-150"
                 />
               );
             })}
           </svg>
 
-          {/* Выбранная точка - плоский цвет с аутлайном цветом фона */}
-          {selectedIndex !== null && (
+          {/* Выбранная точка - максимальный вес */}
+          {selectedIndex !== null && selectedData && selectedData.maxWeight > 0 && showMaxWeight && (
             <div
               className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150"
               style={{
-                left: pointX,
-                top: pointY,
-                backgroundColor: color,
+                left: `${getXPosition(selectedIndex)}%`,
+                top: `${getYPosition(selectedData.maxWeight)}%`,
+                backgroundColor: CHART_COLORS.maxWeightMarker,
+                border: '3px solid #27272a',
+              }}
+            />
+          )}
+
+          {/* Выбранная точка - вес пользователя */}
+          {selectedIndex !== null && selectedData && selectedData.userWeight && selectedData.userWeight > 0 && showUserWeight && (
+            <div
+              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150"
+              style={{
+                left: `${getXPosition(selectedIndex)}%`,
+                top: `${getYPosition(selectedData.userWeight)}%`,
+                backgroundColor: CHART_COLORS.userWeightMarker,
+                border: '3px solid #27272a',
+              }}
+            />
+          )}
+
+          {/* Выбранная точка - общий объём */}
+          {selectedIndex !== null && selectedData && selectedData.totalVolume > 0 && showTotalVolume && (
+            <div
+              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150"
+              style={{
+                left: `${getXPosition(selectedIndex)}%`,
+                top: `${getYPosition(selectedData.totalVolume)}%`,
+                backgroundColor: CHART_COLORS.totalVolumeMarker,
                 border: '3px solid #27272a',
               }}
             />
@@ -310,7 +465,7 @@ function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChar
       {/* Даты по оси X - выровнены с графиком */}
       <div className="flex">
         <div className="pr-2" style={{ visibility: 'hidden' }}>
-          <span className="text-xs">100 кг</span>
+          <span className="text-xs">100</span>
         </div>
         <div className="flex-1 flex justify-between text-xs text-zinc-500">
           {visibleData.length > 0 && (
@@ -323,11 +478,10 @@ function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChar
       </div>
 
       {/* Слайдер для выбора диапазона */}
-      {data.length > visibleCount && (
-        <div className="flex">
-          <div className="pr-2" style={{ visibility: 'hidden' }}>
-            <span className="text-xs">100 кг</span>
-          </div>
+      <div className="flex">
+        <div className="pr-2 w-[40px]" style={{ visibility: 'hidden' }}>
+          <span className="text-xs">00000</span>
+        </div>
           <div className="flex-1 relative bg-zinc-800 rounded-lg py-3 px-2">
             <div className="relative w-full h-2 bg-zinc-700 rounded">
               {/* Выбранный диапазон */}
@@ -336,7 +490,7 @@ function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChar
                 style={{ 
                   left: `${(rangeStart / data.length) * 100}%`,
                   width: `${((rangeEnd - rangeStart) / data.length) * 100}%`,
-                  backgroundColor: color,
+                  backgroundColor: textColor,
                   opacity: 0.5
                 }}
               />
@@ -346,7 +500,7 @@ function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChar
                 className="absolute top-1/2 -translate-y-1/2 w-5 h-8 rounded-md"
                 style={{ 
                   left: `calc(${(rangeStart / data.length) * 100}% - 10px)`,
-                  backgroundColor: color 
+                  backgroundColor: color
                 }}
                 onTouchStart={(e) => {
                   e.preventDefault();
@@ -395,7 +549,7 @@ function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChar
                 className="absolute top-1/2 -translate-y-1/2 w-5 h-8 rounded-md"
                 style={{ 
                   left: `calc(${(rangeEnd / data.length) * 100}% - 10px)`,
-                  backgroundColor: color 
+                  backgroundColor: color
                 }}
                 onTouchStart={(e) => {
                   e.preventDefault();
@@ -441,7 +595,58 @@ function ExerciseStatsChart({ data, color, currentWorkoutId }: ExerciseStatsChar
             </div>
           </div>
         </div>
-      )}
+
+      {/* Тэги включения/отключения графиков */}
+      <div className="flex justify-center gap-3">
+        <div
+          onClick={() => {
+            const newState = !showUserWeight;
+            setShowUserWeight(newState);
+            if (newState) setShowTotalVolume(false);
+          }}
+          className={cn(
+            'px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors',
+            !showUserWeight && 'bg-zinc-700/50 text-zinc-400',
+            showUserWeight && 'text-white'
+          )}
+          style={showUserWeight ? { backgroundColor: TAG_ACTIVE_COLORS.userWeight.bg, color: TAG_ACTIVE_COLORS.userWeight.text } : undefined}
+        >
+          Мой вес
+        </div>
+        <div
+          onClick={() => {
+            const newState = !showMaxWeight;
+            setShowMaxWeight(newState);
+            if (newState) setShowTotalVolume(false);
+          }}
+          className={cn(
+            'px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors',
+            !showMaxWeight && 'bg-zinc-700/50 text-zinc-400',
+            showMaxWeight && 'text-white'
+          )}
+          style={showMaxWeight ? { backgroundColor: TAG_ACTIVE_COLORS.maxWeight.bg, color: TAG_ACTIVE_COLORS.maxWeight.text } : undefined}
+        >
+          Макс. вес
+        </div>
+        <div
+          onClick={() => {
+            const newState = !showTotalVolume;
+            setShowTotalVolume(newState);
+            if (newState) {
+              setShowMaxWeight(false);
+              setShowUserWeight(false);
+            }
+          }}
+          className={cn(
+            'px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors',
+            !showTotalVolume && 'bg-zinc-700/50 text-zinc-400',
+            showTotalVolume && 'text-white'
+          )}
+          style={showTotalVolume ? { backgroundColor: TAG_ACTIVE_COLORS.totalVolume.bg, color: TAG_ACTIVE_COLORS.totalVolume.text } : undefined}
+        >
+          Объём
+        </div>
+      </div>
     </div>
   );
 }
@@ -575,18 +780,23 @@ export function ExerciseCard({
   const exerciseHistory = useMemo(() => {
     if (!workouts) return [];
     
-    const history: { date: string; maxWeight: number; workoutId: string }[] = [];
+    const history: ChartDataPoint[] = [];
     
     workouts.forEach(w => {
       const exerciseInWorkout = w.exercises.find(e => e.name === exercise.name);
       if (exerciseInWorkout && exerciseInWorkout.sets.length > 0) {
         // Находим максимальный вес среди рабочих подходов (не разминочных)
         const workingSets = exerciseInWorkout.sets.filter(s => !s.isWarmup && s.weight > 0);
+        // Вычисляем общий объём (сумма вес × повторения для всех подходов)
+        const totalVolume = exerciseInWorkout.sets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+        
         if (workingSets.length > 0) {
           const maxWeight = Math.max(...workingSets.map(s => s.weight));
           history.push({
             date: w.date,
             maxWeight,
+            userWeight: w.weight, // вес пользователя на дату тренировки
+            totalVolume,
             workoutId: w.id
           });
         }
@@ -1566,6 +1776,7 @@ export function ExerciseCard({
               <ExerciseStatsChart 
                 data={exerciseHistory} 
                 color={exerciseColors.border}
+                textColor={exerciseColors.text}
                 currentWorkoutId={workoutId}
               />
             ) : (

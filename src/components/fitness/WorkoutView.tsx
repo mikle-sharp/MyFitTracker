@@ -55,6 +55,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   const [pendingReplaceName, setPendingReplaceName] = useState('');
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [notesValue, setNotesValue] = useState(workout.notes || '');
+  const [weightValue, setWeightValue] = useState(workout.weight?.toString() || '');
   
   // Template modal state
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
@@ -125,7 +126,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
     };
   }, [dragState]);
   
-  const { addExercise, removeExercise, replaceExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes, getTemplates, saveTemplate, loadTemplate, deleteTemplate } = useFitnessStore();
+  const { addExercise, removeExercise, replaceExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes, updateWorkoutWeight, getTemplates, saveTemplate, loadTemplate, deleteTemplate } = useFitnessStore();
 
   const colors = WORKOUT_TYPE_COLORS[workout.type];
   
@@ -245,6 +246,12 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
   const handleSaveNotes = () => {
     updateWorkoutNotes(workout.id, notesValue);
+    // Сохраняем вес только для сегодняшней и прошедших дат
+    const isFutureDate = workout.date > new Date().toISOString().split('T')[0];
+    if (!isFutureDate) {
+      const weight = weightValue ? parseFloat(weightValue) : undefined;
+      updateWorkoutWeight(workout.id, weight);
+    }
     setIsNotesOpen(false);
   };
 
@@ -485,12 +492,13 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 size="icon"
                 onClick={() => {
                   setNotesValue(workout.notes || '');
+                  setWeightValue(workout.weight?.toString() || '');
                   setIsNotesOpen(true);
                 }}
                 className="h-9 w-9 rounded-lg text-zinc-500 hover:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent"
                 title="Добавить заметку"
               >
-                <PencilIcon className="w-4 h-4" style={workout.notes ? { color: colors.text } : undefined} />
+                <PencilIcon className="w-4 h-4" style={(workout.notes || workout.weight) ? { color: colors.text } : undefined} />
               </Button>
             </div>
             <Button
@@ -505,10 +513,20 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
         </div>
 
-        {/* Notes display */}
-        {workout.notes && (
-          <div className="mt-3 p-2 bg-zinc-800/50 rounded-lg text-sm text-zinc-300 border border-zinc-700/50">
-            {workout.notes}
+        {/* Weight and Notes display */}
+        {(workout.weight || workout.notes) && (
+          <div className="mt-3 space-y-2">
+            {workout.weight && (
+              <div className="p-2 bg-zinc-800/50 rounded-lg text-sm text-zinc-300 border border-zinc-700/50">
+                <span className="text-zinc-500">
+                  {workout.date === new Date().toISOString().split('T')[0] ? 'Мой вес сегодня' : 'Мой вес был'}: </span>{workout.weight} кг
+              </div>
+            )}
+            {workout.notes && (
+              <div className="p-2 bg-zinc-800/50 rounded-lg text-sm text-zinc-300 border border-zinc-700/50">
+                {workout.notes}
+              </div>
+            )}
           </div>
         )}
 
@@ -971,6 +989,35 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             </DialogClose>
           </div>
           
+          {/* Weight input - only for today and past dates */}
+          {workout.date <= new Date().toISOString().split('T')[0] && (
+            <div className="flex items-center px-4 mt-4">
+              <span className="text-sm text-zinc-400">
+                {workout.date === new Date().toISOString().split('T')[0] ? 'Мой вес сегодня' : 'Мой вес был'}
+              </span>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={weightValue}
+                onChange={(e) => {
+                  // Разрешаем только цифры и одну точку/запятую
+                  const value = e.target.value.replace(/[^0-9.,]/g, '');
+                  // Заменяем запятую на точку
+                  const normalized = value.replace(',', '.');
+                  // Проверяем максимум один знак после точки
+                  const parts = normalized.split('.');
+                  if (parts.length > 1 && parts[1] && parts[1].length > 1) {
+                    return;
+                  }
+                  setWeightValue(normalized);
+                }}
+                placeholder="00.0"
+                className="w-16 bg-zinc-900/50 border border-zinc-700 rounded-lg px-2 py-1.5 mx-1 text-white placeholder-zinc-500 focus:outline-none text-center text-sm"
+              />
+              <span className="text-sm text-zinc-400">кг</span>
+            </div>
+          )}
+          
           {/* Textarea */}
           <textarea
             ref={notesTextareaRef}
@@ -985,7 +1032,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           <div className="flex justify-end px-4 pt-4 pb-4">
             <Button
               onClick={handleSaveNotes}
-              disabled={!notesValue.trim()}
+              disabled={workout.date > new Date().toISOString().split('T')[0] ? !notesValue.trim() : !notesValue.trim() && !weightValue.trim()}
               className="min-w-[100px]"
               style={{ backgroundColor: '#19a655' }}
             >

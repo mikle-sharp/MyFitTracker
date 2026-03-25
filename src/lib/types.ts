@@ -68,6 +68,7 @@ export interface Workout {
   type: WorkoutType;
   exercises: Exercise[];
   notes?: string;
+  weight?: number; // вес пользователя в кг (один знак после запятой)
   duration?: number; // длительность в минутах (для импортированных данных)
   createdAt: string;
   updatedAt: string;
