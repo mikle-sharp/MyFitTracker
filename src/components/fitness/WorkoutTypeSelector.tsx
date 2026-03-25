@@ -57,7 +57,7 @@ export function WorkoutTypeSelector({ selectedType, onSelect, isDefaultStyle = t
           >
             <div
               className="p-2 rounded-lg"
-              style={isSelected ? { backgroundColor: colors.bg } : { backgroundColor: 'rgba(63, 63, 70, 0.5)' }}
+              style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
             >
               {getTypeIcon(type)}
             </div>

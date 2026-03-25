@@ -96,7 +96,7 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                 {/* Столбец 1: Иконка и название упражнения (3/5) */}
                 <div className="flex items-center gap-3 px-3 py-3">
                   {isDefaultStyle ? (
-                    <div className="w-9 h-9 shrink-0 bg-zinc-950 rounded-lg flex items-center justify-center">
+                    <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
                       <ExerciseTypeIcon type={exerciseType} color={colors.border} isDefaultStyle={isDefaultStyle} />
                     </div>
                   ) : (

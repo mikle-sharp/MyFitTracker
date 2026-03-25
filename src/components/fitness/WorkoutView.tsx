@@ -471,7 +471,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {isDefaultStyle ? (
-                <div className="w-9 h-9 shrink-0 bg-zinc-950 rounded-lg flex items-center justify-center">
+                <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
                   <WorkoutTypeIcon type={workout.type} color={colors.border} isDefaultStyle={isDefaultStyle} />
                 </div>
               ) : (
