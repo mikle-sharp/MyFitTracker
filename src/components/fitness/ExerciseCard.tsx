@@ -145,6 +145,14 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
     return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
   };
 
+  const formatDateShort = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString().slice(-2);
+    return `${day}.${month}.${year}`;
+  };
+
   // Расчёт расстояния между двумя касаниями
   const getPinchDistance = (touches: React.TouchList): number => {
     if (touches.length < 2) return 0;
@@ -281,8 +289,10 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
     <div className="flex flex-col gap-4">
       {/* Информация о выбранной точке */}
       {selectedData && (
-        <div className="flex flex-wrap justify-between items-center px-2 gap-2">
-          <div className="text-sm text-zinc-400">{formatDisplayDate(selectedData.date)}</div>
+        <div className="flex items-center">
+          <div className="w-[40px]"></div>
+          <div className="text-sm text-zinc-400">{formatDateShort(selectedData.date)}</div>
+          <div className="flex-1"></div>
           <div className="flex gap-3 text-sm">
             {showMaxWeight && selectedData.maxWeight > 0 && (
               <span className="font-medium" style={{ color: CHART_COLORS.maxWeight }}>{selectedData.maxWeight} кг</span>
@@ -375,7 +385,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
                   cx={x}
                   cy={y}
                   r={isSelected ? 1.2 : 0.6}
-                  fill={isSelected ? CHART_COLORS.totalVolumeMarker : '#71717a'}
+                  fill={isSelected ? CHART_COLORS.totalVolume : '#71717a'}
                   className="transition-all duration-150"
                 />
               );
@@ -394,7 +404,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
                   cx={x}
                   cy={y}
                   r={isSelected ? 1.2 : 0.6}
-                  fill={isSelected ? CHART_COLORS.userWeightMarker : '#71717a'}
+                  fill={isSelected ? CHART_COLORS.userWeight : '#71717a'}
                   className="transition-all duration-150"
                 />
               );
@@ -414,7 +424,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
                   cx={x}
                   cy={y}
                   r={isSelected ? 1.2 : 0.6}
-                  fill={isSelected || isCurrent ? CHART_COLORS.maxWeightMarker : '#71717a'}
+                  fill={isSelected || isCurrent ? CHART_COLORS.maxWeight : '#71717a'}
                   className="transition-all duration-150"
                 />
               );
@@ -428,7 +438,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
               style={{
                 left: `${getXPosition(selectedIndex)}%`,
                 top: `${getYPosition(selectedData.maxWeight)}%`,
-                backgroundColor: CHART_COLORS.maxWeightMarker,
+                backgroundColor: CHART_COLORS.maxWeight,
                 border: '3px solid #27272a',
               }}
             />
@@ -441,7 +451,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
               style={{
                 left: `${getXPosition(selectedIndex)}%`,
                 top: `${getYPosition(selectedData.userWeight)}%`,
-                backgroundColor: CHART_COLORS.userWeightMarker,
+                backgroundColor: CHART_COLORS.userWeight,
                 border: '3px solid #27272a',
               }}
             />
@@ -454,7 +464,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
               style={{
                 left: `${getXPosition(selectedIndex)}%`,
                 top: `${getYPosition(selectedData.totalVolume)}%`,
-                backgroundColor: CHART_COLORS.totalVolumeMarker,
+                backgroundColor: CHART_COLORS.totalVolume,
                 border: '3px solid #27272a',
               }}
             />
@@ -463,15 +473,15 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
       </div>
 
       {/* Даты по оси X - выровнены с графиком */}
-      <div className="flex">
-        <div className="pr-2" style={{ visibility: 'hidden' }}>
-          <span className="text-xs">100</span>
+      <div className="flex items-center">
+        <div className="w-[40px] pr-2" style={{ visibility: 'hidden' }}>
+          <span className="text-xs">00000</span>
         </div>
-        <div className="flex-1 flex justify-between text-xs text-zinc-500">
+        <div className="flex-1 flex text-xs text-zinc-500 leading-tight">
           {visibleData.length > 0 && (
             <>
               <span>{formatDisplayDate(visibleData[0].date)}</span>
-              <span>{formatDisplayDate(visibleData[visibleData.length - 1].date)}</span>
+              <span className="ml-auto">{formatDisplayDate(visibleData[visibleData.length - 1].date)}</span>
             </>
           )}
         </div>
@@ -479,11 +489,11 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
 
       {/* Слайдер для выбора диапазона */}
       <div className="flex">
-        <div className="pr-2 w-[40px]" style={{ visibility: 'hidden' }}>
+        <div className="w-[40px] pr-2" style={{ visibility: 'hidden' }}>
           <span className="text-xs">00000</span>
         </div>
-          <div className="flex-1 relative bg-zinc-800 rounded-lg py-3 px-2">
-            <div className="relative w-full h-2 bg-zinc-700 rounded">
+          <div className="flex-1 relative py-2 px-2">
+            <div className="relative w-full h-[10px] bg-zinc-600 rounded">
               {/* Выбранный диапазон */}
               <div 
                 className="absolute h-full rounded"
@@ -497,10 +507,11 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
               
               {/* Левый ползунок */}
               <div 
-                className="absolute top-1/2 -translate-y-1/2 w-5 h-8 rounded-md"
+                className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded"
                 style={{ 
                   left: `calc(${(rangeStart / data.length) * 100}% - 10px)`,
-                  backgroundColor: color
+                  backgroundColor: color,
+                  border: '2px solid #18181b'
                 }}
                 onTouchStart={(e) => {
                   e.preventDefault();
@@ -546,10 +557,11 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
               
               {/* Правый ползунок */}
               <div 
-                className="absolute top-1/2 -translate-y-1/2 w-5 h-8 rounded-md"
+                className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded"
                 style={{ 
                   left: `calc(${(rangeEnd / data.length) * 100}% - 10px)`,
-                  backgroundColor: color
+                  backgroundColor: color,
+                  border: '2px solid #18181b'
                 }}
                 onTouchStart={(e) => {
                   e.preventDefault();
@@ -597,7 +609,9 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
         </div>
 
       {/* Тэги включения/отключения графиков */}
-      <div className="flex justify-center gap-3">
+      <div className="flex gap-3">
+        <div className="w-[40px]"></div>
+        <div className="flex-1 flex justify-center gap-3">
         <div
           onClick={() => {
             const newState = !showUserWeight;
@@ -645,6 +659,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
           style={showTotalVolume ? { backgroundColor: TAG_ACTIVE_COLORS.totalVolume.bg, color: TAG_ACTIVE_COLORS.totalVolume.text } : undefined}
         >
           Объём
+        </div>
         </div>
       </div>
     </div>
