@@ -17,8 +17,9 @@ import { getAllExercisesForType, getAllExercises } from '@/lib/storage';
 
 // Компонент иконки типа тренировки
 function WorkoutTypeIcon({ type, color, isDefaultStyle }: { type: WorkoutType; color: string; isDefaultStyle: boolean }) {
-  const iconStyle = { stroke: color };
-  
+  // Используем color вместо stroke, т.к. иконки используют stroke="currentColor"
+  const iconStyle = { color: color };
+
   if (isDefaultStyle) {
     switch (type) {
       case 'chest': return <DumbbellIcon className="w-6 h-6" style={iconStyle} />;
@@ -27,8 +28,13 @@ function WorkoutTypeIcon({ type, color, isDefaultStyle }: { type: WorkoutType; c
       case 'fullbody': return <HeartIcon className="w-6 h-6" style={iconStyle} />;
     }
   }
-  // Fallback для не-дефолтного стиля - пустой div с цветом
-  return <div className="w-6 h-6" style={{ backgroundColor: color }} />;
+  // Fallback для Retro стиля - пиксельные иконки
+  switch (type) {
+    case 'chest': return <DumbbellIcon className="w-6 h-6" style={iconStyle} />;
+    case 'back': return <TargetIcon className="w-6 h-6" style={iconStyle} />;
+    case 'legs': return <LegsIcon className="w-6 h-6" style={iconStyle} />;
+    case 'fullbody': return <HeartIcon className="w-6 h-6" style={iconStyle} />;
+  }
 }
 
 interface WorkoutViewProps {
@@ -477,13 +483,9 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {isDefaultStyle ? (
-                <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
-                  <WorkoutTypeIcon type={workout.type} color={colors.border} isDefaultStyle={isDefaultStyle} />
-                </div>
-              ) : (
-                <div className="w-9 h-9 shrink-0" style={{ backgroundColor: colors.border }} />
-              )}
+              <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
+                <WorkoutTypeIcon type={workout.type} color={colors.border} isDefaultStyle={isDefaultStyle} />
+              </div>
               <h2 className="text-xl font-bold" style={{ color: colors.text }}>
                 {WORKOUT_TYPE_NAMES[workout.type]}
               </h2>

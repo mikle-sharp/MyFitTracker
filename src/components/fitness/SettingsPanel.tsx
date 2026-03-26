@@ -2,9 +2,9 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { 
-  Type, LogIn, LogOut, AlertCircle, ExternalLink, Sheet
-} from 'lucide-react';
-import { SettingsIcon, XIcon, CheckIcon, RefreshCwIcon, StyleIcon, GoogleIcon, BackupIcon, ImportIcon, ExportIcon } from '@/components/icons/Icons';
+  SettingsIcon, XIcon, CheckIcon, RefreshCwIcon, StyleIcon, GoogleIcon, BackupIcon, ImportIcon, ExportIcon,
+  TypeIcon, LogInIcon, LogOutIcon, AlertCircleIcon, ExternalLinkIcon, SheetIcon
+} from '@/components/icons/Icons';
 import {
   Select,
   SelectContent,
@@ -494,11 +494,7 @@ export function SettingsPanel() {
           {/* Font Selection Section */}
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
-              {isDefaultStyle ? (
-                <StyleIcon className="w-4 h-4" style={{ color: '#c93843' }} />
-              ) : (
-                <Type className="w-4 h-4 text-purple-400" />
-              )}
+              <StyleIcon className="w-4 h-4" style={{ color: '#c93843' }} />
               <h4 className="text-sm font-medium text-white">Стиль приложения</h4>
             </div>
             
@@ -523,11 +519,7 @@ export function SettingsPanel() {
           {/* Google Account Section */}
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
-              {isDefaultStyle ? (
-                <GoogleIcon className="w-4 h-4" style={{ color: '#19a655' }} />
-              ) : (
-                <Sheet className="w-4 h-4" style={{ color: '#037b34' }} />
-              )}
+              <GoogleIcon className="w-4 h-4" style={{ color: '#19a655' }} />
               <h4 className="text-sm font-medium text-white">Google Sheets</h4>
             </div>
             
@@ -553,7 +545,7 @@ export function SettingsPanel() {
                     onClick={handleGoogleLogout}
                     className="text-zinc-400 hover:text-white"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogInIcon className="w-4 h-4" />
                   </Button>
                 </div>
 
@@ -561,7 +553,7 @@ export function SettingsPanel() {
                 {spreadsheetId && spreadsheetUrl ? (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 p-2 bg-zinc-700/50 rounded-lg">
-                      <Sheet className="w-4 h-4 text-emerald-400" />
+                      <SheetIcon className="w-4 h-4 text-emerald-400" />
                       <span className="text-sm text-zinc-300 flex-1 truncate">
                         Мой журнал тренировок
                       </span>
@@ -571,7 +563,7 @@ export function SettingsPanel() {
                         rel="noopener noreferrer"
                         className="text-emerald-400 hover:text-emerald-300"
                       >
-                        <ExternalLink className="w-4 h-4" />
+                        <ExternalLinkIcon className="w-4 h-4" />
                       </a>
                     </div>
                     
@@ -602,7 +594,7 @@ export function SettingsPanel() {
                     onClick={handleCreateSheet}
                     className="w-full bg-emerald-600 hover:bg-emerald-500"
                   >
-                    <Sheet className="w-4 h-4 mr-2" />
+                    <SheetIcon className="w-4 h-4 mr-2" />
                     Создать таблицу Google
                   </Button>
                 )}
@@ -617,7 +609,7 @@ export function SettingsPanel() {
                   )}>
                     {syncStatus.type === 'success' && <CheckIcon className="w-4 h-4 text-emerald-400" />}
                     {syncStatus.type === 'loading' && <RefreshCwIcon className="w-4 h-4 text-blue-400 animate-spin" />}
-                    {syncStatus.type === 'error' && <AlertCircle className="w-4 h-4 text-red-400" />}
+                    {syncStatus.type === 'error' && <AlertCircleIcon className="w-4 h-4 text-red-400" />}
                     <span className={cn(
                       'text-sm',
                       syncStatus.type === 'success' ? 'text-emerald-400' :
@@ -636,7 +628,7 @@ export function SettingsPanel() {
                   variant="outline"
                   className="w-full border-zinc-600 text-zinc-300 hover:text-white hover:bg-zinc-700"
                 >
-                  <LogIn className="w-4 h-4 mr-2" />
+                  <LogOutIcon className="w-4 h-4 mr-2" />
                   Войти через Google
                 </Button>
                 <p className="text-xs text-zinc-500 text-center">
@@ -649,11 +641,7 @@ export function SettingsPanel() {
           {/* Import/Export section */}
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
             <div className="flex items-center gap-2 mb-4">
-              {isDefaultStyle ? (
-                <BackupIcon className="w-4 h-4" style={{ color: '#3871d4' }} />
-              ) : (
-                <BackupIcon className="w-4 h-4" style={{ color: '#3871d4' }} />
-              )}
+              <BackupIcon className="w-4 h-4" style={{ color: '#3871d4' }} />
               <h4 className="text-sm font-medium text-white">Восстановление / Резервное копирование</h4>
             </div>
             
@@ -672,11 +660,7 @@ export function SettingsPanel() {
                   variant="outline"
                   className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col"
                 >
-                  {isDefaultStyle ? (
-                    <ImportIcon className="w-5 h-5 mb-1" />
-                  ) : (
-                    <ImportIcon className="w-5 h-5 mb-1" />
-                  )}
+                  <ImportIcon className="w-5 h-5 mb-1" />
                   <span className="text-sm">Импорт</span>
                   <span className="text-xs text-zinc-500">CSV / JSON</span>
                 </Button>
@@ -696,11 +680,7 @@ export function SettingsPanel() {
                   variant="outline"
                   className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col"
                 >
-                  {isDefaultStyle ? (
-                    <ExportIcon className="w-5 h-5 mb-1" />
-                  ) : (
-                    <ExportIcon className="w-5 h-5 mb-1" />
-                  )}
+                  <ExportIcon className="w-5 h-5 mb-1" />
                   <span className="text-sm">Экспорт</span>
                   <span className="text-xs text-zinc-500">CSV / JSON</span>
                 </Button>
@@ -741,7 +721,7 @@ export function SettingsPanel() {
                 {importStatus.type === 'success' ? (
                   <CheckIcon className="w-4 h-4 text-emerald-400" />
                 ) : (
-                  <AlertCircle className="w-4 h-4 text-red-400" />
+                  <AlertCircleIcon className="w-4 h-4 text-red-400" />
                 )}
                 <span className={cn(
                   'text-sm',
@@ -801,6 +781,11 @@ export function SettingsPanel() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-xs text-zinc-500 text-center pb-4">
+          Создано кривыми руками mikle.sharp
         </div>
       </DialogContent>
     </Dialog>

@@ -21,12 +21,15 @@ export function WorkoutTypeSelector({ selectedType, onSelect, isDefaultStyle = t
   const types: WorkoutType[] = ['chest', 'back', 'legs', 'fullbody'];
 
   // Иконки в зависимости от стиля
-  const getTypeIcon = (type: WorkoutType) => {
+  const getTypeIcon = (type: WorkoutType, isSelected: boolean, borderColor?: string) => {
+    // zinc-500 для неактивных, цвет границы для активных
+    const iconColor = isSelected && borderColor ? borderColor : '#71717a'; // zinc-500
+    const iconStyle = { color: iconColor };
     switch (type) {
-      case 'chest': return <DumbbellIcon className="w-6 h-6" />;
-      case 'back': return <TargetIcon className="w-6 h-6" />;
-      case 'legs': return <LegsIcon className="w-6 h-6" />;
-      case 'fullbody': return <HeartIcon className="w-6 h-6" />;
+      case 'chest': return <DumbbellIcon className="w-6 h-6" style={iconStyle} />;
+      case 'back': return <TargetIcon className="w-6 h-6" style={iconStyle} />;
+      case 'legs': return <LegsIcon className="w-6 h-6" style={iconStyle} />;
+      case 'fullbody': return <HeartIcon className="w-6 h-6" style={iconStyle} />;
     }
   };
 
@@ -47,7 +50,7 @@ export function WorkoutTypeSelector({ selectedType, onSelect, isDefaultStyle = t
               'hover:scale-[1.02] active:scale-95',
               isSelected
                 ? ''
-                : 'bg-zinc-800/50 border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-500'
             )}
             style={isSelected ? {
               backgroundColor: colors.bg,
@@ -59,7 +62,7 @@ export function WorkoutTypeSelector({ selectedType, onSelect, isDefaultStyle = t
               className="p-2 rounded-lg"
               style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
             >
-              {getTypeIcon(type)}
+              {getTypeIcon(type, isSelected, colors.border)}
             </div>
             <div className="text-center">
               <div className="font-semibold text-sm">{WORKOUT_TYPE_NAMES[type]}</div>

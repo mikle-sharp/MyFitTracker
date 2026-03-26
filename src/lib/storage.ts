@@ -435,7 +435,7 @@ export const exportToCSV = (): string => {
     return '';
   }
 
-  const headers = ['Дата', 'Тип тренировки', 'Длительность (мин)', 'Вес пользователя (кг)', 'Упражнение', 'Подход', 'Повторения', 'Вес (кг)', 'Время (сек)', 'Заметки'];
+  const headers = ['Дата', 'Тип тренировки', 'Длительность (мин)', 'Вес пользователя (кг)', 'Упражнение', 'Подход', 'Повторения', 'Вес (кг)', 'Время (сек)', 'Разминка', 'Снаряд', 'Хват', 'Время добавления', 'Заметки'];
   const rows: string[][] = [headers];
 
   workouts
@@ -453,6 +453,10 @@ export const exportToCSV = (): string => {
             String(set.reps),
             String(set.weight),
             set.time ? String(set.time) : '',
+            set.isWarmup ? '1' : '0',
+            set.equipmentType || '',
+            set.gripType || '',
+            set.timestamp || '',
             workout.notes || '',
           ]);
         });
@@ -530,15 +534,21 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
       if (parts.length < 6) continue;
 
       // Поддерживаем разные форматы CSV
-      // Новый формат (с userWeight): Дата, Тип, Длительность, Вес пользователя, Упражнение, Подход, Повторения, Вес, Время, Заметки (10 колонок)
-      // Старый формат (с duration): Дата, Тип, Длительность, Упражнение, Подход, Повторения, Вес, Время, Заметки (9 колонок)
-      // Ещё старее: Дата, Тип, Упражнение, Подход, Повторения, Вес, Время, Заметки (8 колонок)
+      // Новейший формат (14 колонок): Дата, Тип, Длительность, Вес пользователя, Упражнение, Подход, Повторения, Вес, Время, Разминка, Снаряд, Хват, Время добавления, Заметки
+      // Формат с userWeight (10 колонок): Дата, Тип, Длительность, Вес пользователя, Упражнение, Подход, Повторения, Вес, Время, Заметки
+      // Старый формат (9 колонок): Дата, Тип, Длительность, Упражнение, Подход, Повторения, Вес, Время, Заметки
+      // Ещё старее (8 колонок): Дата, Тип, Упражнение, Подход, Повторения, Вес, Время, Заметки
       
       let date: string, type: string, duration: string | undefined, userWeight: string | undefined, 
-          exerciseName: string, reps: string, weight: string, time: string | undefined, notes: string | undefined;
+          exerciseName: string, reps: string, weight: string, time: string | undefined,
+          isWarmup: string | undefined, equipmentType: string | undefined, gripType: string | undefined,
+          timestamp: string | undefined, notes: string | undefined;
 
-      if (parts.length >= 10) {
-        // Новый формат с userWeight
+      if (parts.length >= 14) {
+        // Новейший формат с полными данными
+        [date, type, duration, userWeight, exerciseName, , reps, weight, time, isWarmup, equipmentType, gripType, timestamp, notes] = parts;
+      } else if (parts.length >= 10) {
+        // Формат с userWeight
         [date, type, duration, userWeight, exerciseName, , reps, weight, time, notes] = parts;
       } else if (parts.length >= 9) {
         // Старый формат с duration
@@ -585,6 +595,10 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
         reps: parseInt(reps) || 0,
         weight: parseFloat(weight) || 0,
         time: time ? parseInt(time) : undefined,
+        isWarmup: isWarmup === '1',
+        equipmentType: equipmentType ? equipmentType.trim() as EquipmentType : undefined,
+        gripType: gripType ? gripType.trim() as GripType : undefined,
+        timestamp: timestamp ? timestamp.trim() : undefined,
       };
 
       exercise.sets.push(newSet);
