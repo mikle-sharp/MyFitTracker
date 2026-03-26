@@ -649,7 +649,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       }}>
         <DialogTrigger asChild>
           <Button
-            className="w-full"
+            className="w-full retro-large-text"
             style={{ backgroundColor: '#19a655' }}
           >
             Добавить упражнение
@@ -755,7 +755,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 setIsCreateCustomOpen(true);
               }}
               style={{ backgroundColor: '#ffae00' }}
-              className="text-black"
+              className="text-black retro-large-text"
             >
               Создать своё
             </Button>
@@ -763,6 +763,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
               onClick={handleAddSelectedExercise}
               disabled={!selectedExercise}
               style={{ backgroundColor: '#19a655' }}
+              className="retro-large-text"
             >
               Добавить
             </Button>
@@ -847,7 +848,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
               onClick={handleAddCustomExercise}
               disabled={!newExerciseName.trim()}
               style={{ backgroundColor: '#ffae00' }}
-              className="text-black"
+              className="text-black retro-large-text"
             >
               Создать
             </Button>
@@ -1035,7 +1036,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             <Button
               onClick={handleSaveNotes}
               disabled={workout.date > new Date().toISOString().split('T')[0] ? !notesValue.trim() : !notesValue.trim() && !weightValue.trim()}
-              className="min-w-[100px]"
+              className="min-w-[100px] retro-large-text"
               style={{ backgroundColor: '#19a655' }}
             >
               Сохранить
@@ -1131,7 +1132,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             <button
               onClick={handleSaveTemplate}
               disabled={!templateName.trim()}
-              className="py-2 px-4 rounded-lg text-sm font-medium text-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="py-2 px-4 rounded-lg text-sm font-medium text-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed retro-large-text"
               style={{ backgroundColor: '#ffae00' }}
               data-slot="button"
             >
@@ -1140,7 +1141,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             <button
               onClick={handleLoadTemplate}
               disabled={!selectedTemplate}
-              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed retro-large-text"
               style={{ backgroundColor: '#19a655' }}
               data-slot="button"
             >

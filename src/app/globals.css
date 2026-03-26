@@ -183,6 +183,8 @@ body.retro-mode {
   image-rendering: pixelated;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: unset;
+  /* Увеличенный интервал между словами */
+  word-spacing: 0.15em;
 }
 
 /* Пиксельные иконки */
@@ -230,6 +232,11 @@ body.retro-mode button[data-slot="dialog-close"]:active {
   border: 2px solid !important;
   border-color: rgba(0,0,0,0.4) rgba(255,255,255,0.15) rgba(255,255,255,0.25) rgba(0,0,0,0.25) !important;
   box-shadow: inset 2px 2px 0 rgba(0,0,0,0.25), inset -2px -2px 0 rgba(255,255,255,0.1) !important;
+}
+
+/* Крупный текст на кнопках в retro режиме */
+body.retro-mode .retro-large-text {
+  font-size: 1rem !important;
 }
 
 /* Выпадающий список месяцев в календаре */

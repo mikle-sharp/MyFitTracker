@@ -66,14 +66,14 @@ export function ConfirmDialog({
               <div className="flex flex-row px-4 pb-4">
                 <Button
                   onClick={handleClose}
-                  className="flex-1 bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300"
+                  className="flex-1 bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300 retro-large-text"
                 >
                   Нет
                 </Button>
                 <div className="w-2" />
                 <Button
                   onClick={handleSecondConfirm}
-                  className="flex-1 text-primary-foreground border-0"
+                  className="flex-1 text-primary-foreground border-0 retro-large-text"
                   style={{ backgroundColor: '#c93843' }}
                 >
                   Да
@@ -93,7 +93,7 @@ export function ConfirmDialog({
               <div className="flex flex-row px-4 pb-4">
                 <Button
                   onClick={handleFirstConfirm}
-                  className="flex-1 text-primary-foreground border-0"
+                  className="flex-1 text-primary-foreground border-0 retro-large-text"
                   style={{ backgroundColor: '#c93843' }}
                 >
                   {confirmText}
@@ -101,7 +101,7 @@ export function ConfirmDialog({
                 <div className="w-2" />
                 <Button
                   onClick={handleClose}
-                  className="flex-1 bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300"
+                  className="flex-1 bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300 retro-large-text"
                 >
                   {cancelText}
                 </Button>

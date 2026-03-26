@@ -1675,7 +1675,7 @@ export function ExerciseCard({
                         setSelectedEquipment(null);
                         setSelectedGrip(null);
                       }}
-                      className="border-zinc-600 bg-zinc-700 text-zinc-300 hover:text-zinc-300 hover:bg-zinc-700"
+                      className="border-zinc-600 bg-zinc-700 text-zinc-300 hover:text-zinc-300 hover:bg-zinc-700 retro-large-text"
                     >
                       Отмена
                     </Button>
@@ -1687,6 +1687,7 @@ export function ExerciseCard({
                         (!useReps && !newTimeMinutes && !newTimeSeconds)
                       }
                       style={{ backgroundColor: '#19a655' }}
+                      className="retro-large-text"
                     >
                       Добавить
                     </Button>
@@ -1697,6 +1698,7 @@ export function ExerciseCard({
                   <Button
                     onClick={handleStartAddingSet}
                     style={{ backgroundColor: '#19a655' }}
+                    className="retro-large-text"
                   >
                     Добавить подход
                   </Button>
