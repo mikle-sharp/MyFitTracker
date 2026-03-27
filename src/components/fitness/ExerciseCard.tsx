@@ -1234,7 +1234,7 @@ export function ExerciseCard({
                       size="icon"
                       onClick={() => onMoveUp?.(exercise.id)}
                       disabled={index === 0}
-                      className="h-7 w-7 text-zinc-500 hover:text-white hover:bg-zinc-700 disabled:opacity-30"
+                      className="h-7 w-7 text-zinc-500 hover:text-white active:text-white hover:bg-zinc-700 active:bg-zinc-700 disabled:opacity-30"
                     >
                       <ChevronUpIcon className="w-4 h-4" />
                     </Button>
@@ -1243,7 +1243,7 @@ export function ExerciseCard({
                       size="icon"
                       onClick={() => onMoveDown?.(exercise.id)}
                       disabled={index === totalExercises - 1}
-                      className="h-7 w-7 text-zinc-500 hover:text-white hover:bg-zinc-700 disabled:opacity-30"
+                      className="h-7 w-7 text-zinc-500 hover:text-white active:text-white hover:bg-zinc-700 active:bg-zinc-700 disabled:opacity-30"
                     >
                       <ChevronDownIcon className="w-4 h-4" />
                     </Button>
@@ -1260,7 +1260,7 @@ export function ExerciseCard({
                   <Button
                     variant="ghost"
                     onClick={() => setShowStats(true)}
-                    className="text-zinc-500 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 p-0"
+                    className="text-zinc-500 hover:text-white active:text-white hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 p-0"
                     title="Статистика упражнения"
                   >
                     <TrendingUpIcon className="w-4 h-4" />
@@ -1272,7 +1272,7 @@ export function ExerciseCard({
                     <Button
                       variant="ghost"
                       onClick={() => onReplace(exercise.id, exercise.name)}
-                      className="text-zinc-500 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 p-0"
+                      className="text-zinc-500 hover:text-white active:text-white hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 p-0"
                       title="Заменить упражнение"
                     >
                       <RefreshCwIcon className="w-4 h-4" />
@@ -1284,7 +1284,7 @@ export function ExerciseCard({
                   <Button
                     variant="ghost"
                     onClick={() => setShowDeleteExerciseConfirm(true)}
-                    className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 p-0"
+                    className="text-zinc-500 hover:text-red-400 active:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 p-0"
                     title="Удалить упражнение"
                   >
                     <Trash2Icon className="w-4 h-4" />
@@ -1396,7 +1396,7 @@ export function ExerciseCard({
                       <Button
                         variant="ghost"
                         onClick={() => setEditingSetId(null)}
-                        className="text-zinc-500 hover:text-white hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 shrink-0 p-0"
+                        className="text-zinc-500 hover:text-white active:text-white hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 shrink-0 p-0"
                       >
                         <XIcon className="w-4 h-4" />
                       </Button>
@@ -1405,7 +1405,7 @@ export function ExerciseCard({
                     <>
                       <div
                         onClick={() => startEditingSet(set)}
-                        className="flex-1 h-7 flex items-center cursor-pointer hover:bg-zinc-700/30 px-2 -ml-2 rounded-lg transition-colors"
+                        className="flex-1 h-7 flex items-center cursor-pointer hover:bg-zinc-700/30 active:bg-zinc-700/30 px-2 -ml-2 rounded-lg transition-colors"
                       >
                         {renderSetDisplay(set, setIndex)}
                       </div>
@@ -1429,7 +1429,7 @@ export function ExerciseCard({
                       <Button
                         variant="ghost"
                         onClick={() => handleRemoveSet(set.id)}
-                        className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent h-7 w-7 shrink-0 p-0"
+                        className="text-zinc-500 hover:text-red-400 active:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 shrink-0 p-0"
                       >
                         <Trash2Icon className="w-4 h-4" />
                       </Button>
@@ -1781,7 +1781,7 @@ export function ExerciseCard({
             <button
               type="button"
               onClick={() => setShowStats(false)}
-              className="text-zinc-500 hover:text-white transition-colors p-1"
+              className="text-zinc-500 hover:text-white active:text-white transition-colors p-1"
               data-slot="dialog-close"
             >
               <XIcon className="w-5 h-5" />

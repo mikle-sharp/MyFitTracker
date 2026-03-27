@@ -118,7 +118,7 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                           record.exerciseName,
                           record.weightRecord!.setId
                         )}
-                        className={`flex items-center gap-2 px-3 text-left hover:bg-zinc-700/50 transition-colors rounded-lg ${singleRecord ? '' : 'mt-2'}`}
+                        className={`flex items-center gap-2 px-3 text-left hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg ${singleRecord ? '' : 'mt-2'}`}
                       >
                         <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium">
                           {record.weightRecord.value} кг
@@ -195,7 +195,7 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                             record.exerciseName,
                             record.volumeRecord!.setId
                           )}
-                          className="flex items-center gap-2 px-3 text-left hover:bg-zinc-700/50 transition-colors rounded-lg"
+                          className="flex items-center gap-2 px-3 text-left hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg"
                         >
                           {displayContent}
                         </button>

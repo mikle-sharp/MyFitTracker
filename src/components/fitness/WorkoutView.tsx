@@ -497,7 +497,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                   setWeightValue(workout.weight?.toString() || '');
                   setIsNotesOpen(true);
                 }}
-                className="h-9 w-9 rounded-lg text-zinc-500 hover:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent"
+                className="h-9 w-9 rounded-lg text-zinc-500 hover:text-zinc-300 active:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent"
                 title="Добавить заметку"
               >
                 <PencilIcon className="w-4 h-4" style={(workout.notes || workout.weight) ? { color: colors.text } : undefined} />
@@ -507,7 +507,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
               variant="ghost"
               size="icon"
               onClick={() => setShowDeleteWorkoutConfirm(true)}
-              className="text-zinc-500 hover:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent"
+              className="text-zinc-500 hover:text-red-400 active:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent"
             >
               <Trash2Icon className="w-5 h-5" />
             </Button>
@@ -536,7 +536,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         <div className="flex justify-between mt-4">
           <div className="flex items-center gap-4">
             {/* Template icon button */}
-            <div className="w-9 flex justify-center">
+            <div className="w-9 flex justify-center shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
@@ -545,27 +545,32 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                   setTemplateName('');
                   setIsTemplatesOpen(true);
                 }}
-                className="h-9 w-9 shrink-0 text-zinc-500 hover:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent"
+                className="h-9 w-9 shrink-0 text-zinc-500 hover:text-zinc-300 active:text-zinc-300 hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent"
                 title="Шаблоны тренировок"
               >
                 <BookmarkIcon className="w-5 h-5" />
               </Button>
             </div>
-            
+
             {workoutDuration !== null && (
-              <div>
-                <div className="text-2xl font-bold text-white">{formatDuration(workoutDuration)}</div>
-                <div className="text-xs text-zinc-500">Затрачено (чч:мм)</div>
+              <div className="text-center min-w-[60px]">
+                <div className="text-lg font-bold text-white">{formatDuration(workoutDuration)}</div>
+                <div className="text-xs text-zinc-500">Затрачено</div>
               </div>
             )}
           </div>
-          <div className="flex gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-white">{workout.exercises.length}</div>
+          <div className="flex gap-4">
+            <div className="text-center min-w-[75px]">
+              <div className="text-lg font-bold text-white">{workout.exercises.length}</div>
               <div className="text-xs text-zinc-500">Упражнений</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-white">{Math.round(totalVolume)}</div>
+            <div className="text-center min-w-[70px]">
+              <div className={cn(
+                "font-bold text-white",
+                Math.round(totalVolume).toString().length > 5 ? "text-sm" : "text-lg"
+              )}>
+                {Math.round(totalVolume)}
+              </div>
               <div className="text-xs text-zinc-500">Объем (кг)</div>
             </div>
           </div>
@@ -663,7 +668,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4 shrink-0">
             <DialogTitle className="text-white font-medium text-base">Добавить упражнение</DialogTitle>
-            <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
+            <DialogClose className="text-zinc-500 hover:text-white active:text-white transition-colors p-1">
               <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
@@ -727,7 +732,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                           ? "opacity-40 cursor-not-allowed text-zinc-500"
                           : isSelected 
                             ? "bg-zinc-600 text-white" 
-                            : "hover:bg-zinc-700/50 text-zinc-300 hover:text-white"
+                            : "hover:bg-zinc-700/50 active:bg-zinc-700/50 text-zinc-300 hover:text-white active:text-white"
                       )}
                     >
                       <span
@@ -788,7 +793,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Введите название упражнения</DialogTitle>
-            <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
+            <DialogClose className="text-zinc-500 hover:text-white active:text-white transition-colors p-1">
               <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
@@ -878,7 +883,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             <DialogTitle className="text-white font-medium text-base">
               Заменить <span className="text-zinc-400">{replacingExerciseName}</span> на
             </DialogTitle>
-            <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
+            <DialogClose className="text-zinc-500 hover:text-white active:text-white transition-colors p-1">
               <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
@@ -943,7 +948,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                           ? "opacity-40 cursor-not-allowed text-zinc-500"
                           : isSelected
                             ? "bg-zinc-600 text-white"
-                            : "hover:bg-zinc-700/50 text-zinc-300 hover:text-white"
+                            : "hover:bg-zinc-700/50 active:bg-zinc-700/50 text-zinc-300 hover:text-white active:text-white"
                       )}
                     >
                       <span
@@ -987,7 +992,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           {/* Header row: title + close button */}
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Заметки к тренировке</DialogTitle>
-            <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
+            <DialogClose className="text-zinc-500 hover:text-white active:text-white transition-colors p-1">
               <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
@@ -1088,7 +1093,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4">
             <DialogTitle className="text-white font-medium text-base">Шаблоны тренировок</DialogTitle>
-            <DialogClose className="text-zinc-500 hover:text-white transition-colors p-1">
+            <DialogClose className="text-zinc-500 hover:text-white active:text-white transition-colors p-1">
               <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
@@ -1105,7 +1110,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                       "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between",
                       selectedTemplate?.id === template.id 
                         ? "bg-zinc-600 text-white" 
-                        : "hover:bg-zinc-700/50 text-zinc-300 hover:text-white"
+                        : "hover:bg-zinc-700/50 active:bg-zinc-700/50 text-zinc-300 hover:text-white active:text-white"
                     )}
                   >
                     <span>{template.name}</span>

@@ -184,7 +184,7 @@ export function Calendar() {
             className={cn(
               'flex items-center gap-1 px-2 py-1 rounded transition-colors',
               'text-xs text-zinc-400',
-              showMonthPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 hover:text-zinc-300'
+              showMonthPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 active:bg-zinc-800 hover:text-zinc-300 active:text-zinc-300'
             )}
           >
             {MONTHS[currentMonthIndex]}
@@ -207,7 +207,7 @@ export function Calendar() {
                     <button
                       key={month}
                       onClick={() => goToMonth(index)}
-                      className="px-2 py-1.5 text-xs rounded-lg transition-colors text-zinc-300 hover:bg-zinc-700 text-center whitespace-nowrap"
+                      className="px-2 py-1.5 text-xs rounded-lg transition-colors text-zinc-300 hover:bg-zinc-700 active:bg-zinc-700 text-center whitespace-nowrap"
                       style={currentMonthIndex === index ? {
                         backgroundColor: '#072f18',
                         color: '#fff'
@@ -232,7 +232,7 @@ export function Calendar() {
             className={cn(
               'flex items-center gap-1 px-2 py-1 rounded transition-colors',
               'text-xs text-zinc-400',
-              showYearPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 hover:text-zinc-300'
+              showYearPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 active:bg-zinc-800 hover:text-zinc-300 active:text-zinc-300'
             )}
           >
             {currentYear}
@@ -255,7 +255,7 @@ export function Calendar() {
                     <button
                       key={year}
                       onClick={() => goToYear(year)}
-                      className="px-4 py-1.5 text-xs rounded-lg transition-colors whitespace-nowrap text-zinc-300 hover:bg-zinc-700"
+                      className="px-4 py-1.5 text-xs rounded-lg transition-colors whitespace-nowrap text-zinc-300 hover:bg-zinc-700 active:bg-zinc-700"
                       style={currentYear === year ? {
                         backgroundColor: '#072f18',
                         color: '#fff'

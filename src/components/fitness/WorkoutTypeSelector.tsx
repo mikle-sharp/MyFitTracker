@@ -50,7 +50,7 @@ export function WorkoutTypeSelector({ selectedType, onSelect, isDefaultStyle = t
               'hover:scale-[1.02] active:scale-95',
               isSelected
                 ? ''
-                : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-500'
+                : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-500 active:border-zinc-500'
             )}
             style={isSelected ? {
               backgroundColor: colors.bg,

@@ -193,7 +193,7 @@ export function SettingsPanel() {
         <Button
           variant="outline"
           size="icon"
-          className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
+          className="border-zinc-700 text-zinc-300 hover:text-white active:text-white hover:bg-zinc-800 active:bg-zinc-800"
         >
           <SettingsIcon className="w-6 h-6" />
         </Button>
@@ -207,7 +207,7 @@ export function SettingsPanel() {
             onClick={handleSecretTap}
           />
           <DialogTitle className="text-lg font-semibold text-white m-0">Инструменты</DialogTitle>
-          <DialogClose className="absolute right-4 rounded-lg opacity-70 transition-opacity hover:opacity-100 focus:outline-none text-zinc-400 hover:text-white">
+          <DialogClose className="absolute right-4 rounded-lg opacity-70 transition-opacity hover:opacity-100 active:opacity-100 focus:outline-none text-zinc-400 hover:text-white active:text-white">
             <XIcon className="w-4 h-4" />
           </DialogClose>
         </div>
@@ -258,7 +258,7 @@ export function SettingsPanel() {
                 <Button
                   onClick={handleImportClick}
                   variant="outline"
-                  className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col"
+                  className="w-full border-zinc-700 text-zinc-300 hover:text-white active:text-white hover:bg-zinc-800 active:bg-zinc-800 h-auto py-3 flex-col"
                 >
                   <ImportIcon className="w-5 h-5 mb-1" />
                   <span className="text-sm">Импорт</span>
@@ -278,7 +278,7 @@ export function SettingsPanel() {
                     }
                   }}
                   variant="outline"
-                  className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col"
+                  className="w-full border-zinc-700 text-zinc-300 hover:text-white active:text-white hover:bg-zinc-800 active:bg-zinc-800 h-auto py-3 flex-col"
                 >
                   <ExportIcon className="w-5 h-5 mb-1" />
                   <span className="text-sm">Экспорт</span>
@@ -295,14 +295,14 @@ export function SettingsPanel() {
                       <Button
                         onClick={handleExportCSV}
                         variant="outline"
-                        className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col items-center justify-center"
+                        className="w-full border-zinc-700 text-zinc-300 hover:text-white active:text-white hover:bg-zinc-800 active:bg-zinc-800 h-auto py-3 flex-col items-center justify-center"
                       >
                         <span className="text-sm font-medium">CSV</span>
                       </Button>
                       <Button
                         onClick={handleExportJSON}
                         variant="outline"
-                        className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 h-auto py-3 flex-col items-center justify-center"
+                        className="w-full border-zinc-700 text-zinc-300 hover:text-white active:text-white hover:bg-zinc-800 active:bg-zinc-800 h-auto py-3 flex-col items-center justify-center"
                       >
                         <span className="text-sm font-medium">JSON</span>
                       </Button>
@@ -347,14 +347,14 @@ export function SettingsPanel() {
                   <Button
                     onClick={handleLoadTestData}
                     variant="outline"
-                    className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
+                    className="w-full border-zinc-700 text-zinc-300 hover:text-white active:text-white hover:bg-zinc-800 active:bg-zinc-800"
                   >
                     Загрузить тестовые данные
                   </Button>
                   <Button
                     onClick={handleClearTestData}
                     variant="outline"
-                    className="w-full border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
+                    className="w-full border-zinc-700 text-zinc-300 hover:text-white active:text-white hover:bg-zinc-800 active:bg-zinc-800"
                   >
                     Очистить данные календаря
                   </Button>
