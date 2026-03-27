@@ -1662,7 +1662,6 @@ export function ExerciseCard({
                   {/* Buttons */}
                   <div className="flex justify-end items-center gap-2 pt-4">
                     <Button
-                      variant="outline"
                       onClick={() => {
                         setIsAddingSet(false);
                         setNewReps('');
@@ -1675,7 +1674,7 @@ export function ExerciseCard({
                         setSelectedEquipment(null);
                         setSelectedGrip(null);
                       }}
-                      className="border-zinc-600 bg-zinc-700 text-zinc-300 hover:text-zinc-300 hover:bg-zinc-700 retro-large-text"
+                      className="bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300 active:bg-zinc-700 active:text-zinc-300 retro-large-text"
                     >
                       Отмена
                     </Button>

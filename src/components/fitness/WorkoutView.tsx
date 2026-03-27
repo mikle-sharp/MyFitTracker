@@ -69,6 +69,8 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   const [templateName, setTemplateName] = useState('');
   const [showNoExercisesError, setShowNoExercisesError] = useState(false);
   const [showNoTemplatesError, setShowNoTemplatesError] = useState(false);
+  const [showDeleteExerciseConfirm, setShowDeleteExerciseConfirm] = useState(false);
+  const [exerciseListVersion, setExerciseListVersion] = useState(0);
   
   // Drag-and-drop state
   const [dragState, setDragState] = useState<{
@@ -132,7 +134,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
     };
   }, [dragState]);
   
-  const { addExercise, removeExercise, replaceExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes, updateWorkoutWeight, getTemplates, saveTemplate, loadTemplate, deleteTemplate } = useFitnessStore();
+  const { addExercise, removeExercise, replaceExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes, updateWorkoutWeight, getTemplates, saveTemplate, loadTemplate, deleteTemplate, deleteExerciseFromPresets } = useFitnessStore();
 
   const colors = WORKOUT_TYPE_COLORS[workout.type];
   
@@ -142,7 +144,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   // Получаем ВСЕ упражнения из базы (стандартные + пользовательские всех типов)
   const allExercisesList = useMemo(() => {
     return getAllExercises();
-  }, []);
+  }, [exerciseListVersion]);
 
   // Добавленные упражнения
   const addedExerciseNames = useMemo(() => {
@@ -754,16 +756,26 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
           {/* Bottom buttons */}
           <div className="flex items-center justify-between px-4 pb-4 shrink-0">
-            <Button
-              onClick={() => {
-                setIsAddExerciseOpen(false);
-                setIsCreateCustomOpen(true);
-              }}
-              style={{ backgroundColor: '#ffae00' }}
-              className="text-black retro-large-text"
-            >
-              Создать своё
-            </Button>
+            {selectedExercise ? (
+              <Button
+                onClick={() => setShowDeleteExerciseConfirm(true)}
+                style={{ backgroundColor: '#c93843' }}
+                className="text-white retro-large-text"
+              >
+                Удалить
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  setIsAddExerciseOpen(false);
+                  setIsCreateCustomOpen(true);
+                }}
+                style={{ backgroundColor: '#ffae00' }}
+                className="text-black retro-large-text"
+              >
+                Создать своё
+              </Button>
+            )}
             <Button
               onClick={handleAddSelectedExercise}
               disabled={!selectedExercise}
@@ -775,6 +787,26 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete exercise confirmation dialog */}
+      <ConfirmDialog
+        open={showDeleteExerciseConfirm}
+        onOpenChange={setShowDeleteExerciseConfirm}
+        title={`Удалить упражнение "${selectedExercise}"?`}
+        description="Это удалит упражнение из списка предустановок, а также все подходы этого упражнения во всех днях тренировок."
+        confirmText="Удалить"
+        cancelText="Отмена"
+        onConfirm={() => {
+          if (selectedExercise) {
+            deleteExerciseFromPresets(selectedExercise);
+            setSelectedExercise(null);
+            setSearchQuery('');
+            setExerciseTypeFilter(null);
+            setExerciseListVersion(v => v + 1);
+          }
+        }}
+        borderColor="#c93843"
+      />
 
       {/* Create custom exercise dialog */}
       <Dialog open={isCreateCustomOpen} onOpenChange={(open) => {

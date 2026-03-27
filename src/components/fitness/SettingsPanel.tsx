@@ -200,14 +200,16 @@ export function SettingsPanel() {
       </DialogTrigger>
       <DialogContent className="bg-zinc-900 border-zinc-700 max-h-[90vh] overflow-y-auto p-0 gap-0" showCloseButton={false}>
         {/* Header with title and close button */}
-        <div className="flex items-center justify-center px-4 pt-4 pb-0 relative">
-          {/* Secret tap area on the left */}
-          <div 
-            className="absolute left-4 w-12 h-8 cursor-default"
-            onClick={handleSecretTap}
-          />
-          <DialogTitle className="text-lg font-semibold text-white m-0">Инструменты</DialogTitle>
-          <DialogClose className="absolute right-4 rounded-lg opacity-70 transition-opacity hover:opacity-100 active:opacity-100 focus:outline-none text-zinc-400 hover:text-white active:text-white">
+        <div className="flex items-center justify-between px-4 pt-4 relative">
+          <div className="relative">
+            {/* Secret tap area over title */}
+            <div 
+              className="absolute inset-0 cursor-default z-10"
+              onClick={handleSecretTap}
+            />
+            <DialogTitle className="text-white font-medium text-base">Инструменты</DialogTitle>
+          </div>
+          <DialogClose className="rounded-lg opacity-70 transition-opacity hover:opacity-100 active:opacity-100 focus:outline-none text-zinc-400 hover:text-white active:text-white">
             <XIcon className="w-4 h-4" />
           </DialogClose>
         </div>

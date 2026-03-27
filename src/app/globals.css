@@ -202,6 +202,27 @@ body.retro-mode .rounded-full {
   border-radius: 0 !important;
 }
 
+/* ============================================
+   КНОПКИ - HOVER И АНИМАЦИИ (по умолчанию)
+   ============================================ */
+
+/* Hover задержка для кнопок -hover эффект остаётся дольше после нажатия */
+button[data-slot="button"]:not(body.retro-mode *),
+button[data-slot="dialog-trigger"]:not(body.retro-mode *) {
+  transition-timing-function: ease-out;
+}
+
+/* После активного состояния hover держится дольше */
+button[data-slot="button"]:not(body.retro-mode *):active,
+button[data-slot="dialog-trigger"]:not(body.retro-mode *):active {
+  transition-delay: 0ms;
+}
+
+button[data-slot="button"]:not(body.retro-mode *):not(:active),
+button[data-slot="dialog-trigger"]:not(body.retro-mode *):not(:active) {
+  transition-delay: 100ms;
+}
+
 /* Minecraft-стиль кнопок (shadcn Button и DialogTrigger) */
 body.retro-mode button[data-slot="button"],
 body.retro-mode button[data-slot="dialog-trigger"] {
@@ -217,6 +238,7 @@ body.retro-mode button[data-slot="dialog-trigger"]:active {
   border: 2px solid !important;
   border-color: rgba(0,0,0,0.4) rgba(255,255,255,0.15) rgba(255,255,255,0.25) rgba(0,0,0,0.25) !important;
   box-shadow: inset 2px 2px 0 rgba(0,0,0,0.25), inset -2px -2px 0 rgba(255,255,255,0.1) !important;
+  transform: none !important;
 }
 
 /* Кнопка закрыть X в диалогах */
@@ -232,6 +254,7 @@ body.retro-mode button[data-slot="dialog-close"]:active {
   border: 2px solid !important;
   border-color: rgba(0,0,0,0.4) rgba(255,255,255,0.15) rgba(255,255,255,0.25) rgba(0,0,0,0.25) !important;
   box-shadow: inset 2px 2px 0 rgba(0,0,0,0.25), inset -2px -2px 0 rgba(255,255,255,0.1) !important;
+  transform: none !important;
 }
 
 /* Крупный текст на кнопках в retro режиме */

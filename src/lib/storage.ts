@@ -3,10 +3,36 @@ import { Workout, Exercise, WorkoutSet, WorkoutType, DEFAULT_EXERCISES, isAbsExe
 const STORAGE_KEY = 'fitness-journal-workouts';
 const CUSTOM_EXERCISES_KEY = 'fitness-journal-custom-exercises-by-type';
 const TEMPLATES_KEY = 'fitness-journal-templates';
+const DELETED_EXERCISES_KEY = 'fitness-journal-deleted-exercises';
 
 // Генерация уникального ID
 export const generateId = (): string => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
+// Получение списка удалённых упражнений
+export const getDeletedExercises = (): string[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(DELETED_EXERCISES_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Добавление упражнения в список удалённых
+const addDeletedExercise = (name: string): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    const deleted = getDeletedExercises();
+    if (!deleted.includes(name)) {
+      deleted.push(name);
+      localStorage.setItem(DELETED_EXERCISES_KEY, JSON.stringify(deleted));
+    }
+  } catch {
+    // ignore
+  }
 };
 
 // Получение всех тренировок
@@ -78,27 +104,34 @@ export const addCustomExerciseForType = (type: WorkoutType, name: string): void 
 
 // Получение всех упражнений для типа тренировки (стандартные + пользовательские)
 export const getAllExercisesForType = (type: WorkoutType): string[] => {
+  const deletedExercises = getDeletedExercises();
+  
   if (type === 'fullbody') {
     // Для фулбоди объединяем упражнения из всех типов
     const allExercises = new Set<string>();
     (['chest', 'back', 'legs'] as WorkoutType[]).forEach(t => {
       const defaultExercises = DEFAULT_EXERCISES[t];
       const customExercises = getCustomExercisesByType(t);
-      [...defaultExercises, ...customExercises].forEach(ex => allExercises.add(ex));
+      [...defaultExercises, ...customExercises]
+        .filter(ex => !deletedExercises.includes(ex))
+        .forEach(ex => allExercises.add(ex));
     });
     // Добавляем пользовательские упражнения для fullbody
     const fullbodyCustom = getCustomExercisesByType('fullbody');
-    fullbodyCustom.forEach(ex => allExercises.add(ex));
+    fullbodyCustom
+      .filter(ex => !deletedExercises.includes(ex))
+      .forEach(ex => allExercises.add(ex));
     return Array.from(allExercises);
   }
   
   const defaultExercises = DEFAULT_EXERCISES[type];
   const customExercises = getCustomExercisesByType(type);
-  return [...defaultExercises, ...customExercises];
+  return [...defaultExercises, ...customExercises].filter(ex => !deletedExercises.includes(ex));
 };
 
 // Получение ВСЕХ упражнений из базы (стандартные + пользовательские всех типов)
 export const getAllExercises = (): string[] => {
+  const deletedExercises = getDeletedExercises();
   const allExercises = new Set<string>();
   
   // Стандартные упражнения всех типов
@@ -113,12 +146,14 @@ export const getAllExercises = (): string[] => {
     customExercises.forEach(ex => allExercises.add(ex));
   });
   
-  return Array.from(allExercises);
+  // Фильтруем удалённые
+  return Array.from(allExercises).filter(ex => !deletedExercises.includes(ex));
 };
 
 // Создание новой тренировки
 export const createWorkout = (date: string, type: WorkoutType): Workout => {
   const now = new Date().toISOString();
+  const deletedExercises = getDeletedExercises();
   
   let exerciseNames: string[];
   
@@ -129,9 +164,9 @@ export const createWorkout = (date: string, type: WorkoutType): Workout => {
       ...DEFAULT_EXERCISES.back.slice(0, 2),
       ...DEFAULT_EXERCISES.legs.slice(0, 2),
       'Планка', // пресс
-    ];
+    ].filter(ex => !deletedExercises.includes(ex));
   } else {
-    exerciseNames = [...DEFAULT_EXERCISES[type]];
+    exerciseNames = [...DEFAULT_EXERCISES[type]].filter(ex => !deletedExercises.includes(ex));
   }
   
   const exercises: Exercise[] = exerciseNames.map(name => ({
@@ -724,4 +759,34 @@ export const loadTemplateToWorkout = (workoutId: string, templateId: string): Wo
   saveWorkouts(workouts);
   
   return workout;
+};
+
+// Удаление упражнения из предустановок и всех тренировок
+export const deleteExerciseFromPresets = (exerciseName: string): void => {
+  if (typeof window === 'undefined') return;
+  
+  // 1. Добавляем в список удалённых (чтобы скрыть из стандартных)
+  addDeletedExercise(exerciseName);
+  
+  // 2. Удаляем из пользовательских упражнений
+  try {
+    const data = localStorage.getItem(CUSTOM_EXERCISES_KEY);
+    if (data) {
+      const allCustom: Record<WorkoutType, string[]> = JSON.parse(data);
+      (['chest', 'back', 'legs', 'fullbody'] as WorkoutType[]).forEach(type => {
+        allCustom[type] = allCustom[type].filter(name => name !== exerciseName);
+      });
+      localStorage.setItem(CUSTOM_EXERCISES_KEY, JSON.stringify(allCustom));
+    }
+  } catch {
+    // ignore
+  }
+  
+  // 3. Удаляем из всех тренировок
+  const workouts = getWorkouts();
+  workouts.forEach(workout => {
+    workout.exercises = workout.exercises.filter(e => e.name !== exerciseName);
+    workout.updatedAt = new Date().toISOString();
+  });
+  saveWorkouts(workouts);
 };

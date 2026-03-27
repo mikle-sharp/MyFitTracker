@@ -34,6 +34,8 @@ interface FitnessStore {
   saveTemplate: (name: string, workoutType: WorkoutType, exerciseNames: string[]) => void;
   loadTemplate: (workoutId: string, templateId: string) => Workout | null;
   deleteTemplate: (templateId: string) => void;
+  // Удаление упражнения из предустановок
+  deleteExerciseFromPresets: (exerciseName: string) => void;
 }
 
 // Получить сегодняшнюю дату в формате YYYY-MM-DD
@@ -230,5 +232,17 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   
   deleteTemplate: (templateId: string) => {
     storage.deleteTemplate(templateId);
+  },
+  
+  // Удаление упражнения из предустановок
+  deleteExerciseFromPresets: (exerciseName: string) => {
+    storage.deleteExerciseFromPresets(exerciseName);
+    const workouts = storage.getWorkouts();
+    const currentWorkout = get().currentWorkout;
+    // Обновляем текущую тренировку если она изменилась
+    const updatedCurrentWorkout = currentWorkout 
+      ? workouts.find(w => w.id === currentWorkout.id) || null 
+      : null;
+    set({ workouts, currentWorkout: updatedCurrentWorkout });
   },
 }));
