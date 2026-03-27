@@ -96,8 +96,12 @@ export interface PersonalRecord {
   prevVolumeRecord: RecordData | null;
 }
 
-// Предустановленные упражнения для каждого типа тренировки
-export const DEFAULT_EXERCISES: Record<WorkoutType, string[]> = {
+// Тип для базы упражнений (ключи - типы для цветовой маркировки)
+export type ExerciseBaseKey = 'chest' | 'back' | 'legs' | 'common';
+export type ExercisesBase = Record<ExerciseBaseKey, string[]>;
+
+// Дефолтная база упражнений (используется при первом запуске или сбросе)
+export const DEFAULT_EXERCISES_BASE: ExercisesBase = {
   chest: [
     'Жим лежа',
     'Жим на наклонной',
@@ -119,28 +123,35 @@ export const DEFAULT_EXERCISES: Record<WorkoutType, string[]> = {
     'Разгибание ног',
     'Сгибание ног',
   ],
+  common: [
+    'Планка',
+    'Скручивания на пресс',
+    'Подъем ног в висе',
+    'Боковая планка',
+    'Русский твист',
+    'Велосипед',
+    'Скручивания',
+    'Обратные скручивания',
+    'Подъем корпуса',
+    'V-up',
+  ],
+};
+
+// Предустановленные упражнения для каждого типа тренировки (для обратной совместимости)
+export const DEFAULT_EXERCISES: Record<WorkoutType, string[]> = {
+  chest: DEFAULT_EXERCISES_BASE.chest,
+  back: DEFAULT_EXERCISES_BASE.back,
+  legs: DEFAULT_EXERCISES_BASE.legs,
   fullbody: [
-    'Приседания',
-    'Жим лежа',
-    'Становая тяга',
-    'Подтягивания',
-    'Отжимания',
+    ...DEFAULT_EXERCISES_BASE.chest.slice(0, 2),
+    ...DEFAULT_EXERCISES_BASE.back.slice(0, 2),
+    ...DEFAULT_EXERCISES_BASE.legs.slice(0, 2),
+    'Планка',
   ],
 };
 
 // Упражнения на пресс (требуют особого ввода)
-export const ABS_EXERCISES = [
-  'Планка',
-  'Скручивания на пресс',
-  'Подъем ног в висе',
-  'Боковая планка',
-  'Русский твист',
-  'Велосипед',
-  'Скручивания',
-  'Обратные скручивания',
-  'Подъем корпуса',
-  'V-up',
-];
+export const ABS_EXERCISES = DEFAULT_EXERCISES_BASE.common;
 
 // Проверка, является ли упражнение на пресс
 export const isAbsExercise = (name: string): boolean => {

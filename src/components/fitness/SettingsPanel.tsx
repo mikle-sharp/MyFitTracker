@@ -363,19 +363,21 @@ export function SettingsPanel() {
                 </div>
 
                 {testDataStatus && (
-                  <div className={cn(
-                    'mt-4 p-3 rounded-lg flex items-center gap-2',
-                    testDataStatus.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-red-500/10 border border-red-500/30'
-                  )}>
+                  <div
+                    className={cn(
+                      'mt-4 px-3 rounded-lg flex items-center gap-2 h-9',
+                      testDataStatus.type === 'success' ? 'bg-[rgb(7,47,24)] border border-[rgb(3,123,52)]' : 'bg-red-500/10 border border-red-500/30'
+                    )}
+                  >
                     {testDataStatus.type === 'success' ? (
-                      <CheckIcon className="w-4 h-4 text-emerald-400" />
+                      <CheckIcon className="w-4 h-4" style={{ color: 'rgb(25, 166, 85)' }} />
                     ) : (
                       <XIcon className="w-4 h-4 text-red-400" />
                     )}
                     <span className={cn(
                       'text-sm',
-                      testDataStatus.type === 'success' ? 'text-emerald-400' : 'text-red-400'
-                    )}>
+                      testDataStatus.type === 'success' ? '' : 'text-red-400'
+                    )} style={testDataStatus.type === 'success' ? { color: 'rgb(25, 166, 85)' } : undefined}>
                       {testDataStatus.message}
                     </span>
                   </div>

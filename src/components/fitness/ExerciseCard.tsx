@@ -1210,7 +1210,7 @@ export function ExerciseCard({
         <div className="flex">
           <div className="flex-1 min-w-0">
             {/* Header */}
-            <div className="flex items-center justify-between py-2 pl-2 pr-4" style={{ background: `linear-gradient(to right, ${exerciseColors.border}, transparent) bottom left / 100% 1px no-repeat` }}>
+            <div className="flex items-center justify-between gap-2 py-2 pl-2 pr-4" style={{ background: `linear-gradient(to right, ${exerciseColors.border}, transparent) bottom left / 100% 1px no-repeat` }}>
               <div className="flex items-center gap-2">
                 {/* Move buttons / Drag handle */}
                 {currentWorkout && (
@@ -1265,9 +1265,9 @@ export function ExerciseCard({
                   >
                     <TrendingUpIcon className="w-4 h-4" />
                   </Button>
-                  
-                  <div className="w-9" />
-                  
+
+                  <div className="w-1" />
+
                   {onReplace && (
                     <Button
                       variant="ghost"
@@ -1715,7 +1715,7 @@ export function ExerciseCard({
         title="Удалить упражнение?"
         description={
           <>
-            Упражнение <strong className="text-white">"{exercise.name}"</strong> и все его подходы будут удалены.<br />
+            Упражнение <strong className="text-white">"{exercise.name}"</strong> и все его подходы на текущей дате будут удалены.<br />
             Это действие нельзя отменить.
           </>
         }

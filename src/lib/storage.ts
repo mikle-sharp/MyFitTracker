@@ -1,8 +1,11 @@
-import { Workout, Exercise, WorkoutSet, WorkoutType, DEFAULT_EXERCISES, isAbsExercise, ExerciseType, EquipmentType, GripType, WorkoutTemplate } from './types';
+import { Workout, Exercise, WorkoutSet, WorkoutType, ExerciseType, EquipmentType, GripType, WorkoutTemplate, ExercisesBase, ExerciseBaseKey, DEFAULT_EXERCISES_BASE } from './types';
 
 const STORAGE_KEY = 'fitness-journal-workouts';
-const CUSTOM_EXERCISES_KEY = 'fitness-journal-custom-exercises-by-type';
+const EXERCISES_BASE_KEY = 'fitness-journal-exercises-base';
 const TEMPLATES_KEY = 'fitness-journal-templates';
+
+// Старые ключи (для миграции при импорте старых данных)
+const CUSTOM_EXERCISES_KEY = 'fitness-journal-custom-exercises-by-type';
 const DELETED_EXERCISES_KEY = 'fitness-journal-deleted-exercises';
 
 // Генерация уникального ID
@@ -10,30 +13,93 @@ export const generateId = (): string => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
-// Получение списка удалённых упражнений
-export const getDeletedExercises = (): string[] => {
-  if (typeof window === 'undefined') return [];
+// === БАЗА УПРАЖНЕНИЙ ===
+
+// Получение базы упражнений (из localStorage или дефолтная)
+export const getExercisesBase = (): ExercisesBase => {
+  if (typeof window === 'undefined') return DEFAULT_EXERCISES_BASE;
   try {
-    const data = localStorage.getItem(DELETED_EXERCISES_KEY);
-    return data ? JSON.parse(data) : [];
+    const data = localStorage.getItem(EXERCISES_BASE_KEY);
+    if (data) {
+      const parsed = JSON.parse(data);
+      // Убеждаемся что все ключи существуют
+      return {
+        chest: parsed.chest || [],
+        back: parsed.back || [],
+        legs: parsed.legs || [],
+        common: parsed.common || [],
+      };
+    }
+    return DEFAULT_EXERCISES_BASE;
   } catch {
-    return [];
+    return DEFAULT_EXERCISES_BASE;
   }
 };
 
-// Добавление упражнения в список удалённых
-const addDeletedExercise = (name: string): void => {
+// Сохранение базы упражнений
+export const saveExercisesBase = (base: ExercisesBase): void => {
   if (typeof window === 'undefined') return;
-  try {
-    const deleted = getDeletedExercises();
-    if (!deleted.includes(name)) {
-      deleted.push(name);
-      localStorage.setItem(DELETED_EXERCISES_KEY, JSON.stringify(deleted));
-    }
-  } catch {
-    // ignore
+  localStorage.setItem(EXERCISES_BASE_KEY, JSON.stringify(base));
+};
+
+// Добавление упражнения в базу
+export const addExerciseToBase = (type: ExerciseBaseKey, name: string): void => {
+  if (typeof window === 'undefined') return;
+  const base = getExercisesBase();
+  if (!base[type].includes(name)) {
+    base[type].push(name);
+    saveExercisesBase(base);
   }
 };
+
+// Удаление упражнения из базы
+export const deleteExerciseFromBase = (name: string): void => {
+  if (typeof window === 'undefined') return;
+  const base = getExercisesBase();
+  (['chest', 'back', 'legs', 'common'] as ExerciseBaseKey[]).forEach(type => {
+    base[type] = base[type].filter(ex => ex !== name);
+  });
+  saveExercisesBase(base);
+};
+
+// Сброс базы к дефолтной
+export const resetExercisesBase = (): void => {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(EXERCISES_BASE_KEY);
+};
+
+// Получение всех упражнений для типа тренировки
+export const getAllExercisesForType = (type: WorkoutType): string[] => {
+  const base = getExercisesBase();
+  
+  if (type === 'fullbody') {
+    // Для фулбоди объединяем упражнения из chest, back, legs
+    const allExercises = new Set<string>();
+    (['chest', 'back', 'legs'] as ExerciseBaseKey[]).forEach(t => {
+      base[t].forEach(ex => allExercises.add(ex));
+    });
+    return Array.from(allExercises);
+  }
+  
+  // Для других типов - упражнения соответствующего типа + common
+  const exercises = new Set<string>();
+  const typeKey = type as ExerciseBaseKey;
+  base[typeKey]?.forEach(ex => exercises.add(ex));
+  base.common?.forEach(ex => exercises.add(ex));
+  return Array.from(exercises);
+};
+
+// Получение ВСЕХ упражнений из базы
+export const getAllExercises = (): string[] => {
+  const base = getExercisesBase();
+  const allExercises = new Set<string>();
+  (['chest', 'back', 'legs', 'common'] as ExerciseBaseKey[]).forEach(type => {
+    base[type].forEach(ex => allExercises.add(ex));
+  });
+  return Array.from(allExercises);
+};
+
+// === ТРЕНИРОВКИ ===
 
 // Получение всех тренировок
 export const getWorkouts = (): Workout[] => {
@@ -64,109 +130,25 @@ export const getWorkoutById = (id: string): Workout | undefined => {
   return workouts.find(w => w.id === id);
 };
 
-// Получение пользовательских упражнений по типу тренировки
-export const getCustomExercisesByType = (type: WorkoutType): string[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const data = localStorage.getItem(CUSTOM_EXERCISES_KEY);
-    const allCustom: Record<WorkoutType, string[]> = data ? JSON.parse(data) : {
-      chest: [],
-      back: [],
-      legs: [],
-      fullbody: [],
-    };
-    return allCustom[type] || [];
-  } catch {
-    return [];
-  }
-};
-
-// Сохранение пользовательского упражнения для типа тренировки
-export const addCustomExerciseForType = (type: WorkoutType, name: string): void => {
-  if (typeof window === 'undefined') return;
-  try {
-    const data = localStorage.getItem(CUSTOM_EXERCISES_KEY);
-    const allCustom: Record<WorkoutType, string[]> = data ? JSON.parse(data) : {
-      chest: [],
-      back: [],
-      legs: [],
-      fullbody: [],
-    };
-    
-    if (!allCustom[type].includes(name)) {
-      allCustom[type].push(name);
-      localStorage.setItem(CUSTOM_EXERCISES_KEY, JSON.stringify(allCustom));
-    }
-  } catch {
-    // ignore
-  }
-};
-
-// Получение всех упражнений для типа тренировки (стандартные + пользовательские)
-export const getAllExercisesForType = (type: WorkoutType): string[] => {
-  const deletedExercises = getDeletedExercises();
-  
-  if (type === 'fullbody') {
-    // Для фулбоди объединяем упражнения из всех типов
-    const allExercises = new Set<string>();
-    (['chest', 'back', 'legs'] as WorkoutType[]).forEach(t => {
-      const defaultExercises = DEFAULT_EXERCISES[t];
-      const customExercises = getCustomExercisesByType(t);
-      [...defaultExercises, ...customExercises]
-        .filter(ex => !deletedExercises.includes(ex))
-        .forEach(ex => allExercises.add(ex));
-    });
-    // Добавляем пользовательские упражнения для fullbody
-    const fullbodyCustom = getCustomExercisesByType('fullbody');
-    fullbodyCustom
-      .filter(ex => !deletedExercises.includes(ex))
-      .forEach(ex => allExercises.add(ex));
-    return Array.from(allExercises);
-  }
-  
-  const defaultExercises = DEFAULT_EXERCISES[type];
-  const customExercises = getCustomExercisesByType(type);
-  return [...defaultExercises, ...customExercises].filter(ex => !deletedExercises.includes(ex));
-};
-
-// Получение ВСЕХ упражнений из базы (стандартные + пользовательские всех типов)
-export const getAllExercises = (): string[] => {
-  const deletedExercises = getDeletedExercises();
-  const allExercises = new Set<string>();
-  
-  // Стандартные упражнения всех типов
-  (['chest', 'back', 'legs'] as WorkoutType[]).forEach(t => {
-    const defaultExercises = DEFAULT_EXERCISES[t];
-    defaultExercises.forEach(ex => allExercises.add(ex));
-  });
-  
-  // Пользовательские упражнения всех типов
-  (['chest', 'back', 'legs', 'fullbody'] as WorkoutType[]).forEach(t => {
-    const customExercises = getCustomExercisesByType(t);
-    customExercises.forEach(ex => allExercises.add(ex));
-  });
-  
-  // Фильтруем удалённые
-  return Array.from(allExercises).filter(ex => !deletedExercises.includes(ex));
-};
-
 // Создание новой тренировки
 export const createWorkout = (date: string, type: WorkoutType): Workout => {
   const now = new Date().toISOString();
-  const deletedExercises = getDeletedExercises();
+  const base = getExercisesBase();
   
   let exerciseNames: string[];
   
   if (type === 'fullbody') {
     // Для фулбоди: по 2 упражнения из каждого типа + 1 на пресс
     exerciseNames = [
-      ...DEFAULT_EXERCISES.chest.slice(0, 2),
-      ...DEFAULT_EXERCISES.back.slice(0, 2),
-      ...DEFAULT_EXERCISES.legs.slice(0, 2),
-      'Планка', // пресс
-    ].filter(ex => !deletedExercises.includes(ex));
+      ...(base.chest.slice(0, 2)),
+      ...(base.back.slice(0, 2)),
+      ...(base.legs.slice(0, 2)),
+      ...(base.common.slice(0, 1)), // первое упражнение из common (обычно Планка)
+    ];
   } else {
-    exerciseNames = [...DEFAULT_EXERCISES[type]].filter(ex => !deletedExercises.includes(ex));
+    // Для других типов: упражнения соответствующего типа
+    const typeKey = type as ExerciseBaseKey;
+    exerciseNames = [...base[typeKey]];
   }
   
   const exercises: Exercise[] = exerciseNames.map(name => ({
@@ -258,8 +240,9 @@ export const addExerciseToWorkout = (
   workout.exercises.push(newExercise);
   workout.updatedAt = new Date().toISOString();
   
-  // Сохраняем упражнение для данного типа тренировки
-  addCustomExerciseForType(workout.type, exerciseName);
+  // Добавляем упражнение в базу если его там нет
+  const targetType = exerciseType || 'common';
+  addExerciseToBase(targetType, exerciseName);
   
   saveWorkouts(workouts);
 
@@ -308,8 +291,9 @@ export const replaceExerciseInWorkout = (
   workout.exercises[index] = newExercise;
   workout.updatedAt = new Date().toISOString();
   
-  // Сохраняем упражнение для данного типа тренировки
-  addCustomExerciseForType(workout.type, newExerciseName);
+  // Добавляем упражнение в базу если его там нет
+  const targetType = exerciseType || 'common';
+  addExerciseToBase(targetType, newExerciseName);
   
   saveWorkouts(workouts);
 
@@ -331,7 +315,7 @@ export const moveExerciseUp = (
 
   // Swap with previous
   [workout.exercises[index - 1], workout.exercises[index]] = 
-  [workout.exercises[index], workout.exercises[index - 1]];
+    [workout.exercises[index], workout.exercises[index - 1]];
   
   workout.updatedAt = new Date().toISOString();
   saveWorkouts(workouts);
@@ -352,7 +336,7 @@ export const moveExerciseDown = (
 
   // Swap with next
   [workout.exercises[index], workout.exercises[index + 1]] = 
-  [workout.exercises[index + 1], workout.exercises[index]];
+    [workout.exercises[index + 1], workout.exercises[index]];
   
   workout.updatedAt = new Date().toISOString();
   saveWorkouts(workouts);
@@ -462,6 +446,8 @@ export const getWorkoutDates = (): Set<string> => {
   return new Set(workouts.map(w => w.date));
 };
 
+// === ЭКСПОРТ / ИМПОРТ ===
+
 // Экспорт данных в CSV
 export const exportToCSV = (): string => {
   const workouts = getWorkouts();
@@ -504,20 +490,13 @@ export const exportToCSV = (): string => {
 // Экспорт данных в JSON
 export const exportToJSON = (): string => {
   const workouts = getWorkouts();
-  const customExercisesData = typeof window !== 'undefined' 
-    ? localStorage.getItem(CUSTOM_EXERCISES_KEY) 
-    : null;
+  const exercisesBase = getExercisesBase();
   
   const exportData = {
     workouts,
-    customExercisesByType: customExercisesData ? JSON.parse(customExercisesData) : {
-      chest: [],
-      back: [],
-      legs: [],
-      fullbody: [],
-    },
+    exercisesBase,
     exportDate: new Date().toISOString(),
-    version: '1.0',
+    version: '2.0',
   };
   
   return JSON.stringify(exportData, null, 2);
@@ -528,12 +507,39 @@ export const importFromJSON = (jsonString: string): { success: boolean; message:
   try {
     const data = JSON.parse(jsonString);
     
+    // Новый формат (версия 2.0+)
     if (data.workouts && Array.isArray(data.workouts)) {
       saveWorkouts(data.workouts);
       
-      if (data.customExercisesByType) {
-        localStorage.setItem(CUSTOM_EXERCISES_KEY, JSON.stringify(data.customExercisesByType));
+      // Импортируем базу упражнений
+      if (data.exercisesBase) {
+        saveExercisesBase(data.exercisesBase);
+      } else if (data.customExercisesByType) {
+        // Миграция со старого формата
+        const base = { ...DEFAULT_EXERCISES_BASE };
+        const deleted: string[] = data.deletedExercises || [];
+        
+        // Добавляем пользовательские упражнения
+        (['chest', 'back', 'legs'] as WorkoutType[]).forEach(type => {
+          const custom = data.customExercisesByType[type] || [];
+          custom.forEach((ex: string) => {
+            if (!deleted.includes(ex) && !base[type as ExerciseBaseKey].includes(ex)) {
+              base[type as ExerciseBaseKey].push(ex);
+            }
+          });
+        });
+        
+        // Фильтруем удалённые из дефолтных
+        (['chest', 'back', 'legs', 'common'] as ExerciseBaseKey[]).forEach(type => {
+          base[type] = base[type].filter(ex => !deleted.includes(ex));
+        });
+        
+        saveExercisesBase(base);
       }
+      
+      // Очищаем старые ключи
+      localStorage.removeItem(CUSTOM_EXERCISES_KEY);
+      localStorage.removeItem(DELETED_EXERCISES_KEY);
       
       return { success: true, message: `Импортировано ${data.workouts.length} тренировок` };
     }
@@ -541,6 +547,8 @@ export const importFromJSON = (jsonString: string): { success: boolean; message:
     // Попытка импорта старого формата (просто массив тренировок)
     if (Array.isArray(data)) {
       saveWorkouts(data);
+      // Сбрасываем базу к дефолтной
+      resetExercisesBase();
       return { success: true, message: `Импортировано ${data.length} тренировок` };
     }
     
@@ -641,6 +649,9 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
 
     const workouts = Array.from(workoutsMap.values());
     saveWorkouts(workouts);
+    
+    // При импорте CSV сбрасываем базу к дефолтной
+    resetExercisesBase();
 
     return { success: true, message: `Импортировано ${workouts.length} тренировок` };
   } catch (error) {
@@ -761,32 +772,57 @@ export const loadTemplateToWorkout = (workoutId: string, templateId: string): Wo
   return workout;
 };
 
-// Удаление упражнения из предустановок и всех тренировок
+// Удаление упражнения из базы и всех тренировок
 export const deleteExerciseFromPresets = (exerciseName: string): void => {
   if (typeof window === 'undefined') return;
   
-  // 1. Добавляем в список удалённых (чтобы скрыть из стандартных)
-  addDeletedExercise(exerciseName);
+  // 1. Удаляем из базы упражнений
+  deleteExerciseFromBase(exerciseName);
   
-  // 2. Удаляем из пользовательских упражнений
-  try {
-    const data = localStorage.getItem(CUSTOM_EXERCISES_KEY);
-    if (data) {
-      const allCustom: Record<WorkoutType, string[]> = JSON.parse(data);
-      (['chest', 'back', 'legs', 'fullbody'] as WorkoutType[]).forEach(type => {
-        allCustom[type] = allCustom[type].filter(name => name !== exerciseName);
-      });
-      localStorage.setItem(CUSTOM_EXERCISES_KEY, JSON.stringify(allCustom));
-    }
-  } catch {
-    // ignore
-  }
-  
-  // 3. Удаляем из всех тренировок
+  // 2. Удаляем из всех тренировок
   const workouts = getWorkouts();
   workouts.forEach(workout => {
     workout.exercises = workout.exercises.filter(e => e.name !== exerciseName);
     workout.updatedAt = new Date().toISOString();
   });
   saveWorkouts(workouts);
+};
+
+// === УСТАРЕВШИЕ ФУНКЦИИ (для обратной совместимости) ===
+
+// Получение списка удалённых упражнений (устарело)
+export const getDeletedExercises = (): string[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(DELETED_EXERCISES_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Получение пользовательских упражнений по типу тренировки (устарело)
+export const getCustomExercisesByType = (type: WorkoutType): string[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(CUSTOM_EXERCISES_KEY);
+    const allCustom: Record<WorkoutType, string[]> = data ? JSON.parse(data) : {
+      chest: [],
+      back: [],
+      legs: [],
+      fullbody: [],
+    };
+    return allCustom[type] || [];
+  } catch {
+    return [];
+  }
+};
+
+// Сохранение пользовательского упражнения для типа тренировки (устарело)
+export const addCustomExerciseForType = (type: WorkoutType, name: string): void => {
+  if (typeof window === 'undefined') return;
+  
+  // Теперь добавляем в новую базу
+  const typeKey = type === 'fullbody' ? 'common' : type as ExerciseBaseKey;
+  addExerciseToBase(typeKey, name);
 };

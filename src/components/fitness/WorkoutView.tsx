@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useCallback, useEffect, useReducer } from 'react';
-import { Trash2Icon, CalendarIcon, ClockIcon, SearchIcon, RefreshCwIcon, PencilIcon, XIcon, CopyIcon, BookmarkIcon, DumbbellIcon, TargetIcon, LegsIcon, HeartIcon } from '@/components/icons/Icons';
+import { Trash2Icon, CalendarIcon, ClockIcon, SearchIcon, RefreshCwIcon, PencilIcon, XIcon, CopyIcon, BookmarkIcon, DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, TypeIcon } from '@/components/icons/Icons';
 import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType, WorkoutTemplate } from '@/lib/types';
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '@/components/ui/button';
@@ -69,8 +69,14 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   const [templateName, setTemplateName] = useState('');
   const [showNoExercisesError, setShowNoExercisesError] = useState(false);
   const [showNoTemplatesError, setShowNoTemplatesError] = useState(false);
-  const [showDeleteExerciseConfirm, setShowDeleteExerciseConfirm] = useState(false);
   const [exerciseListVersion, setExerciseListVersion] = useState(0);
+
+  // Delete exercises dialog state
+  const [isDeleteExerciseOpen, setIsDeleteExerciseOpen] = useState(false);
+  const [deleteSearchQuery, setDeleteSearchQuery] = useState('');
+  const [deleteTypeFilter, setDeleteTypeFilter] = useState<ExerciseType | null>(null);
+  const [selectedDeleteExercise, setSelectedDeleteExercise] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Drag-and-drop state
   const [dragState, setDragState] = useState<{
@@ -154,21 +160,38 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   // Упражнения для отображения
   const displayedExercises = useMemo(() => {
     let result = allExercisesList;
-    
+
     // Фильтр по поиску - ищет по всем упражнениям
     if (searchQuery) {
-      result = result.filter(ex => 
+      result = result.filter(ex =>
         ex.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    
+
     // Теги фильтруют - показываем только совпадающие
     if (exerciseTypeFilter) {
       result = result.filter(ex => getExerciseType(ex) === exerciseTypeFilter);
     }
-    
+
     return result;
   }, [allExercisesList, searchQuery, exerciseTypeFilter]);
+
+  // Упражнения для отображения в диалоге удаления
+  const deleteDialogExercises = useMemo(() => {
+    let result = allExercisesList;
+
+    if (deleteSearchQuery) {
+      result = result.filter(ex =>
+        ex.toLowerCase().includes(deleteSearchQuery.toLowerCase())
+      );
+    }
+
+    if (deleteTypeFilter) {
+      result = result.filter(ex => getExerciseType(ex) === deleteTypeFilter);
+    }
+
+    return result;
+  }, [allExercisesList, deleteSearchQuery, deleteTypeFilter]);
 
   // Проверка на дубликат упражнения
   const checkDuplicateExercise = (name: string): boolean => {
@@ -644,24 +667,39 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         })}
       </AnimatePresence>
 
-      {/* Add exercise button */}
-      <Dialog open={isAddExerciseOpen} onOpenChange={(open) => {
-        setIsAddExerciseOpen(open);
-        if (!open) {
-          setSearchQuery('');
-          setNewExerciseName('');
-          setExerciseTypeFilter(null);
-          setSelectedExercise(null);
-        }
-      }}>
-        <DialogTrigger asChild>
-          <Button
-            className="w-full retro-large-text"
-            style={{ backgroundColor: '#19a655' }}
-          >
-            Добавить упражнение
-          </Button>
-        </DialogTrigger>
+      {/* Delete button and Add exercise button */}
+      <div className="flex gap-4">
+        {/* Delete exercises button */}
+        <Button
+          onClick={() => {
+            setDeleteSearchQuery('');
+            setDeleteTypeFilter(null);
+            setSelectedDeleteExercise(null);
+            setIsDeleteExerciseOpen(true);
+          }}
+          className="w-9 h-9 shrink-0 p-0 text-primary-foreground"
+          style={{ backgroundColor: 'rgb(201, 56, 67)' }}
+        >
+          <span className="text-sm retro-large-text leading-none">−</span>
+        </Button>
+
+        <Dialog open={isAddExerciseOpen} onOpenChange={(open) => {
+          setIsAddExerciseOpen(open);
+          if (!open) {
+            setSearchQuery('');
+            setNewExerciseName('');
+            setExerciseTypeFilter(null);
+            setSelectedExercise(null);
+          }
+        }}>
+          <DialogTrigger asChild>
+            <Button
+              className="flex-1 retro-large-text"
+              style={{ backgroundColor: '#19a655' }}
+            >
+              Добавить упражнение
+            </Button>
+          </DialogTrigger>
         <DialogContent 
           className="bg-zinc-800 border h-[70vh] !top-[15vh] !translate-y-0 !p-0 !gap-0 flex flex-col"
           style={{ borderColor: colors.border }}
@@ -756,26 +794,16 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
           {/* Bottom buttons */}
           <div className="flex items-center justify-between px-4 pb-4 shrink-0">
-            {selectedExercise ? (
-              <Button
-                onClick={() => setShowDeleteExerciseConfirm(true)}
-                style={{ backgroundColor: '#c93843' }}
-                className="text-white retro-large-text"
-              >
-                Удалить
-              </Button>
-            ) : (
-              <Button
-                onClick={() => {
-                  setIsAddExerciseOpen(false);
-                  setIsCreateCustomOpen(true);
-                }}
-                style={{ backgroundColor: '#ffae00' }}
-                className="text-black retro-large-text"
-              >
-                Создать своё
-              </Button>
-            )}
+            <Button
+              onClick={() => {
+                setIsAddExerciseOpen(false);
+                setIsCreateCustomOpen(true);
+              }}
+              style={{ backgroundColor: '#ffae00' }}
+              className="text-black retro-large-text"
+            >
+              Создать своё
+            </Button>
             <Button
               onClick={handleAddSelectedExercise}
               disabled={!selectedExercise}
@@ -787,21 +815,132 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+
+      {/* Delete exercises dialog */}
+      <Dialog open={isDeleteExerciseOpen} onOpenChange={(open) => {
+        setIsDeleteExerciseOpen(open);
+        if (!open) {
+          setDeleteSearchQuery('');
+          setDeleteTypeFilter(null);
+          setSelectedDeleteExercise(null);
+        }
+      }}>
+        <DialogContent
+          className="bg-zinc-800 border h-[70vh] !top-[15vh] !translate-y-0 !p-0 !gap-0 flex flex-col"
+          style={{ borderColor: '#c93843' }}
+          showCloseButton={false}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-4 shrink-0">
+            <DialogTitle className="text-white font-medium text-base">Удаление упражнений</DialogTitle>
+            <DialogClose className="text-zinc-500 hover:text-white active:text-white transition-colors p-1">
+              <XIcon className="w-5 h-5" />
+            </DialogClose>
+          </div>
+
+          <div className="flex flex-col min-h-0 p-4 gap-4 flex-1">
+            {/* Search */}
+            <div className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <Input
+                value={deleteSearchQuery}
+                onChange={(e) => setDeleteSearchQuery(e.target.value)}
+                placeholder="Поиск упражнения..."
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 pl-9"
+                autoComplete="off"
+                inputMode="search"
+              />
+            </div>
+
+            {/* Type filter tags */}
+            <div className="flex gap-3">
+              {(['chest', 'back', 'legs', 'common'] as ExerciseType[]).map((type) => {
+                const typeColors = EXERCISE_TYPE_COLORS[type];
+                const isSelected = deleteTypeFilter === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setDeleteTypeFilter(isSelected ? null : type)}
+                    className="flex items-center justify-center px-2 py-1 rounded-lg text-sm font-medium transition-colors flex-1"
+                    style={isSelected ? {
+                      backgroundColor: typeColors.bg,
+                      color: typeColors.text,
+                    } : {
+                      backgroundColor: 'rgb(63 63 70 / 0.5)',
+                      color: '#d4d4d8',
+                    }}
+                  >
+                    <span className="truncate">{EXERCISE_TYPE_NAMES[type]}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Exercises list */}
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
+              {deleteDialogExercises.length > 0 ? (
+                deleteDialogExercises.map((exerciseName) => {
+                  const exerciseType = getExerciseType(exerciseName);
+                  const exerciseColors = EXERCISE_TYPE_COLORS[exerciseType];
+                  const exerciseMarker = EXERCISE_TYPE_MARKERS[exerciseType];
+                  const isSelected = selectedDeleteExercise === exerciseName;
+                  return (
+                    <button
+                      key={exerciseName}
+                      onClick={() => setSelectedDeleteExercise(isSelected ? null : exerciseName)}
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2",
+                        isSelected
+                          ? "bg-zinc-600 text-white"
+                          : "hover:bg-zinc-700/50 active:bg-zinc-700/50 text-zinc-300 hover:text-white active:text-white"
+                      )}
+                    >
+                      <span
+                        className="w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: exerciseColors.bg, color: exerciseColors.text }}
+                      >
+                        {exerciseMarker}
+                      </span>
+                      <span className="flex-1">{exerciseName}</span>
+                    </button>
+                  );
+                })
+              ) : (
+                <p className="text-center text-zinc-500 py-4">Нет упражнений</p>
+              )}
+            </div>
+          </div>
+
+          {/* Delete button */}
+          <div className="flex justify-end px-4 pb-4 shrink-0">
+            <Button
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={!selectedDeleteExercise}
+              style={{ backgroundColor: '#c93843' }}
+              className="text-primary-foreground retro-large-text"
+            >
+              Удалить
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete exercise confirmation dialog */}
       <ConfirmDialog
-        open={showDeleteExerciseConfirm}
-        onOpenChange={setShowDeleteExerciseConfirm}
-        title={`Удалить упражнение "${selectedExercise}"?`}
-        description="Это удалит упражнение из списка предустановок, а также все подходы этого упражнения во всех днях тренировок."
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title={`Удалить упражнение "${selectedDeleteExercise}"?`}
+        description="Это удалит упражнение из базы, а также все подходы этого упражнения во всех тренировках. Это действие нельзя отменить."
         confirmText="Удалить"
         cancelText="Отмена"
         onConfirm={() => {
-          if (selectedExercise) {
-            deleteExerciseFromPresets(selectedExercise);
-            setSelectedExercise(null);
-            setSearchQuery('');
-            setExerciseTypeFilter(null);
+          if (selectedDeleteExercise) {
+            deleteExerciseFromPresets(selectedDeleteExercise);
+            setSelectedDeleteExercise(null);
+            setDeleteSearchQuery('');
+            setDeleteTypeFilter(null);
             setExerciseListVersion(v => v + 1);
           }
         }}
