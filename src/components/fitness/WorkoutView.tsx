@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useCallback, useEffect, useReducer } from 'react';
-import { Trash2Icon, CalendarIcon, ClockIcon, SearchIcon, RefreshCwIcon, PencilIcon, XIcon, CopyIcon, BookmarkIcon, DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, TypeIcon } from '@/components/icons/Icons';
+import { Trash2Icon, CalendarIcon, ClockIcon, SearchIcon, RefreshCwIcon, PencilIcon, XIcon, CopyIcon, BookmarkIcon, DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, TypeIcon, ListIcon } from '@/components/icons/Icons';
 import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType, WorkoutTemplate } from '@/lib/types';
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '@/components/ui/button';
@@ -680,7 +680,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           className="w-9 h-9 shrink-0 p-0 text-primary-foreground"
           style={{ backgroundColor: 'rgb(201, 56, 67)' }}
         >
-          <span className="text-sm retro-large-text leading-none">−</span>
+          <ListIcon className="w-5 h-5" />
         </Button>
 
         <Dialog open={isAddExerciseOpen} onOpenChange={(open) => {

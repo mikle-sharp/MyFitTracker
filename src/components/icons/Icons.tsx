@@ -2767,3 +2767,60 @@ export function MikleSharpIcon({ className, style }: IconProps) {
     </svg>
   );
 }
+
+export function ListIcon({ className, style }: IconProps) {
+  const isRetro = useIconStyle();
+
+  if (isRetro) {
+    return (
+      <svg className={className} viewBox="0 0 17 17" fill="none" style={{ ...style, stroke: undefined }}>
+        <rect fill="currentColor" x="10" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="14" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="13" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="12" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="3" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="2" width="1" height="1"/>
+      </svg>
+    );
+  }
+
+  return (
+    <svg className={className} style={style} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path stroke="currentColor" fill="none" d="M14,2L14,2H2"/>
+        <path stroke="currentColor" fill="none" d="M10.3,14H4.8 M2.4,14H2"/>
+        <path stroke="currentColor" fill="none" d="M10.3,6H4.8 M2.4,6H2"/>
+        <path stroke="currentColor" fill="none" d="M10.3,10H4.8 M2.4,10H2"/>
+    </svg>
+  );
+}

@@ -15,6 +15,42 @@ export const generateId = (): string => {
 
 // === БАЗА УПРАЖНЕНИЙ ===
 
+// Проверка, инициализирована ли база упражнений
+export const isExercisesBaseInitialized = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(EXERCISES_BASE_KEY) !== null;
+};
+
+// Инициализация базы упражнений из файла (при первом запуске)
+export const initExercisesBaseFromServer = async (): Promise<void> => {
+  if (typeof window === 'undefined') return;
+  
+  // Если база уже есть в localStorage — не перезаписываем
+  if (localStorage.getItem(EXERCISES_BASE_KEY) !== null) return;
+  
+  try {
+    const response = await fetch('/exercises.json');
+    if (response.ok) {
+      const data = await response.json();
+      // Проверяем структуру
+      if (data.chest && data.back && data.legs && data.common) {
+        saveExercisesBase({
+          chest: data.chest,
+          back: data.back,
+          legs: data.legs,
+          common: data.common,
+        });
+        return;
+      }
+    }
+  } catch {
+    // Игнорируем ошибки загрузки
+  }
+  
+  // Fallback — сохраняем дефолтную базу
+  saveExercisesBase(DEFAULT_EXERCISES_BASE);
+};
+
 // Получение базы упражнений (из localStorage или дефолтная)
 export const getExercisesBase = (): ExercisesBase => {
   if (typeof window === 'undefined') return DEFAULT_EXERCISES_BASE;

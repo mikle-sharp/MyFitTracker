@@ -10,7 +10,7 @@ interface FitnessStore {
   isInitialized: boolean;
 
   // Действия
-  init: () => void;
+  init: () => Promise<void>;
   setSelectedDate: (date: string) => void;
   loadWorkoutForDate: (date: string) => void;
   clearSelection: () => void;
@@ -52,7 +52,10 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   isInitialized: false,
 
   // Инициализация
-  init: () => {
+  init: async () => {
+    // Сначала инициализируем базу упражнений из файла
+    await storage.initExercisesBaseFromServer();
+    
     const workouts = storage.getWorkouts();
     const today = getTodayDate();
     const currentWorkout = storage.getWorkoutByDate(today);

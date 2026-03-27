@@ -48,6 +48,8 @@ interface ExerciseStatsChartProps {
   color: string;
   textColor: string;
   currentWorkoutId: string;
+  exerciseName: string;
+  onNavigateToDate?: (date: string, exerciseName: string) => void;
 }
 
 const DEFAULT_VISIBLE_COUNT = 9;
@@ -69,7 +71,7 @@ const TAG_ACTIVE_COLORS = {
   totalVolume: { bg: 'rgb(115, 66, 0)', text: 'rgb(255, 185, 0)' },
 };
 
-function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: ExerciseStatsChartProps) {
+function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exerciseName, onNavigateToDate }: ExerciseStatsChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -87,6 +89,10 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
   // Refs для pinch-to-zoom
   const lastPinchDistanceRef = useRef<number | null>(null);
   const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
+  
+  // Refs для тройного клика
+  const clickCountRef = useRef(0);
+  const lastClickTimeRef = useRef(0);
   
   // Видимые данные на основе диапазона
   const visibleData = data.slice(rangeStart, rangeEnd);
@@ -258,6 +264,30 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
 
   // Выбранные данные
   const selectedData = selectedIndex !== null ? visibleData[selectedIndex] : null;
+  
+  // Обработчик тройного клика по маркеру
+  const handleMarkerClick = () => {
+    if (!onNavigateToDate || !selectedData) return;
+    
+    const now = Date.now();
+    const timeDiff = now - lastClickTimeRef.current;
+    
+    // Если прошло меньше 500мс с последнего клика - увеличиваем счётчик
+    if (timeDiff < 500) {
+      clickCountRef.current += 1;
+    } else {
+      // Иначе сбрасываем счётчик
+      clickCountRef.current = 1;
+    }
+    
+    lastClickTimeRef.current = now;
+    
+    // Если три клика - навигируем
+    if (clickCountRef.current >= 3) {
+      onNavigateToDate(selectedData.date, exerciseName);
+      clickCountRef.current = 0;
+    }
+  };
 
   // Функция для вычисления Y позиции
   const getYPosition = (value: number) => {
@@ -434,7 +464,8 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
           {/* Выбранная точка - максимальный вес */}
           {selectedIndex !== null && selectedData && selectedData.maxWeight > 0 && showMaxWeight && (
             <div
-              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150"
+              onClick={handleMarkerClick}
+              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer"
               style={{
                 left: `${getXPosition(selectedIndex)}%`,
                 top: `${getYPosition(selectedData.maxWeight)}%`,
@@ -447,7 +478,8 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
           {/* Выбранная точка - вес пользователя */}
           {selectedIndex !== null && selectedData && selectedData.userWeight && selectedData.userWeight > 0 && showUserWeight && (
             <div
-              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150"
+              onClick={handleMarkerClick}
+              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer"
               style={{
                 left: `${getXPosition(selectedIndex)}%`,
                 top: `${getYPosition(selectedData.userWeight)}%`,
@@ -460,7 +492,8 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId }: Exerci
           {/* Выбранная точка - общий объём */}
           {selectedIndex !== null && selectedData && selectedData.totalVolume > 0 && showTotalVolume && (
             <div
-              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150"
+              onClick={handleMarkerClick}
+              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer"
               style={{
                 left: `${getXPosition(selectedIndex)}%`,
                 top: `${getYPosition(selectedData.totalVolume)}%`,
@@ -788,7 +821,7 @@ export function ExerciseCard({
     return () => clearInterval(interval);
   }, [highlightSetIndex]);
 
-  const { addSet, removeSet, updateSet, removeExercise, currentWorkout, workouts } = useFitnessStore();
+  const { addSet, removeSet, updateSet, removeExercise, currentWorkout, workouts, setSelectedDate } = useFitnessStore();
   const pr = getPersonalRecord(exercise.name);
   
   // История упражнения для графика
@@ -1794,6 +1827,11 @@ export function ExerciseCard({
                 color={exerciseColors.border}
                 textColor={exerciseColors.text}
                 currentWorkoutId={workoutId}
+                exerciseName={exercise.name}
+                onNavigateToDate={(date) => {
+                  setShowStats(false);
+                  setSelectedDate(date);
+                }}
               />
             ) : (
               <div className="text-center py-8 text-zinc-500">
