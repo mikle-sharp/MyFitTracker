@@ -13,10 +13,10 @@ export const metadata: Metadata = {
   description: "Персональный журнал тренировок с отслеживанием прогресса и личных рекордов",
   keywords: ["фитнес", "тренировки", "журнал", "спорт", "зал", "fitness", "workout"],
   authors: [{ name: "Fitness Journal" }],
-  manifest: "/manifest.json",
+  manifest: "/MyFitTracker/manifest.json",
   icons: {
-    icon: "/icon-192.png",
-    apple: "/icon-512.png",
+    icon: "/MyFitTracker/icon-192.png",
+    apple: "/MyFitTracker/icon-512.png",
   },
   appleWebApp: {
     capable: true,
@@ -51,7 +51,7 @@ export default function RootLayout({
   return (
     <html lang="ru" className="dark">
       <head>
-        <link rel="apple-touch-icon" sizes="180x180" href="/icon-512.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/MyFitTracker/icon-512.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>

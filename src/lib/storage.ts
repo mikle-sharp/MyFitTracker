@@ -29,7 +29,9 @@ export const initExercisesBaseFromServer = async (): Promise<void> => {
   if (localStorage.getItem(EXERCISES_BASE_KEY) !== null) return;
   
   try {
-    const response = await fetch('/exercises.json');
+    // basePath учитывается через переменную окружения
+    const basePath = process.env.NODE_ENV === 'production' ? '/MyFitTracker' : '';
+    const response = await fetch(`${basePath}/exercises.json`);
     if (response.ok) {
       const data = await response.json();
       // Проверяем структуру

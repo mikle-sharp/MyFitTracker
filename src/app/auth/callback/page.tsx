@@ -50,7 +50,8 @@ export default function GoogleCallback() {
           }, 1000);
         } else {
           // If no opener, redirect to main page
-          window.location.href = '/';
+          const basePath = process.env.NODE_ENV === 'production' ? '/MyFitTracker' : '';
+          window.location.href = basePath + '/';
         }
       } catch (err) {
         setStatus('error');

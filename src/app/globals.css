@@ -19,7 +19,7 @@
 /* Minecraft - пиксельный шрифт */
 @font-face {
   font-family: 'Minecraft';
-  src: url('/fonts/minecraft.ttf') format('truetype');
+  src: url('/MyFitTracker/fonts/minecraft.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -29,7 +29,7 @@
 /* Supercar - гоночный шрифт */
 @font-face {
   font-family: 'Supercar';
-  src: url('/fonts/supercar_c.ttf') format('truetype');
+  src: url('/MyFitTracker/fonts/supercar_c.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -39,7 +39,7 @@
 /* IBM MDA - моноширинный шрифт */
 @font-face {
   font-family: 'IBMMDA';
-  src: url('/fonts/web_ibm_mda.ttf') format('truetype');
+  src: url('/MyFitTracker/fonts/web_ibm_mda.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
