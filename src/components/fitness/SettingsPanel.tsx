@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 // Доступные стили приложения
 const AVAILABLE_FONTS = [
   { id: 'inter', name: 'По умолчанию', family: 'var(--font-inter)', isDefault: true },
-  { id: 'retro', name: 'Retro', family: 'Minecraft', isDefault: false, isRetro: true },
+  { id: 'retro', name: 'Retro', family: 'Monocraft', isDefault: false, isRetro: true },
 ] as const;
 
 type FontId = typeof AVAILABLE_FONTS[number]['id'];

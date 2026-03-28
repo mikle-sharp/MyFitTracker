@@ -16,10 +16,10 @@
 
 /* Inter - загружается через next/font/google в layout.tsx */
 
-/* Minecraft - пиксельный шрифт */
+/* Monocraft - пиксельный шрифт */
 @font-face {
-  font-family: 'Minecraft';
-  src: url('/MyFitTracker/fonts/minecraft.ttf') format('truetype');
+  font-family: 'Monocraft';
+  src: url('/MyFitTracker/fonts/Monocraft.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
