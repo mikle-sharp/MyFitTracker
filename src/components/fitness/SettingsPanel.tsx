@@ -96,8 +96,8 @@ export function SettingsPanel() {
     setTestDataStatus({ type: 'success', message: 'Загрузка...' });
     
     try {
-      // basePath учитывается через относительный путь
-      const basePath = process.env.NODE_ENV === 'production' ? '/MyFitTracker' : '';
+      // Определяем basePath по текущему URL
+      const basePath = window.location.pathname.startsWith('/MyFitTracker') ? '/MyFitTracker' : '';
       const response = await fetch(`${basePath}/test-data/fitness-journal.json`);
       if (!response.ok) {
         throw new Error('Файл не найден');

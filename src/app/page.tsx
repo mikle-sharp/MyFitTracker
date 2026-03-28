@@ -61,7 +61,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 pb-16">
+    <div className="min-h-screen bg-zinc-950">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-lg border-b border-zinc-800">
         <div className="max-w-lg mx-auto px-4 py-3">
@@ -152,15 +152,6 @@ export default function Home() {
           </TabsContent>
         </Tabs>
       </main>
-
-      {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-zinc-950/80 backdrop-blur-lg border-t border-zinc-800 safe-area-inset-bottom">
-        <div className="max-w-lg mx-auto px-4 py-2">
-          <p className="text-center text-xs text-zinc-600">
-            Данные сохраняются локально на устройстве
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
