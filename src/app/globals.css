@@ -183,8 +183,6 @@ body.retro-mode {
   image-rendering: pixelated;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: unset;
-  /* Увеличенный интервал между словами */
-  word-spacing: 0.15em;
 }
 
 /* Пиксельные иконки */
