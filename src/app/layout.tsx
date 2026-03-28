@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -8,15 +9,21 @@ const inter = Inter({
   subsets: ["latin", "cyrillic"],
 });
 
+const monocraft = localFont({
+  src: "../fonts/Monocraft.ttf",
+  variable: "--font-monocraft",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Мой журнал тренировок",
   description: "Персональный журнал тренировок с отслеживанием прогресса и личных рекордов",
   keywords: ["фитнес", "тренировки", "журнал", "спорт", "зал", "fitness", "workout"],
   authors: [{ name: "Fitness Journal" }],
-  manifest: "/MyFitTracker/manifest.json",
+  manifest: "/manifest.json",
   icons: {
-    icon: "/MyFitTracker/icon-192.png",
-    apple: "/MyFitTracker/icon-512.png",
+    icon: "/icon-192.png",
+    apple: "/icon-512.png",
   },
   appleWebApp: {
     capable: true,
@@ -51,12 +58,12 @@ export default function RootLayout({
   return (
     <html lang="ru" className="dark">
       <head>
-        <link rel="apple-touch-icon" sizes="180x180" href="/MyFitTracker/icon-512.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-512.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body
-        className={`${inter.variable} font-sans antialiased bg-zinc-950 text-white min-h-screen`}
+        className={`${inter.variable} ${monocraft.variable} font-sans antialiased bg-zinc-950 text-white min-h-screen`}
       >
         {children}
         <Toaster />

@@ -5,8 +5,8 @@
  * ============================================
  * ШРИФТЫ ПРИЛОЖЕНИЯ
  * ============================================
- * Inter - базовый шрифт (100%)
- * Minecraft - пиксельный (75%)
+ * Inter - базовый шрифт (загружается через next/font/google)
+ * Monocraft - пиксельный (загружается через next/font/local)
  * Supercar - гоночный (85%)
  * IBM MDA - моноширинный (90%)
  *
@@ -15,21 +15,12 @@
  */
 
 /* Inter - загружается через next/font/google в layout.tsx */
-
-/* Monocraft - пиксельный шрифт */
-@font-face {
-  font-family: 'Monocraft';
-  src: url('/MyFitTracker/fonts/Monocraft.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-  size-adjust: 80%;
-}
+/* Monocraft - загружается через next/font/local в layout.tsx */
 
 /* Supercar - гоночный шрифт */
 @font-face {
   font-family: 'Supercar';
-  src: url('/MyFitTracker/fonts/supercar_c.ttf') format('truetype');
+  src: url('/fonts/supercar_c.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -39,7 +30,7 @@
 /* IBM MDA - моноширинный шрифт */
 @font-face {
   font-family: 'IBMMDA';
-  src: url('/MyFitTracker/fonts/web_ibm_mda.ttf') format('truetype');
+  src: url('/fonts/web_ibm_mda.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
