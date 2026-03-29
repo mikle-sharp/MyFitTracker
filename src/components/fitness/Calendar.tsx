@@ -333,7 +333,7 @@ export function Calendar() {
                   color: isSelected ? '#fff' : isTodayDate ? '#fff' : '#d4d4d8',
                   fontSize: isSelected ? '18px' : '14px',
                   fontWeight: isSelected ? 'bold' : 'normal',
-                  WebkitTextStroke: isSelected ? '1px #fff' : undefined
+                  WebkitTextStroke: isSelected ? '0.5px #fff' : undefined
                 }}
               >
                 {format(day, 'd')}

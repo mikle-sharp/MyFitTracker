@@ -489,10 +489,10 @@ export const updateSet = (
     set.time = time;
   }
   if (equipmentType !== undefined) {
-    set.equipmentType = equipmentType;
+    set.equipmentType = equipmentType || undefined;
   }
   if (gripType !== undefined) {
-    set.gripType = gripType;
+    set.gripType = gripType || undefined;
   }
   workout.updatedAt = new Date().toISOString();
   saveWorkouts(workouts);

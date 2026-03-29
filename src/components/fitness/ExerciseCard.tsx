@@ -1144,7 +1144,7 @@ export function ExerciseCard({
 
     if (reps <= 0 && time <= 0) return;
 
-    updateSet(workoutId, exercise.id, setId, reps, weight, time > 0 ? time : undefined, editEquipment ?? undefined, editGrip ?? undefined);
+    updateSet(workoutId, exercise.id, setId, reps, weight, time > 0 ? time : undefined, editEquipment !== null ? editEquipment ?? undefined : null, editGrip !== null ? editGrip ?? undefined : null);
     
     setEditingSetId(null);
     setEditReps('');
@@ -1387,217 +1387,236 @@ export function ExerciseCard({
                   key={set.id}
                   ref={isHighlighted ? highlightedSetRef : null}
                   className={cn(
-                    'flex transition-all duration-500',
-                    editingSetId === set.id ? 'items-start bg-zinc-700/30 -mx-2 px-2 rounded-lg relative z-[10000] gap-2' : 'items-center gap-3',
-                    isHighlighted ? 'bg-amber-500/20 -mx-2 px-2 rounded-lg ring-1 ring-amber-500/50' : ''
+                    'flex flex-col sm:flex-row relative gap-1',
+                    editingSetId === set.id ? 'items-start bg-zinc-700/30 rounded-lg z-[10000]' : 'items-start sm:items-center',
+                    isHighlighted ? 'bg-amber-500/20 rounded-lg ring-1 ring-amber-500/50' : ''
                   )}
                 >
-                  <div className={cn(
-                    'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0',
-                    set.isWarmup
-                      ? 'bg-transparent text-zinc-500 border border-zinc-500'
-                      : 'bg-zinc-700 text-zinc-300'
-                  )}>
-                    {set.isWarmup ? 'Р' : workingSetNumber}
-                  </div>
-                  
-                  {editingSetId === set.id ? (
-                    <>
-                      <div className="flex flex-col gap-2 flex-1">
-                        {/* Первая строка: вес, повторения, время, галка */}
-                        <div className="flex items-center gap-3">
-                          {/* Вес и повторения */}
-                          {(set.weight > 0 || set.reps > 0) && (
-                            <div className="flex items-center gap-3 relative">
-                              {set.weight > 0 && (
-                                <Input
-                                  type="number"
-                                  step="0.5"
-                                  min="0.1"
-                                  value={editWeight}
-                                  onChange={(e) => setEditWeight(e.target.value)}
-                                  placeholder="кг"
-                                  className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                />
-                              )}
-                              
-                              {set.weight > 0 && set.reps > 0 && (
-                                <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-xs">×</span>
-                              )}
-                              
-                              {set.reps > 0 && (
-                                <Input
-                                  type="number"
-                                  min="1"
-                                  value={editReps}
-                                  onChange={(e) => setEditReps(e.target.value)}
-                                  placeholder="повт."
-                                  className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                />
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* Время */}
-                          {set.time && set.time > 0 && (
-                            <div className="flex items-center gap-3 relative">
+                  {/* Первая строка: номер + вес + повторения */}
+                  <div className="flex items-center gap-3 pr-7">
+                    <div className="relative">
+                      <div className={cn(
+                        'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-medium shrink-0',
+                        set.isWarmup
+                          ? 'bg-transparent text-zinc-500 border border-zinc-500'
+                          : 'bg-zinc-700 text-zinc-300'
+                      )}>
+                        {set.isWarmup ? 'Р' : workingSetNumber}
+                      </div>
+                      
+                      {/* Галочка поверх номера при редактировании */}
+                      {editingSetId === set.id && (
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpdateSet(set.id, set);
+                          }}
+                          className="h-7 w-7 p-0 flex items-center justify-center bg-[#19a655] absolute inset-0"
+                        >
+                          <CheckIcon className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {editingSetId === set.id ? (
+                      <div className="flex items-center gap-3 flex-1">
+                        {/* Вес и повторения */}
+                        {(set.weight > 0 || set.reps > 0) && (
+                          <div className="flex items-center gap-3 relative">
+                            {set.weight > 0 && (
                               <Input
                                 type="number"
-                                min="0"
-                                value={editTimeMinutes}
-                                onChange={(e) => setEditTimeMinutes(e.target.value)}
-                                placeholder="мин."
-                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                step="0.5"
+                                min="0.1"
+                                value={editWeight}
+                                onChange={(e) => setEditWeight(e.target.value)}
+                                placeholder="кг"
+                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
-                              <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-xs">:</span>
+                            )}
+                            
+                            {set.weight > 0 && set.reps > 0 && (
+                              <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-xs">×</span>
+                            )}
+                            
+                            {set.reps > 0 && (
                               <Input
                                 type="number"
-                                min="0"
-                                max={59}
-                                value={editTimeSeconds}
-                                onChange={(e) => setEditTimeSeconds(e.target.value)}
-                                placeholder="сек."
-                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                min="1"
+                                value={editReps}
+                                onChange={(e) => setEditReps(e.target.value)}
+                                placeholder="повт."
+                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
-                            </div>
-                          )}
-                          
-                          <Button
-                            size="sm"
-                            onClick={() => handleUpdateSet(set.id, set)}
-                            className="h-7 w-7 p-0 flex items-center justify-center bg-[#19a655]"
-                          >
-                            <CheckIcon className="w-3 h-3" />
-                          </Button>
-                        </div>
-                        
-                        {/* Вторая строка: Снаряд */}
-                        {set.weight > 0 && (
-                          <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-zinc-500 w-16 shrink-0">Снаряд</span>
-                            <button
-                              ref={editEquipmentButtonRef}
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!showEquipmentPicker && editEquipmentButtonRef.current) {
-                                  const rect = editEquipmentButtonRef.current.getBoundingClientRect();
-                                  const viewportHeight = window.innerHeight;
-                                  const listHeight = 320;
-                                  const spaceBelow = viewportHeight - rect.bottom;
-                                  const spaceAbove = rect.top;
-                                  const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
-                                  
-                                  setPickerPosition({ 
-                                    top: rect.bottom + 2,
-                                    bottom: rect.top,
-                                    left: rect.left, 
-                                    width: rect.width,
-                                    openUpward
-                                  });
-                                }
-                                setShowEquipmentPicker(!showEquipmentPicker);
-                                setShowGripPicker(false);
-                              }}
-                              className={cn(
-                                'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[140px] sm:w-[160px]',
-                                showEquipmentPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
-                              )}
-                            >
-                              <span className="truncate overflow-hidden">{editEquipment ? EQUIPMENT_TYPES[editEquipment].full : 'Не выбран'}</span>
-                              <ChevronDownIcon className={cn(
-                                'w-3 h-3 transition-transform shrink-0',
-                                showEquipmentPicker && 'rotate-180'
-                              )} />
-                            </button>
-                          </div>
-                        )}
-                        
-                        {/* Третья строка: Тип хвата */}
-                        {!set.time && set.reps > 0 && (
-                          <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-zinc-500 w-16 shrink-0">Тип хвата</span>
-                            <button
-                              ref={editGripButtonRef}
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!showGripPicker && editGripButtonRef.current) {
-                                  const rect = editGripButtonRef.current.getBoundingClientRect();
-                                  const viewportHeight = window.innerHeight;
-                                  const listHeight = 200;
-                                  const spaceBelow = viewportHeight - rect.bottom;
-                                  const spaceAbove = rect.top;
-                                  const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
-                                  
-                                  setPickerPosition({ 
-                                    top: rect.bottom + 2,
-                                    bottom: rect.top,
-                                    left: rect.left, 
-                                    width: rect.width,
-                                    openUpward
-                                  });
-                                }
-                                setShowGripPicker(!showGripPicker);
-                                setShowEquipmentPicker(false);
-                              }}
-                              className={cn(
-                                'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[140px] sm:w-[160px]',
-                                showGripPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
-                              )}
-                            >
-                              <span className="truncate overflow-hidden">{editGrip ? GRIP_TYPES[editGrip].full : 'Не выбран'}</span>
-                              <ChevronDownIcon className={cn(
-                                'w-3 h-3 transition-transform shrink-0',
-                                showGripPicker && 'rotate-180'
-                              )} />
-                            </button>
+                            )}
                           </div>
                         )}
                       </div>
-                      
-                      {/* Крестик отмены в том же столбце что и кнопка удаления */}
-                      <Button
-                        variant="ghost"
-                        onClick={() => setEditingSetId(null)}
-                        className="text-zinc-500 hover:text-white active:text-white hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 shrink-0 p-0"
-                      >
-                        <XIcon className="w-4 h-4" />
-                      </Button>
-                    </>
-                  ) : (
-                    <>
+                    ) : (
                       <div
                         onClick={() => startEditingSet(set)}
                         className="flex-1 h-7 flex items-center cursor-pointer hover:bg-zinc-700/30 active:bg-zinc-700/30 px-2 -ml-2 rounded-lg transition-colors"
                       >
                         {renderSetDisplay(set, setIndex)}
                       </div>
-                      
-                      {/* Equipment and grip tags */}
-                      <div className="flex items-center gap-1">
-                        {set.equipmentType && (
-                          <div className="h-7 flex-1 min-w-[44px] px-1 rounded-lg text-[11px] font-medium flex items-center justify-center text-primary-foreground whitespace-nowrap"
-                               style={{ backgroundColor: exerciseColors.border }}>
-                            {EQUIPMENT_TYPES[set.equipmentType].short}
-                          </div>
-                        )}
-                        {set.gripType && (
-                          <div className="h-7 flex-1 min-w-[44px] px-1 rounded-lg text-[11px] font-medium flex items-center justify-center text-primary-foreground whitespace-nowrap"
-                               style={{ backgroundColor: exerciseColors.border }}>
-                            {GRIP_TYPES[set.gripType].short}
-                          </div>
-                        )}
+                    )}
+                  </div>
+                  
+                  {/* Вторая строка при редактировании: время */}
+                  {editingSetId === set.id && set.time && set.time > 0 && (
+                    <div className="flex items-center gap-3 pl-10">
+                      <div className="flex items-center gap-3 relative">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={editTimeMinutes}
+                          onChange={(e) => setEditTimeMinutes(e.target.value)}
+                          placeholder="мин."
+                          className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-xs">:</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          max={59}
+                          value={editTimeSeconds}
+                          onChange={(e) => setEditTimeSeconds(e.target.value)}
+                          placeholder="сек."
+                          className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
                       </div>
+                    </div>
+                  )}
+                  
+                  {/* Третья и четвёртая строки при редактировании: снаряд и хват */}
+                  {editingSetId === set.id && (
+                    <>
+                      {/* Снаряд */}
+                      {set.weight > 0 && (
+                        <div className="flex items-center gap-1 pl-10">
+                          <span className="text-[10px] text-zinc-500 w-16 shrink-0">Снаряд</span>
+                          <button
+                            ref={editEquipmentButtonRef}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!showEquipmentPicker && editEquipmentButtonRef.current) {
+                                const rect = editEquipmentButtonRef.current.getBoundingClientRect();
+                                const viewportHeight = window.innerHeight;
+                                const listHeight = 320;
+                                const spaceBelow = viewportHeight - rect.bottom;
+                                const spaceAbove = rect.top;
+                                const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
+                                
+                                setPickerPosition({ 
+                                  top: rect.bottom + 2,
+                                  bottom: rect.top,
+                                  left: rect.left, 
+                                  width: rect.width,
+                                  openUpward
+                                });
+                              }
+                              setShowEquipmentPicker(!showEquipmentPicker);
+                              setShowGripPicker(false);
+                            }}
+                            className={cn(
+                              'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[140px] sm:w-[160px]',
+                              showEquipmentPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                            )}
+                          >
+                            <span className="truncate overflow-hidden">{editEquipment ? EQUIPMENT_TYPES[editEquipment].full : 'Не выбран'}</span>
+                            <ChevronDownIcon className={cn(
+                              'w-3 h-3 transition-transform shrink-0',
+                              showEquipmentPicker && 'rotate-180'
+                            )} />
+                          </button>
+                        </div>
+                      )}
                       
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleRemoveSet(set.id)}
-                        className="text-zinc-500 hover:text-red-400 active:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 shrink-0 p-0"
-                      >
-                        <Trash2Icon className="w-4 h-4" />
-                      </Button>
+                      {/* Тип хвата */}
+                      {set.reps > 0 && (
+                        <div className="flex items-center gap-1 pl-10">
+                          <span className="text-[10px] text-zinc-500 w-16 shrink-0">Тип хвата</span>
+                          <button
+                            ref={editGripButtonRef}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!showGripPicker && editGripButtonRef.current) {
+                                const rect = editGripButtonRef.current.getBoundingClientRect();
+                                const viewportHeight = window.innerHeight;
+                                const listHeight = 200;
+                                const spaceBelow = viewportHeight - rect.bottom;
+                                const spaceAbove = rect.top;
+                                const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
+                                
+                                setPickerPosition({ 
+                                  top: rect.bottom + 2,
+                                  bottom: rect.top,
+                                  left: rect.left, 
+                                  width: rect.width,
+                                  openUpward
+                                });
+                              }
+                              setShowGripPicker(!showGripPicker);
+                              setShowEquipmentPicker(false);
+                            }}
+                            className={cn(
+                              'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[140px] sm:w-[160px]',
+                              showGripPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                            )}
+                          >
+                            <span className="truncate overflow-hidden">{editGrip ? GRIP_TYPES[editGrip].full : 'Не выбран'}</span>
+                            <ChevronDownIcon className={cn(
+                              'w-3 h-3 transition-transform shrink-0',
+                              showGripPicker && 'rotate-180'
+                            )} />
+                          </button>
+                        </div>
+                      )}
                     </>
+                  )}
+                  
+                  {/* Теги при просмотре */}
+                  {editingSetId !== set.id && (set.equipmentType || set.gripType) && (
+                    <div className="flex items-center gap-1 justify-end pr-11 sm:pr-10 w-full sm:flex-1">
+                      {set.equipmentType && (
+                        <div className="h-5 min-w-[44px] px-1 rounded-lg text-[11px] font-medium flex items-center justify-center text-primary-foreground whitespace-nowrap"
+                             style={{ backgroundColor: exerciseColors.border }}>
+                          {EQUIPMENT_TYPES[set.equipmentType].short}
+                        </div>
+                      )}
+                      {set.gripType && (
+                        <div className="h-5 min-w-[44px] px-1 rounded-lg text-[11px] font-medium flex items-center justify-center text-primary-foreground whitespace-nowrap"
+                             style={{ backgroundColor: exerciseColors.border }}>
+                          {GRIP_TYPES[set.gripType].short}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Кнопка удалить - всегда в правом столбце */}
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleRemoveSet(set.id)}
+                    className="text-zinc-500 hover:text-red-400 active:text-red-400 hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 shrink-0 p-0 absolute right-0"
+                  >
+                    <Trash2Icon className="w-4 h-4" />
+                  </Button>
+                  
+                  {/* X поверх удалить при редактировании */}
+                  {editingSetId === set.id && (
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingSetId(null);
+                      }}
+                      className="text-zinc-500 hover:text-white active:text-white hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 shrink-0 p-0 absolute right-0 bg-zinc-800 rounded-full z-10"
+                    >
+                      <XIcon className="w-4 h-4" />
+                    </Button>
                   )}
                 </div>
               );})}
@@ -1683,12 +1702,12 @@ export function ExerciseCard({
                             value={newWeight}
                             onChange={(e) => setNewWeight(e.target.value)}
                             placeholder="кг"
-                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         )}
 
                         {!useBodyweight && useReps && (
-                          <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-sm">×</span>
+                          <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-xs">×</span>
                         )}
 
                         {useReps && (
@@ -1698,7 +1717,7 @@ export function ExerciseCard({
                             value={newReps}
                             onChange={(e) => setNewReps(e.target.value)}
                             placeholder="повт."
-                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         )}
                       </div>
@@ -1813,45 +1832,43 @@ export function ExerciseCard({
                     </div>
                   )}
                   
-                  {!useTime && (
-                    <div className="flex items-center gap-1 mb-2">
-                      <span className="text-[10px] text-zinc-500 w-16 shrink-0">Тип хвата</span>
-                      <button
-                        ref={gripButtonRef}
-                        type="button"
-                        onClick={() => {
-                          if (!showGripPicker && gripButtonRef.current) {
-                            const rect = gripButtonRef.current.getBoundingClientRect();
-                            const viewportHeight = window.innerHeight;
-                            const listHeight = 200; // 6 пунктов легко влезают без прокрутки
-                            const spaceBelow = viewportHeight - rect.bottom;
-                            const spaceAbove = rect.top;
-                            const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
-                            
-                            setPickerPosition({ 
-                              top: rect.bottom + 2,
-                              bottom: rect.top,
-                              left: rect.left, 
-                              width: rect.width,
-                              openUpward
-                            });
-                          }
-                          setShowGripPicker(!showGripPicker);
-                          setShowEquipmentPicker(false);
-                        }}
-                        className={cn(
-                          'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[140px] sm:w-[160px]',
-                          showGripPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
-                        )}
-                      >
-                        <span className="truncate overflow-hidden">{selectedGrip ? GRIP_TYPES[selectedGrip].full : 'Не выбран'}</span>
-                        <ChevronDownIcon className={cn(
-                          'w-3 h-3 transition-transform shrink-0',
-                          showGripPicker && 'rotate-180'
-                        )} />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1 mb-2">
+                    <span className="text-[10px] text-zinc-500 w-16 shrink-0">Тип хвата</span>
+                    <button
+                      ref={gripButtonRef}
+                      type="button"
+                      onClick={() => {
+                        if (!showGripPicker && gripButtonRef.current) {
+                          const rect = gripButtonRef.current.getBoundingClientRect();
+                          const viewportHeight = window.innerHeight;
+                          const listHeight = 200; // 6 пунктов легко влезают без прокрутки
+                          const spaceBelow = viewportHeight - rect.bottom;
+                          const spaceAbove = rect.top;
+                          const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
+                          
+                          setPickerPosition({ 
+                            top: rect.bottom + 2,
+                            bottom: rect.top,
+                            left: rect.left, 
+                            width: rect.width,
+                            openUpward
+                          });
+                        }
+                        setShowGripPicker(!showGripPicker);
+                        setShowEquipmentPicker(false);
+                      }}
+                      className={cn(
+                        'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[140px] sm:w-[160px]',
+                        showGripPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                      )}
+                    >
+                      <span className="truncate overflow-hidden">{selectedGrip ? GRIP_TYPES[selectedGrip].full : 'Не выбран'}</span>
+                      <ChevronDownIcon className={cn(
+                        'w-3 h-3 transition-transform shrink-0',
+                        showGripPicker && 'rotate-180'
+                      )} />
+                    </button>
+                  </div>
 
                   {/* Buttons */}
                   <div className="flex justify-end items-center gap-2 pt-4">
