@@ -76,7 +76,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   const [isDeleteExerciseOpen, setIsDeleteExerciseOpen] = useState(false);
   const [deleteSearchQuery, setDeleteSearchQuery] = useState('');
   const [deleteTypeFilter, setDeleteTypeFilter] = useState<ExerciseType | null>(null);
-  const [selectedDeleteExercise, setSelectedDeleteExercise] = useState<string | null>(null);
+  const [selectedDeleteExercises, setSelectedDeleteExercises] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Drag-and-drop state
@@ -696,7 +696,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           onClick={() => {
             setDeleteSearchQuery('');
             setDeleteTypeFilter(null);
-            setSelectedDeleteExercise(null);
+            setSelectedDeleteExercises([]);
             setIsDeleteExerciseOpen(true);
           }}
           className="w-9 h-9 shrink-0 p-0 text-primary-foreground"
@@ -743,7 +743,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск упражнения..."
-                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 pl-9"
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500 pl-9"
                 autoComplete="off"
                 inputMode="search"
               />
@@ -845,7 +845,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         if (!open) {
           setDeleteSearchQuery('');
           setDeleteTypeFilter(null);
-          setSelectedDeleteExercise(null);
+          setSelectedDeleteExercises([]);
         }
       }}>
         <DialogContent
@@ -869,7 +869,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 value={deleteSearchQuery}
                 onChange={(e) => setDeleteSearchQuery(e.target.value)}
                 placeholder="Поиск упражнения..."
-                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 pl-9"
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500 pl-9"
                 autoComplete="off"
                 inputMode="search"
               />
@@ -907,11 +907,17 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                   const exerciseType = getExerciseType(exerciseName);
                   const exerciseColors = EXERCISE_TYPE_COLORS[exerciseType];
                   const exerciseMarker = EXERCISE_TYPE_MARKERS[exerciseType];
-                  const isSelected = selectedDeleteExercise === exerciseName;
+                  const isSelected = selectedDeleteExercises.includes(exerciseName);
                   return (
                     <button
                       key={exerciseName}
-                      onClick={() => setSelectedDeleteExercise(isSelected ? null : exerciseName)}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedDeleteExercises(selectedDeleteExercises.filter(e => e !== exerciseName));
+                        } else {
+                          setSelectedDeleteExercises([...selectedDeleteExercises, exerciseName]);
+                        }
+                      }}
                       className={cn(
                         "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2",
                         isSelected
@@ -939,7 +945,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           <div className="flex justify-end px-4 pb-4 shrink-0">
             <Button
               onClick={() => setShowDeleteConfirm(true)}
-              disabled={!selectedDeleteExercise}
+              disabled={selectedDeleteExercises.length === 0}
               style={{ backgroundColor: '#c93843' }}
               className="text-primary-foreground retro-large-text"
             >
@@ -953,14 +959,17 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       <ConfirmDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
-        title={`Удалить упражнение "${selectedDeleteExercise}"?`}
-        description="Это удалит упражнение из базы, а также все подходы этого упражнения во всех тренировках. Это действие нельзя отменить."
+        title={selectedDeleteExercises.length === 1 ? `Удалить упражнение "${selectedDeleteExercises[0]}"?` : `Удалить упражнения?`}
+        description={selectedDeleteExercises.length === 1 
+          ? "Это удалит упражнение из базы, а также все подходы этого упражнения во всех тренировках. Это действие нельзя отменить."
+          : "Это удалит упражнения из базы, а также все подходы этих упражнений во всех тренировках. Это действие нельзя отменить."
+        }
         confirmText="Удалить"
         cancelText="Отмена"
         onConfirm={() => {
-          if (selectedDeleteExercise) {
-            deleteExerciseFromPresets(selectedDeleteExercise);
-            setSelectedDeleteExercise(null);
+          if (selectedDeleteExercises.length > 0) {
+            selectedDeleteExercises.forEach(exerciseName => deleteExerciseFromPresets(exerciseName));
+            setSelectedDeleteExercises([]);
             setDeleteSearchQuery('');
             setDeleteTypeFilter(null);
             setExerciseListVersion(v => v + 1);
@@ -1000,7 +1009,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 setDuplicateExerciseError(false);
               }}
               placeholder="Название упражнения"
-              className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500"
+              className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500"
               autoComplete="off"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && newExerciseName.trim() && !duplicateExerciseError) {
@@ -1089,7 +1098,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск упражнения..."
-                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500 pl-9"
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500 pl-9"
                 autoComplete="off"
                 inputMode="search"
               />
@@ -1323,7 +1332,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               placeholder="Имя шаблона"
-              className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-zinc-500"
+              className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500"
               autoComplete="off"
             />
           </div>
@@ -1362,7 +1371,11 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         title="Удалить шаблон?"
         description={
           <>
-            Шаблон <strong className="text-white">{selectedTemplates.length === 1 ? selectedTemplates[0].name : `${selectedTemplates.length} шаблонов`}</strong> будет удалён.
+            {selectedTemplates.length === 1 ? (
+              <>Шаблон <strong className="text-white">{selectedTemplates[0].name}</strong> будет удалён.</>
+            ) : (
+              <><strong className="text-white">Шаблоны</strong> будут удалены.</>
+            )}
             <br />
             Это действие нельзя отменить.
           </>

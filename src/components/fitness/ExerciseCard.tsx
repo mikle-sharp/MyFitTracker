@@ -1416,8 +1416,8 @@ export function ExerciseCard({
                                   min="0.1"
                                   value={editWeight}
                                   onChange={(e) => setEditWeight(e.target.value)}
-                                  placeholder="Вес, кг"
-                                  className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  placeholder="кг"
+                                  className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                               )}
                               
@@ -1431,8 +1431,8 @@ export function ExerciseCard({
                                   min="1"
                                   value={editReps}
                                   onChange={(e) => setEditReps(e.target.value)}
-                                  placeholder="Повторения"
-                                  className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  placeholder="повт."
+                                  className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                               )}
                             </div>
@@ -1446,8 +1446,8 @@ export function ExerciseCard({
                                 min="0"
                                 value={editTimeMinutes}
                                 onChange={(e) => setEditTimeMinutes(e.target.value)}
-                                placeholder="Мин"
-                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                placeholder="мин."
+                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
                               <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-xs">:</span>
                               <Input
@@ -1456,8 +1456,8 @@ export function ExerciseCard({
                                 max={59}
                                 value={editTimeSeconds}
                                 onChange={(e) => setEditTimeSeconds(e.target.value)}
-                                placeholder="Сек"
-                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                placeholder="сек."
+                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
                             </div>
                           )}
@@ -1473,7 +1473,7 @@ export function ExerciseCard({
                         
                         {/* Вторая строка: Снаряд */}
                         {set.weight > 0 && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <span className="text-[10px] text-zinc-500 w-16 shrink-0">Снаряд</span>
                             <button
                               ref={editEquipmentButtonRef}
@@ -1515,7 +1515,7 @@ export function ExerciseCard({
                         
                         {/* Третья строка: Тип хвата */}
                         {!set.time && set.reps > 0 && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <span className="text-[10px] text-zinc-500 w-16 shrink-0">Тип хвата</span>
                             <button
                               ref={editGripButtonRef}
@@ -1621,7 +1621,7 @@ export function ExerciseCard({
                         style={isWarmup ? { backgroundColor: '#734200' } : undefined}
                       >
                         <ZapIcon className="w-3 h-3" style={{ color: isWarmup ? '#ffb900' : '#a1a1aa' }} />
-                        <span className="text-[11px]" style={{ color: isWarmup ? '#ffb900' : '#d4d4d8' }}>Разм.</span>
+                        <span className="text-[9px]" style={{ color: isWarmup ? '#ffb900' : '#d4d4d8' }}>Разм.</span>
                       </div>
                     )}
 
@@ -1634,7 +1634,7 @@ export function ExerciseCard({
                       style={useBodyweight ? { backgroundColor: '#072f18' } : undefined}
                     >
                       <UserIcon className="w-3 h-3" style={{ color: useBodyweight ? '#19a655' : '#a1a1aa' }} />
-                      <span className="text-[11px]" style={{ color: useBodyweight ? '#19a655' : '#d4d4d8' }}>Собст. вес</span>
+                      <span className="text-[9px]" style={{ color: useBodyweight ? '#19a655' : '#d4d4d8' }}>Собст. вес</span>
                     </div>
 
                     <div
@@ -1646,7 +1646,7 @@ export function ExerciseCard({
                       style={useReps ? { backgroundColor: '#391013' } : undefined}
                     >
                       <Repeat2Icon className="w-3 h-3" style={{ color: useReps ? '#c93843' : '#a1a1aa' }} />
-                      <span className="text-[11px]" style={{ color: useReps ? '#c93843' : '#d4d4d8' }}>Повт.</span>
+                      <span className="text-[9px]" style={{ color: useReps ? '#c93843' : '#d4d4d8' }}>Повт.</span>
                     </div>
 
                     <div
@@ -1658,7 +1658,7 @@ export function ExerciseCard({
                       style={useTime ? { backgroundColor: '#2a153c' } : undefined}
                     >
                       <ClockIcon className="w-3 h-3" style={{ color: useTime ? '#944ad4' : '#a1a1aa' }} />
-                      <span className="text-[11px]" style={{ color: useTime ? '#944ad4' : '#d4d4d8' }}>Вр.</span>
+                      <span className="text-[9px]" style={{ color: useTime ? '#944ad4' : '#d4d4d8' }}>Вр.</span>
                     </div>
                   </div>
 
@@ -1683,7 +1683,7 @@ export function ExerciseCard({
                             value={newWeight}
                             onChange={(e) => setNewWeight(e.target.value)}
                             placeholder="кг"
-                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         )}
 
@@ -1698,21 +1698,21 @@ export function ExerciseCard({
                             value={newReps}
                             onChange={(e) => setNewReps(e.target.value)}
                             placeholder="повт."
-                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs placeholder:text-[10px] text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         )}
                       </div>
                     )}
 
                     {useTime && (
-                      <div className="flex items-center gap-3 relative ml-1">
+                      <div className="flex items-center gap-3 relative">
                         <Input
                           type="number"
                           min="0"
                           value={newTimeMinutes}
                           onChange={(e) => setNewTimeMinutes(e.target.value)}
                           placeholder="мин."
-                          className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-xs">:</span>
                         <Input
@@ -1722,7 +1722,7 @@ export function ExerciseCard({
                           value={newTimeSeconds}
                           onChange={(e) => setNewTimeSeconds(e.target.value)}
                           placeholder="сек."
-                          className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
                     )}
@@ -1758,7 +1758,7 @@ export function ExerciseCard({
                           </div>
                         )}
                         {useTime && (
-                          <div className="flex items-center gap-3 relative ml-1">
+                          <div className="flex items-center gap-3 relative">
                             <div className="w-14 text-center">
                               {prevData.time > 0 ? Math.floor(prevData.time / 60) : ''}
                             </div>
@@ -1774,7 +1774,7 @@ export function ExerciseCard({
 
                   {/* Equipment and grip selection */}
                   {!useBodyweight && (
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-1 mb-2">
                       <span className="text-[10px] text-zinc-500 w-16 shrink-0">Снаряд</span>
                       <button
                         ref={equipmentButtonRef}
@@ -1814,7 +1814,7 @@ export function ExerciseCard({
                   )}
                   
                   {!useTime && (
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-1 mb-2">
                       <span className="text-[10px] text-zinc-500 w-16 shrink-0">Тип хвата</span>
                       <button
                         ref={gripButtonRef}
