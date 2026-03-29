@@ -231,30 +231,9 @@ export const getWorkoutById = (id: string): Workout | undefined => {
 // Создание новой тренировки
 export const createWorkout = (date: string, type: WorkoutType): Workout => {
   const now = new Date().toISOString();
-  const base = getExercisesBase();
   
-  let exerciseNames: string[];
-  
-  if (type === 'fullbody') {
-    // Для фулбоди: по 2 упражнения из каждого типа + 1 на пресс
-    exerciseNames = [
-      ...(base.chest.slice(0, 2)),
-      ...(base.back.slice(0, 2)),
-      ...(base.legs.slice(0, 2)),
-      ...(base.common.slice(0, 1)), // первое упражнение из common (обычно Планка)
-    ];
-  } else {
-    // Для других типов: упражнения соответствующего типа
-    const typeKey = type as ExerciseBaseKey;
-    exerciseNames = [...base[typeKey]];
-  }
-  
-  const exercises: Exercise[] = exerciseNames.map(name => ({
-    id: generateId(),
-    name,
-    sets: [],
-    isCustom: false,
-  }));
+  // Создаём пустую тренировку без упражнений
+  const exercises: Exercise[] = [];
 
   const workout: Workout = {
     id: generateId(),
@@ -868,6 +847,87 @@ export const loadTemplateToWorkout = (workoutId: string, templateId: string): Wo
   saveWorkouts(workouts);
   
   return workout;
+};
+
+// === БАЗОВЫЕ ШАБЛОНЫ ===
+
+// Базовые шаблоны тренировок
+const DEFAULT_TEMPLATES: Omit<WorkoutTemplate, 'id' | 'createdAt'>[] = [
+  {
+    name: 'Базовая тренировка груди',
+    workoutType: 'chest',
+    exerciseNames: [
+      'Жим штанги лёжа',
+      'Жим в хаммере',
+      'Жим на плечи в тренажере сидя',
+      'Разгибания на трицепс в кроссовере',
+      'Классическая планка',
+    ],
+  },
+  {
+    name: 'Базовая тренировка спины',
+    workoutType: 'back',
+    exerciseNames: [
+      'Подтягивания',
+      'Тяга вертикального блока в тренажере',
+      'Шраги в машине Смита',
+      'Сгибания на бицепс',
+      'Скручивания на пресс',
+    ],
+  },
+  {
+    name: 'Базовая тренировка ног',
+    workoutType: 'legs',
+    exerciseNames: [
+      'Приседания со штангой',
+      'Сгибания ног в тренажере сидя',
+      'Разгибания ног в тренажере сидя',
+      'Подъем на носки сидя',
+      'Сгибания запястий',
+      'Подъём ног на брусьях',
+    ],
+  },
+  {
+    name: 'Базовая тренировка всего тела',
+    workoutType: 'fullbody',
+    exerciseNames: [
+      'Приседания со штангой',
+      'Подтягивания',
+      'Жим штанги лёжа',
+      'Жим на плечи сидя',
+      'Сгибания на бицепс',
+      'Подъём ног в висе',
+    ],
+  },
+];
+
+// Ключ для отметки что базовые шаблоны уже инициализированы
+const DEFAULT_TEMPLATES_INITIALIZED_KEY = 'fitness-journal-default-templates-initialized';
+
+// Инициализация базовых шаблонов (при первом запуске)
+export const initDefaultTemplates = (): void => {
+  if (typeof window === 'undefined') return;
+  
+  // Проверяем, были ли уже инициализированы базовые шаблоны
+  if (localStorage.getItem(DEFAULT_TEMPLATES_INITIALIZED_KEY) === 'true') return;
+  
+  const templates = getTemplates();
+  const now = new Date().toISOString();
+  
+  // Добавляем базовые шаблоны
+  DEFAULT_TEMPLATES.forEach(defaultTemplate => {
+    // Проверяем, нет ли уже шаблона с таким именем
+    if (!templates.some(t => t.name === defaultTemplate.name)) {
+      templates.push({
+        id: generateId(),
+        ...defaultTemplate,
+        createdAt: now,
+      });
+    }
+  });
+  
+  localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+  localStorage.setItem(DEFAULT_TEMPLATES_INITIALIZED_KEY, 'true');
 };
 
 // Удаление упражнения из базы и всех тренировок

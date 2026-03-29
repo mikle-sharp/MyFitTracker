@@ -16,7 +16,20 @@ export type ExerciseInputType =
   | 'time';            // только время
 
 // Типы снаряда
-export type EquipmentType = 'barbell_20' | 'barbell_10' | 'trap_bar' | 'ez_small' | 'ez_large';
+export type EquipmentType = 
+  | 'barbell_20' 
+  | 'barbell_10' 
+  | 'trap_bar' 
+  | 'ez_bar' 
+  | 'w_bar'
+  | 'dumbbells'
+  | 'ball'
+  | 'rope'
+  | 'straight_crossover'
+  | 'ez_crossover'
+  | 'power_grip'
+  | 'v_handle'
+  | 'parallel_bar';
 
 // Типы хвата
 export type GripType = 'wide' | 'narrow' | 'parallel' | 'cross' | 'reverse';
@@ -34,22 +47,30 @@ export interface WorkoutSet {
   gripType?: GripType; // тип хвата
 }
 
-// Константы для типов снаряда
+// Константы для типов снаряда (упорядочены по полному названию)
 export const EQUIPMENT_TYPES: Record<EquipmentType, { short: string; full: string }> = {
-  barbell_20: { short: 'ш-20', full: 'Гриф 20 кг' },
-  barbell_10: { short: 'ш-10', full: 'Гриф 10 кг' },
-  trap_bar: { short: 'т-ш', full: 'Трэп гриф' },
-  ez_small: { short: 'ez-м', full: 'EZ-гриф маленький' },
-  ez_large: { short: 'ez-б', full: 'EZ-гриф большой' },
+  w_bar: { short: 'w-г', full: 'W-гриф' },
+  ez_bar: { short: 'ez-г', full: 'EZ-гриф' },
+  ez_crossover: { short: 'ez-к', full: 'EZ-гриф для кроссовера' },
+  power_grip: { short: 'p-g', full: 'Power-grip' },
+  v_handle: { short: 'v-р', full: 'V-образная ручка' },
+  dumbbells: { short: 'ган', full: 'Гантели' },
+  rope: { short: 'кан', full: 'Канат' },
+  ball: { short: 'мяч', full: 'Мяч' },
+  parallel_bar: { short: 'п-г', full: 'Параллельный гриф' },
+  straight_crossover: { short: 'п-к', full: 'Прямой гриф для кроссовера' },
+  trap_bar: { short: 'т-г', full: 'Трэп-гриф' },
+  barbell_10: { short: 'ш-10', full: 'Штанга 10 кг' },
+  barbell_20: { short: 'ш-20', full: 'Штанга 20 кг' },
 };
 
 // Константы для типов хвата
 export const GRIP_TYPES: Record<GripType, { short: string; full: string }> = {
-  wide: { short: 'шир.', full: 'Широкий хват' },
-  narrow: { short: 'узк.', full: 'Узкий хват' },
-  parallel: { short: 'пар.', full: 'Параллельный хват' },
-  cross: { short: 'пер.', full: 'Перекрестный хват' },
-  reverse: { short: 'обр.', full: 'Обратный хват' },
+  wide: { short: 'шир', full: 'Широкий' },
+  narrow: { short: 'узк', full: 'Узкий' },
+  parallel: { short: 'пар', full: 'Параллельный' },
+  cross: { short: 'пер', full: 'Перекрёстный' },
+  reverse: { short: 'обр', full: 'Обратный' },
 };
 
 // Упражнение
@@ -246,25 +267,31 @@ export const EXERCISE_TYPE_NAMES: Record<ExerciseType, string> = {
 export const getExerciseType = (exerciseName: string): ExerciseType => {
   const name = exerciseName.toLowerCase();
   
-  // Проверяем упражнения на пресс/общие
+  // Проверяем упражнения на пресс/общие (сначала, так как они приоритетны)
   if (isAbsExercise(exerciseName)) {
     return 'common';
   }
   
+  // Общие упражнения (руки, плечи, предплечья) - проверяем до основных групп
+  const commonKeywords = ['бицепс', 'трицепс', 'плеч', 'запястий', 'предплеч', 'дельт'];
+  if (commonKeywords.some(k => name.includes(k))) {
+    return 'common';
+  }
+  
   // Упражнения груди
-  const chestKeywords = ['жим лежа', 'жим на наклонной', 'разводка', 'кроссовер', 'отжимания', 'грудь', 'пек'];
+  const chestKeywords = ['жим лежа', 'жим штанги лёжа', 'жим на наклонной', 'жим в хаммере', 'разводка', 'сведение рук', 'отжимания', 'грудь', 'пек', 'грудн'];
   if (chestKeywords.some(k => name.includes(k))) {
     return 'chest';
   }
   
   // Упражнения спины
-  const backKeywords = ['становая тяга', 'тяга штанги', 'подтягивания', 'тяга гантели', 'горизонтальная тяга', 'спина', 'широчайш'];
+  const backKeywords = ['становая тяга', 'тяга штанги', 'подтягивания', 'тяга гантели', 'горизонтальная тяга', 'тяга вертикального', 'тяга блока', 'тяга т-грифа', 'рычажн', 'спина', 'широчайш', 'шраги', 'гиперэкстенз'];
   if (backKeywords.some(k => name.includes(k))) {
     return 'back';
   }
   
   // Упражнения ног
-  const legsKeywords = ['приседания', 'жим ногами', 'выпады', 'разгибание ног', 'сгибание ног', 'ноги', 'квадрицепс', 'бицепс бедра'];
+  const legsKeywords = ['приседания', 'присед', 'жим ногами', 'выпады', 'разгибание ног', 'разгибания ног', 'сгибание ног', 'сгибания ног', 'ноги', 'квадрицепс', 'бицепс бедра', 'ягодич', 'подъем на носки', 'подъем на носок', 'носки'];
   if (legsKeywords.some(k => name.includes(k))) {
     return 'legs';
   }

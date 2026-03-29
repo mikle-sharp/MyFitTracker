@@ -56,6 +56,9 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
     // Сначала инициализируем базу упражнений из файла
     await storage.initExercisesBaseFromServer();
     
+    // Инициализируем базовые шаблоны
+    storage.initDefaultTemplates();
+    
     const workouts = storage.getWorkouts();
     const today = getTodayDate();
     const currentWorkout = storage.getWorkoutByDate(today);

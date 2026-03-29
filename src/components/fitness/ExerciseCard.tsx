@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Trash2Icon, PlusIcon, CheckIcon, ClockIcon, RefreshCwIcon, UserIcon, WeightIcon, ChevronUpIcon, ChevronDownIcon, XIcon, ZapIcon, Repeat2Icon, TrendingUpIcon } from '@/components/icons/Icons';
 import { Exercise, WorkoutSet, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EquipmentType, GripType, EQUIPMENT_TYPES, GRIP_TYPES } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -416,7 +417,11 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
                   cy={y}
                   r={isSelected ? 1.2 : 0.6}
                   fill={isSelected ? CHART_COLORS.totalVolume : '#71717a'}
-                  className="transition-all duration-150"
+                  className="transition-all duration-150 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedIndex(i);
+                  }}
                 />
               );
             })}
@@ -435,7 +440,11 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
                   cy={y}
                   r={isSelected ? 1.2 : 0.6}
                   fill={isSelected ? CHART_COLORS.userWeight : '#71717a'}
-                  className="transition-all duration-150"
+                  className="transition-all duration-150 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedIndex(i);
+                  }}
                 />
               );
             })}
@@ -455,7 +464,11 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
                   cy={y}
                   r={isSelected ? 1.2 : 0.6}
                   fill={isSelected || isCurrent ? CHART_COLORS.maxWeight : '#71717a'}
-                  className="transition-all duration-150"
+                  className="transition-all duration-150 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedIndex(i);
+                  }}
                 />
               );
             })}
@@ -768,6 +781,26 @@ export function ExerciseCard({
   // State for equipment and grip tags
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
   const [selectedGrip, setSelectedGrip] = useState<GripType | null>(null);
+  const [showEquipmentPicker, setShowEquipmentPicker] = useState(false);
+  const [showGripPicker, setShowGripPicker] = useState(false);
+  const [pickerPosition, setPickerPosition] = useState({ top: 0, left: 0, width: 0, openUpward: false, bottom: 0 });
+  const equipmentButtonRef = useRef<HTMLButtonElement>(null);
+  const gripButtonRef = useRef<HTMLButtonElement>(null);
+  
+  // Block scroll when picker is open
+  useEffect(() => {
+    if (showEquipmentPicker || showGripPicker) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [showEquipmentPicker, showGripPicker]);
   
   // State for delete confirmation
   const [showDeleteExerciseConfirm, setShowDeleteExerciseConfirm] = useState(false);
@@ -1095,6 +1128,8 @@ export function ExerciseCard({
     setIsWarmup(false);
     setSelectedEquipment(null);
     setSelectedGrip(null);
+    setShowEquipmentPicker(false);
+    setShowGripPicker(false);
   };
 
   const handleUpdateSet = (setId: string, originalSet: WorkoutSet) => {
@@ -1641,55 +1676,182 @@ export function ExerciseCard({
                     );
                   })()}
 
-                  {/* Equipment and grip selection tags */}
+                  {/* Equipment and grip selection */}
                   {!useBodyweight && (
-                    <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-2 mb-2">
-                      <div className="w-7 text-center">Гриф</div>
-                      <div className="flex gap-2 flex-wrap items-center">
-                        {(Object.keys(EQUIPMENT_TYPES) as EquipmentType[]).map((type) => {
-                          const isSelected = selectedEquipment === type;
-                          return (
-                            <div
-                              key={type}
-                              onClick={() => setSelectedEquipment(isSelected ? null : type)}
-                              className={cn(
-                                'w-10 py-1 rounded-lg text-[11px] font-medium flex items-center justify-center cursor-pointer transition-colors',
-                                !isSelected && 'bg-zinc-700/50 text-zinc-400',
-                                isSelected && 'text-primary-foreground'
-                              )}
-                              style={isSelected ? { backgroundColor: exerciseColors.border } : undefined}
-                            >
-                              {EQUIPMENT_TYPES[type].short}
-                            </div>
-                          );
-                        })}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[10px] text-zinc-500 w-16 shrink-0">Снаряд</span>
+                      <div className="relative">
+                        <button
+                          ref={equipmentButtonRef}
+                          type="button"
+                          onClick={() => {
+                            if (!showEquipmentPicker && equipmentButtonRef.current) {
+                              const rect = equipmentButtonRef.current.getBoundingClientRect();
+                              const viewportHeight = window.innerHeight;
+                              const listHeight = 320; // увеличенная высота для вертикальных устройств
+                              const spaceBelow = viewportHeight - rect.bottom;
+                              const spaceAbove = rect.top;
+                              const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
+                              
+                              setPickerPosition({ 
+                                top: rect.bottom + 2,
+                                bottom: rect.top,
+                                left: rect.left, 
+                                width: rect.width,
+                                openUpward
+                              });
+                            }
+                            setShowEquipmentPicker(!showEquipmentPicker);
+                            setShowGripPicker(false);
+                          }}
+                          className={cn(
+                            'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs min-w-[180px]',
+                            showEquipmentPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                          )}
+                        >
+                          <span className="truncate">{selectedEquipment ? EQUIPMENT_TYPES[selectedEquipment].full : 'Не выбран'}</span>
+                          <ChevronDownIcon className={cn(
+                            'w-3 h-3 transition-transform shrink-0',
+                            showEquipmentPicker && 'rotate-180'
+                          )} />
+                        </button>
                       </div>
                     </div>
                   )}
                   
                   {!useTime && (
-                    <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-2">
-                      <div className="w-7 text-center">Хват</div>
-                      <div className="flex gap-2 flex-wrap items-center">
-                        {(Object.keys(GRIP_TYPES) as GripType[]).map((type) => {
-                          const isSelected = selectedGrip === type;
-                          return (
-                            <div
-                              key={type}
-                              onClick={() => setSelectedGrip(isSelected ? null : type)}
-                              className={cn(
-                                'w-10 py-1 rounded-lg text-[11px] font-medium flex items-center justify-center cursor-pointer transition-colors',
-                                !isSelected && 'bg-zinc-700/50 text-zinc-400',
-                                isSelected && 'text-primary-foreground'
-                              )}
-                              style={isSelected ? { backgroundColor: exerciseColors.border } : undefined}
-                            >
-                              {GRIP_TYPES[type].short}
-                            </div>
-                          );
-                        })}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[10px] text-zinc-500 w-16 shrink-0">Тип хвата</span>
+                      <div className="relative">
+                        <button
+                          ref={gripButtonRef}
+                          type="button"
+                          onClick={() => {
+                            if (!showGripPicker && gripButtonRef.current) {
+                              const rect = gripButtonRef.current.getBoundingClientRect();
+                              const viewportHeight = window.innerHeight;
+                              const listHeight = 200; // 6 пунктов легко влезают без прокрутки
+                              const spaceBelow = viewportHeight - rect.bottom;
+                              const spaceAbove = rect.top;
+                              const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
+                              
+                              setPickerPosition({ 
+                                top: rect.bottom + 2,
+                                bottom: rect.top,
+                                left: rect.left, 
+                                width: rect.width,
+                                openUpward
+                              });
+                            }
+                            setShowGripPicker(!showGripPicker);
+                            setShowEquipmentPicker(false);
+                          }}
+                          className={cn(
+                            'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs min-w-[180px]',
+                            showGripPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                          )}
+                        >
+                          <span className="truncate">{selectedGrip ? GRIP_TYPES[selectedGrip].full : 'Не выбран'}</span>
+                          <ChevronDownIcon className={cn(
+                            'w-3 h-3 transition-transform shrink-0',
+                            showGripPicker && 'rotate-180'
+                          )} />
+                        </button>
                       </div>
                     </div>
+                  )}
+
+                  {/* Portal for dropdown pickers */}
+                  {(showEquipmentPicker || showGripPicker) && createPortal(
+                    <>
+                      <div 
+                        className="fixed inset-0 z-[10000]" 
+                        onClick={() => {
+                          setShowEquipmentPicker(false);
+                          setShowGripPicker(false);
+                        }}
+                      />
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className={cn(
+                          "fixed bg-zinc-800 rounded-lg border border-zinc-700 shadow-xl z-[10001]",
+                          showEquipmentPicker ? "max-h-[320px] overflow-y-auto" : "overflow-hidden"
+                        )}
+                        style={{ 
+                          top: pickerPosition.openUpward ? pickerPosition.bottom : pickerPosition.top,
+                          left: pickerPosition.left,
+                          minWidth: Math.max(pickerPosition.width, 160),
+                          transform: pickerPosition.openUpward ? 'translateY(-100%) translateY(-2px)' : undefined
+                        }}
+                      >
+                        <div className="flex flex-col gap-1 p-2">
+                          {showEquipmentPicker ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedEquipment(null);
+                                  setShowEquipmentPicker(false);
+                                }}
+                                className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                              >
+                                Не выбран
+                              </button>
+                              {(Object.keys(EQUIPMENT_TYPES) as EquipmentType[]).map((type) => (
+                                <button
+                                  key={type}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedEquipment(type);
+                                    setShowEquipmentPicker(false);
+                                  }}
+                                  className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                                  style={selectedEquipment === type ? {
+                                    backgroundColor: '#072f18',
+                                    color: '#fff'
+                                  } : undefined}
+                                >
+                                  {EQUIPMENT_TYPES[type].full}
+                                </button>
+                              ))}
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedGrip(null);
+                                  setShowGripPicker(false);
+                                }}
+                                className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                              >
+                                Не выбран
+                              </button>
+                              {(Object.keys(GRIP_TYPES) as GripType[]).map((type) => (
+                                <button
+                                  key={type}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedGrip(type);
+                                    setShowGripPicker(false);
+                                  }}
+                                  className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                                  style={selectedGrip === type ? {
+                                    backgroundColor: '#072f18',
+                                    color: '#fff'
+                                  } : undefined}
+                                >
+                                  {GRIP_TYPES[type].full}
+                                </button>
+                              ))}
+                            </>
+                          )}
+                        </div>
+                      </motion.div>
+                    </>,
+                    document.body
                   )}
 
                   {/* Buttons */}
@@ -1706,6 +1868,8 @@ export function ExerciseCard({
                         setIsWarmup(false);
                         setSelectedEquipment(null);
                         setSelectedGrip(null);
+                        setShowEquipmentPicker(false);
+                        setShowGripPicker(false);
                       }}
                       className="bg-zinc-700 text-zinc-300 border-0 hover:bg-zinc-700 hover:text-zinc-300 active:bg-zinc-700 active:text-zinc-300 retro-large-text"
                     >
