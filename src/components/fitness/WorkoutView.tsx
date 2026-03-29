@@ -65,10 +65,11 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   
   // Template modal state
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<WorkoutTemplate | null>(null);
+  const [selectedTemplates, setSelectedTemplates] = useState<WorkoutTemplate[]>([]);
   const [templateName, setTemplateName] = useState('');
   const [showNoExercisesError, setShowNoExercisesError] = useState(false);
   const [showNoTemplatesError, setShowNoTemplatesError] = useState(false);
+  const [showDeleteTemplateConfirm, setShowDeleteTemplateConfirm] = useState(false);
   const [exerciseListVersion, setExerciseListVersion] = useState(0);
 
   // Delete exercises dialog state
@@ -314,10 +315,31 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       setShowNoTemplatesError(true);
       return;
     }
-    if (selectedTemplate) {
-      loadTemplate(workout.id, selectedTemplate.id);
-      setSelectedTemplate(null);
+    if (selectedTemplates.length === 1) {
+      loadTemplate(workout.id, selectedTemplates[0].id);
+      setSelectedTemplates([]);
       setIsTemplatesOpen(false);
+    }
+  };
+
+  const handleDeleteTemplates = () => {
+    if (selectedTemplates.length > 0) {
+      setShowDeleteTemplateConfirm(true);
+    }
+  };
+
+  const confirmDeleteTemplates = () => {
+    selectedTemplates.forEach(t => deleteTemplate(t.id));
+    setSelectedTemplates([]);
+    setShowDeleteTemplateConfirm(false);
+  };
+
+  const toggleTemplateSelection = (template: WorkoutTemplate) => {
+    const isSelected = selectedTemplates.some(t => t.id === template.id);
+    if (isSelected) {
+      setSelectedTemplates(selectedTemplates.filter(t => t.id !== template.id));
+    } else {
+      setSelectedTemplates([...selectedTemplates, template]);
     }
   };
 
@@ -566,7 +588,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 variant="ghost"
                 size="icon"
                 onClick={() => {
-                  setSelectedTemplate(null);
+                  setSelectedTemplates([]);
                   setTemplateName('');
                   setIsTemplatesOpen(true);
                 }}
@@ -1252,7 +1274,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       <Dialog open={isTemplatesOpen} onOpenChange={(open) => {
         setIsTemplatesOpen(open);
         if (!open) {
-          setSelectedTemplate(null);
+          setSelectedTemplates([]);
           setTemplateName('');
         }
       }}>
@@ -1273,21 +1295,24 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           <div className="p-4 space-y-4">
             {templates.length > 0 ? (
               <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                {templates.map((template) => (
-                  <button
-                    key={template.id}
-                    onClick={() => setSelectedTemplate(selectedTemplate?.id === template.id ? null : template)}
-                    className={cn(
-                      "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between",
-                      selectedTemplate?.id === template.id 
-                        ? "bg-zinc-600 text-white" 
-                        : "hover:bg-zinc-700/50 active:bg-zinc-700/50 text-zinc-300 hover:text-white active:text-white"
-                    )}
-                  >
-                    <span>{template.name}</span>
-                    <span className="text-xs text-zinc-500">{template.exerciseNames.length} упр.</span>
-                  </button>
-                ))}
+                {templates.map((template) => {
+                  const isSelected = selectedTemplates.some(t => t.id === template.id);
+                  return (
+                    <button
+                      key={template.id}
+                      onClick={() => toggleTemplateSelection(template)}
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between",
+                        isSelected 
+                          ? "bg-zinc-600 text-white" 
+                          : "hover:bg-zinc-700/50 active:bg-zinc-700/50 text-zinc-300 hover:text-white active:text-white"
+                      )}
+                    >
+                      <span>{template.name}</span>
+                      <span className="text-xs text-zinc-500">{template.exerciseNames.length} упр.</span>
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <p className="text-center text-zinc-500">Нет сохранённых шаблонов</p>
@@ -1304,20 +1329,23 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           </div>
 
           {/* Buttons */}
-          <div className="flex justify-between px-4 pb-4">
+          <div className="flex justify-between px-4 pb-4 gap-4">
             <button
-              onClick={handleSaveTemplate}
-              disabled={!templateName.trim()}
-              className="py-2 px-4 rounded-lg text-sm font-medium text-black hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed retro-large-text"
-              style={{ backgroundColor: '#ffae00' }}
+              onClick={selectedTemplates.length > 0 ? handleDeleteTemplates : handleSaveTemplate}
+              disabled={selectedTemplates.length === 0 && !templateName.trim()}
+              className={cn(
+                "py-2 px-4 rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed retro-large-text flex-1 text-center",
+                selectedTemplates.length > 0 ? "text-primary-foreground" : "text-black"
+              )}
+              style={{ backgroundColor: selectedTemplates.length > 0 ? '#c93843' : '#ffae00' }}
               data-slot="button"
             >
-              Сохранить
+              {selectedTemplates.length > 0 ? 'Удалить' : 'Сохранить'}
             </button>
             <button
               onClick={handleLoadTemplate}
-              disabled={!selectedTemplate}
-              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed retro-large-text"
+              disabled={selectedTemplates.length !== 1}
+              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed retro-large-text flex-1 text-center"
               style={{ backgroundColor: '#19a655' }}
               data-slot="button"
             >
@@ -1326,6 +1354,23 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete template confirmation dialog */}
+      <ConfirmDialog
+        open={showDeleteTemplateConfirm}
+        onOpenChange={setShowDeleteTemplateConfirm}
+        title="Удалить шаблон?"
+        description={
+          <>
+            Шаблон <strong className="text-white">{selectedTemplates.length === 1 ? selectedTemplates[0].name : `${selectedTemplates.length} шаблонов`}</strong> будет удалён.
+            <br />
+            Это действие нельзя отменить.
+          </>
+        }
+        confirmText="Удалить"
+        onConfirm={confirmDeleteTemplates}
+        borderColor="#c93843"
+      />
 
       {/* No exercises error dialog */}
       <Dialog open={showNoExercisesError} onOpenChange={setShowNoExercisesError}>
