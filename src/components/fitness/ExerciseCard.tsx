@@ -823,7 +823,35 @@ export function ExerciseCard({
   
   // Ref for highlighted set scrolling
   const highlightedSetRef = useRef<HTMLDivElement>(null);
-  
+
+  // Ref for adding/editing set scrolling
+  const addingSetRef = useRef<HTMLDivElement>(null);
+  const editingSetRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to adding set area
+  useEffect(() => {
+    if (isAddingSet && addingSetRef.current) {
+      setTimeout(() => {
+        addingSetRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 100);
+    }
+  }, [isAddingSet]);
+
+  // Scroll to editing set
+  useEffect(() => {
+    if (editingSetId && editingSetRef.current) {
+      setTimeout(() => {
+        editingSetRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 100);
+    }
+  }, [editingSetId]);
+
   // Scroll to highlighted set when it changes
   useEffect(() => {
     if (highlightSetIndex === undefined) return;
@@ -1385,10 +1413,10 @@ export function ExerciseCard({
                 return (
                 <div
                   key={set.id}
-                  ref={isHighlighted ? highlightedSetRef : null}
+                  ref={isHighlighted ? highlightedSetRef : editingSetId === set.id ? editingSetRef : null}
                   className={cn(
-                    'flex flex-col sm:flex-row relative gap-1',
-                    editingSetId === set.id ? 'items-start bg-zinc-700/30 rounded-lg z-[10000]' : 'items-start sm:items-center',
+                    'flex flex-col relative gap-1',
+                    editingSetId === set.id ? 'items-start rounded-lg z-[10000]' : 'items-start',
                     isHighlighted ? 'bg-amber-500/20 rounded-lg ring-1 ring-amber-500/50' : ''
                   )}
                 >
@@ -1495,7 +1523,7 @@ export function ExerciseCard({
                       {/* Снаряд */}
                       {set.weight > 0 && (
                         <div className="flex items-center gap-1 pl-10">
-                          <span className="text-[10px] text-zinc-500 w-16 shrink-0">Снаряд</span>
+                          <span className="text-[10px] text-zinc-500 w-14 shrink-0">Снаряд</span>
                           <button
                             ref={editEquipmentButtonRef}
                             type="button"
@@ -1521,7 +1549,7 @@ export function ExerciseCard({
                               setShowGripPicker(false);
                             }}
                             className={cn(
-                              'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[140px] sm:w-[160px]',
+                              'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
                               showEquipmentPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
                             )}
                           >
@@ -1537,7 +1565,7 @@ export function ExerciseCard({
                       {/* Тип хвата */}
                       {set.reps > 0 && (
                         <div className="flex items-center gap-1 pl-10">
-                          <span className="text-[10px] text-zinc-500 w-16 shrink-0">Тип хвата</span>
+                          <span className="text-[10px] text-zinc-500 w-14 shrink-0">Тип хвата</span>
                           <button
                             ref={editGripButtonRef}
                             type="button"
@@ -1563,7 +1591,7 @@ export function ExerciseCard({
                               setShowEquipmentPicker(false);
                             }}
                             className={cn(
-                              'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[140px] sm:w-[160px]',
+                              'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
                               showGripPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
                             )}
                           >
@@ -1580,7 +1608,7 @@ export function ExerciseCard({
                   
                   {/* Теги при просмотре */}
                   {editingSetId !== set.id && (set.equipmentType || set.gripType) && (
-                    <div className="flex items-center gap-1 justify-end pr-11 sm:pr-10 w-full sm:flex-1">
+                    <div className="flex items-center gap-1 justify-end pr-11 w-full">
                       {set.equipmentType && (
                         <div className="h-5 min-w-[44px] px-1 rounded-lg text-[11px] font-medium flex items-center justify-center text-primary-foreground whitespace-nowrap"
                              style={{ backgroundColor: exerciseColors.border }}>
@@ -1613,7 +1641,7 @@ export function ExerciseCard({
                         e.stopPropagation();
                         setEditingSetId(null);
                       }}
-                      className="text-zinc-500 hover:text-white active:text-white hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 shrink-0 p-0 absolute right-0 bg-zinc-800 rounded-full z-10"
+                      className="text-zinc-500 hover:text-white active:text-white hover:!bg-zinc-800 active:!bg-zinc-800 h-7 w-7 shrink-0 p-0 absolute right-0 bg-zinc-800 rounded-lg z-10"
                     >
                       <XIcon className="w-4 h-4" />
                     </Button>
@@ -1627,7 +1655,7 @@ export function ExerciseCard({
                 <div className="fixed inset-0 z-[9999] bg-black/50" onClick={(e) => e.stopPropagation()} />
               )}
               {isAddingSet ? (
-                <div className="pt-4 relative z-[10000]">
+                <div ref={addingSetRef} className="pt-4 relative z-[10000]">
                   {/* Toggle tags */}
                   <div className="flex gap-2 flex-wrap items-center mb-2">
                     {!exercise.sets.some(s => s.isWarmup) && (
@@ -1731,7 +1759,7 @@ export function ExerciseCard({
                           value={newTimeMinutes}
                           onChange={(e) => setNewTimeMinutes(e.target.value)}
                           placeholder="мин."
-                          className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span className="absolute left-1/2 -translate-x-1/2 text-zinc-500 text-xs">:</span>
                         <Input
@@ -1741,7 +1769,7 @@ export function ExerciseCard({
                           value={newTimeSeconds}
                           onChange={(e) => setNewTimeSeconds(e.target.value)}
                           placeholder="сек."
-                          className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] text-zinc-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
                     )}
@@ -1793,8 +1821,8 @@ export function ExerciseCard({
 
                   {/* Equipment and grip selection */}
                   {!useBodyweight && (
-                    <div className="flex items-center gap-1 mb-2">
-                      <span className="text-[10px] text-zinc-500 w-16 shrink-0">Снаряд</span>
+                    <div className="flex items-center gap-2 mb-2 -ml-9 pl-9">
+                      <span className="text-[10px] text-zinc-500 w-[60px] shrink-0">Снаряд</span>
                       <button
                         ref={equipmentButtonRef}
                         type="button"
@@ -1819,7 +1847,7 @@ export function ExerciseCard({
                           setShowGripPicker(false);
                         }}
                         className={cn(
-                          'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[140px] sm:w-[160px]',
+                          'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
                           showEquipmentPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
                         )}
                       >
@@ -1832,8 +1860,8 @@ export function ExerciseCard({
                     </div>
                   )}
                   
-                  <div className="flex items-center gap-1 mb-2">
-                    <span className="text-[10px] text-zinc-500 w-16 shrink-0">Тип хвата</span>
+                  <div className="flex items-center gap-2 mb-2 -ml-9 pl-9">
+                    <span className="text-[10px] text-zinc-500 w-[60px] shrink-0">Тип хвата</span>
                     <button
                       ref={gripButtonRef}
                       type="button"
@@ -1858,7 +1886,7 @@ export function ExerciseCard({
                         setShowEquipmentPicker(false);
                       }}
                       className={cn(
-                        'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[140px] sm:w-[160px]',
+                        'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
                         showGripPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
                       )}
                     >
@@ -2080,7 +2108,7 @@ export function ExerciseCard({
                         }}
                         className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
                         style={currentEquipment === type ? {
-                          backgroundColor: '#072f18',
+                          backgroundColor: '#3f3f46',
                           color: '#fff'
                         } : undefined}
                       >
@@ -2121,7 +2149,7 @@ export function ExerciseCard({
                         }}
                         className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
                         style={currentGrip === type ? {
-                          backgroundColor: '#072f18',
+                          backgroundColor: '#3f3f46',
                           color: '#fff'
                         } : undefined}
                       >

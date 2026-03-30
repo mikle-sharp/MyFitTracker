@@ -67,6 +67,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [selectedTemplates, setSelectedTemplates] = useState<WorkoutTemplate[]>([]);
   const [templateName, setTemplateName] = useState('');
+  const [templateSearchQuery, setTemplateSearchQuery] = useState('');
   const [showNoExercisesError, setShowNoExercisesError] = useState(false);
   const [showNoTemplatesError, setShowNoTemplatesError] = useState(false);
   const [showDeleteTemplateConfirm, setShowDeleteTemplateConfirm] = useState(false);
@@ -147,6 +148,13 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   
   // Шаблоны для текущего типа тренировки
   const templates = getTemplates(workout.type);
+
+  // Отфильтрованные шаблоны по поиску
+  const filteredTemplates = useMemo(() => {
+    if (!templateSearchQuery) return templates;
+    const query = templateSearchQuery.toLowerCase();
+    return templates.filter(t => t.name.toLowerCase().includes(query));
+  }, [templates, templateSearchQuery]);
 
   // Получаем ВСЕ упражнения из базы (стандартные + пользовательские всех типов)
   const allExercisesList = useMemo(() => {
@@ -1083,7 +1091,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4 shrink-0">
             <DialogTitle className="text-white font-medium text-base">
-              Заменить <span className="text-zinc-400">{replacingExerciseName}</span> на
+              Заменить "{replacingExerciseName}" на
             </DialogTitle>
             <DialogClose className="text-zinc-500 hover:text-white active:text-white transition-colors p-1">
               <XIcon className="w-5 h-5" />
@@ -1257,7 +1265,11 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         open={showReplaceConfirm}
         onOpenChange={setShowReplaceConfirm}
         title="Заменить упражнение?"
-        description={`Упражнение "${replacingExerciseName}" будет заменено на "${pendingReplaceName}". Все подходы будут удалены.`}
+        description={
+          <>
+            Упражнение <span className="text-white">"{replacingExerciseName}"</span> будет заменено на <span className="text-white">"{pendingReplaceName}"</span>. Все подходы будут удалены.
+          </>
+        }
         confirmText="Заменить"
         onConfirm={confirmReplace}
         borderColor={colors.border}
@@ -1285,81 +1297,90 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         if (!open) {
           setSelectedTemplates([]);
           setTemplateName('');
+          setTemplateSearchQuery('');
         }
       }}>
-        <DialogContent 
-          className="bg-zinc-800 border !p-0 !gap-0"
+        <DialogContent
+          className="bg-zinc-800 border h-[70vh] !top-[15vh] !translate-y-0 !p-0 !gap-0 flex flex-col"
           style={{ borderColor: colors.border }}
           showCloseButton={false}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 pt-4">
+          <div className="flex items-center justify-between px-4 pt-4 shrink-0">
             <DialogTitle className="text-white font-medium text-base">Шаблоны тренировок</DialogTitle>
             <DialogClose className="text-zinc-500 hover:text-white active:text-white transition-colors p-1">
               <XIcon className="w-5 h-5" />
             </DialogClose>
           </div>
 
-          {/* Template list & input */}
-          <div className="p-4 space-y-4">
-            {templates.length > 0 ? (
-              <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                {templates.map((template) => {
+          <div className="flex flex-col min-h-0 p-4 gap-4 flex-1">
+            {/* Search */}
+            <div className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <Input
+                value={templateSearchQuery}
+                onChange={(e) => setTemplateSearchQuery(e.target.value)}
+                placeholder="Поиск шаблона..."
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500 pl-9"
+                autoComplete="off"
+                inputMode="search"
+              />
+            </div>
+
+            {/* Templates list */}
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
+              {filteredTemplates.length > 0 ? (
+                filteredTemplates.map((template) => {
                   const isSelected = selectedTemplates.some(t => t.id === template.id);
                   return (
                     <button
                       key={template.id}
                       onClick={() => toggleTemplateSelection(template)}
                       className={cn(
-                        "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between",
-                        isSelected 
-                          ? "bg-zinc-600 text-white" 
+                        "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between gap-2",
+                        isSelected
+                          ? "bg-zinc-600 text-white"
                           : "hover:bg-zinc-700/50 active:bg-zinc-700/50 text-zinc-300 hover:text-white active:text-white"
                       )}
                     >
-                      <span>{template.name}</span>
-                      <span className="text-xs text-zinc-500">{template.exerciseNames.length} упр.</span>
+                      <span className="flex-1 truncate">{template.name}</span>
+                      <span className="text-xs text-zinc-500 shrink-0">{template.exerciseNames.length} упр.</span>
                     </button>
                   );
-                })}
-              </div>
-            ) : (
-              <p className="text-center text-zinc-500">Нет сохранённых шаблонов</p>
-            )}
+                })
+              ) : (
+                <p className="text-center text-zinc-500 py-4">Нет сохранённых шаблонов</p>
+              )}
+            </div>
 
             {/* Template name input for save */}
             <Input
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
-              placeholder="Имя шаблона"
+              placeholder="Имя нового шаблона"
               className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500"
               autoComplete="off"
             />
           </div>
 
-          {/* Buttons */}
-          <div className="flex justify-between px-4 pb-4 gap-4">
-            <button
-              onClick={selectedTemplates.length > 0 ? handleDeleteTemplates : handleSaveTemplate}
+          {/* Bottom buttons */}
+          <div className="flex items-center justify-between px-4 pb-4 shrink-0 gap-3">
+            <Button
+              onClick={selectedTemplates.length > 0 ? () => setShowDeleteTemplateConfirm(true) : handleSaveTemplate}
               disabled={selectedTemplates.length === 0 && !templateName.trim()}
-              className={cn(
-                "py-2 px-4 rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed retro-large-text flex-1 text-center",
-                selectedTemplates.length > 0 ? "text-primary-foreground" : "text-black"
-              )}
+              className="flex-1 text-primary-foreground border-0 retro-large-text"
               style={{ backgroundColor: selectedTemplates.length > 0 ? '#c93843' : '#ffae00' }}
-              data-slot="button"
             >
               {selectedTemplates.length > 0 ? 'Удалить' : 'Сохранить'}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleLoadTemplate}
               disabled={selectedTemplates.length !== 1}
-              className="py-2 px-4 rounded-lg text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed retro-large-text flex-1 text-center"
+              className="flex-1 text-primary-foreground border-0 retro-large-text"
               style={{ backgroundColor: '#19a655' }}
-              data-slot="button"
             >
               Загрузить
-            </button>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

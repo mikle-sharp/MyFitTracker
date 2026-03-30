@@ -38,7 +38,8 @@ export function Calendar() {
   const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
   
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  
+  const yearPickerRef = useRef<HTMLDivElement>(null);
+
   const { selectedDate, setSelectedDate, loadWorkoutForDate, clearSelection, workouts } = useFitnessStore();
 
   const workoutDates = useMemo(() => {
@@ -166,6 +167,16 @@ export function Calendar() {
   const currentMonthIndex = currentMonth.getMonth();
   const currentYear = currentMonth.getFullYear();
 
+  // Прокрутка к текущему году при открытии списка годов
+  useEffect(() => {
+    if (showYearPicker && yearPickerRef.current) {
+      const currentYearButton = yearPickerRef.current.querySelector(`[data-year="${currentYear}"]`) as HTMLElement;
+      if (currentYearButton) {
+        currentYearButton.scrollIntoView({ block: 'center', behavior: 'auto' });
+      }
+    }
+  }, [showYearPicker, currentYear]);
+
   return (
     <div 
       className="w-full bg-zinc-900/50 rounded-lg p-4 border border-zinc-800"
@@ -182,7 +193,7 @@ export function Calendar() {
               setShowYearPicker(false);
             }}
             className={cn(
-              'flex items-center gap-1 px-2 py-1 rounded transition-colors',
+              'flex items-center gap-1 px-2 py-1 rounded-lg transition-colors',
               'text-xs text-zinc-400',
               showMonthPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 active:bg-zinc-800 hover:text-zinc-300 active:text-zinc-300'
             )}
@@ -209,7 +220,7 @@ export function Calendar() {
                       onClick={() => goToMonth(index)}
                       className="px-2 py-1.5 text-xs rounded-lg transition-colors text-zinc-300 hover:bg-zinc-700 active:bg-zinc-700 text-center whitespace-nowrap"
                       style={currentMonthIndex === index ? {
-                        backgroundColor: '#072f18',
+                        backgroundColor: '#3f3f46',
                         color: '#fff'
                       } : undefined}
                     >
@@ -230,7 +241,7 @@ export function Calendar() {
               setShowMonthPicker(false);
             }}
             className={cn(
-              'flex items-center gap-1 px-2 py-1 rounded transition-colors',
+              'flex items-center gap-1 px-2 py-1 rounded-lg transition-colors',
               'text-xs text-zinc-400',
               showYearPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 active:bg-zinc-800 hover:text-zinc-300 active:text-zinc-300'
             )}
@@ -250,14 +261,15 @@ export function Calendar() {
                 exit={{ opacity: 0, y: -10 }}
                 className="absolute top-full right-0 mt-2 bg-zinc-800 rounded-lg border border-zinc-700 shadow-xl z-50 overflow-hidden max-h-[200px] overflow-y-auto"
               >
-                <div className="flex flex-col gap-1 p-2">
+                <div ref={yearPickerRef} className="flex flex-col gap-1 p-2">
                   {YEARS().map(year => (
                     <button
                       key={year}
+                      data-year={year}
                       onClick={() => goToYear(year)}
                       className="px-4 py-1.5 text-xs rounded-lg transition-colors whitespace-nowrap text-zinc-300 hover:bg-zinc-700 active:bg-zinc-700"
                       style={currentYear === year ? {
-                        backgroundColor: '#072f18',
+                        backgroundColor: '#3f3f46',
                         color: '#fff'
                       } : undefined}
                     >
