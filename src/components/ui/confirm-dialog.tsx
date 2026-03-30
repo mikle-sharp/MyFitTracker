@@ -60,7 +60,7 @@ export function ConfirmDialog({
             <>
               {/* Second confirmation */}
               <div className="pt-4" />
-              <div className="text-white text-center font-semibold">Вы уверены?</div>
+              <div className="text-white font-medium text-base text-center">Вы уверены?</div>
               
               <div className="pt-4" />
               <div className="flex flex-row px-4 pb-4">
@@ -84,7 +84,7 @@ export function ConfirmDialog({
             <>
               {/* First confirmation */}
               <div className="pt-4" />
-              <div className="text-white text-center font-semibold">{title}</div>
+              <div className="text-white font-medium text-base text-center">{title}</div>
               
               <div className="pt-4" />
               <div className="text-zinc-400 text-center px-4">{description}</div>

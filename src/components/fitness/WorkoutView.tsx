@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useCallback, useEffect, useReducer } from 'react';
 import { Trash2Icon, CalendarIcon, ClockIcon, SearchIcon, RefreshCwIcon, PencilIcon, XIcon, CopyIcon, BookmarkIcon, DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, TypeIcon, ListIcon } from '@/components/icons/Icons';
-import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, getExerciseType, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType, WorkoutTemplate } from '@/lib/types';
+import { Workout, WorkoutType, WORKOUT_TYPE_COLORS, WORKOUT_TYPE_NAMES, WORKOUT_TYPE_ICONS, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, ExerciseType, WorkoutTemplate } from '@/lib/types';
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFitnessStore } from '@/lib/store';
-import { getAllExercisesForType, getAllExercises } from '@/lib/storage';
+import { getAllExercisesForType, getAllExercises, getExerciseTypeFromBase } from '@/lib/storage';
 
 // Компонент иконки типа тренировки
 function WorkoutTypeIcon({ type, color, isDefaultStyle }: { type: WorkoutType; color: string; isDefaultStyle: boolean }) {
@@ -179,7 +179,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
     // Теги фильтруют - показываем только совпадающие
     if (exerciseTypeFilter) {
-      result = result.filter(ex => getExerciseType(ex) === exerciseTypeFilter);
+      result = result.filter(ex => getExerciseTypeFromBase(ex) === exerciseTypeFilter);
     }
 
     return result;
@@ -196,7 +196,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
     }
 
     if (deleteTypeFilter) {
-      result = result.filter(ex => getExerciseType(ex) === deleteTypeFilter);
+      result = result.filter(ex => getExerciseTypeFromBase(ex) === deleteTypeFilter);
     }
 
     return result;
@@ -226,7 +226,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
 
   const handleAddSelectedExercise = () => {
     if (selectedExercise) {
-      const exerciseType = getExerciseType(selectedExercise);
+      const exerciseType = getExerciseTypeFromBase(selectedExercise);
       handleAddExercise(selectedExercise, exerciseType);
     }
   };
@@ -250,7 +250,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
     setSearchQuery('');
     setNewExerciseName('');
     setSelectedReplaceExercise(null);
-    setExerciseTypeFilter(getExerciseType(exerciseName));
+    setExerciseTypeFilter(getExerciseTypeFromBase(exerciseName));
     setIsReplaceExerciseOpen(true);
   };
 
@@ -262,7 +262,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
   const confirmReplace = () => {
     if (replacingExerciseId && pendingReplaceName) {
       // Заменяем упражнение (сохраняет позицию)
-      replaceExercise(workout.id, replacingExerciseId, pendingReplaceName, getExerciseType(pendingReplaceName));
+      replaceExercise(workout.id, replacingExerciseId, pendingReplaceName, getExerciseTypeFromBase(pendingReplaceName));
       setIsReplaceExerciseOpen(false);
       setReplacingExerciseId(null);
       setReplacingExerciseName('');
@@ -751,7 +751,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск упражнения..."
-                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500 pl-9"
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] pl-9"
                 autoComplete="off"
                 inputMode="search"
               />
@@ -786,7 +786,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             <div className="flex-1 min-h-0 overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
               {displayedExercises.length > 0 ? (
                 displayedExercises.map((exerciseName) => {
-                  const exerciseType = getExerciseType(exerciseName);
+                  const exerciseType = getExerciseTypeFromBase(exerciseName);
                   const exerciseColors = EXERCISE_TYPE_COLORS[exerciseType];
                   const exerciseMarker = EXERCISE_TYPE_MARKERS[exerciseType];
                   const isSelected = selectedExercise === exerciseName;
@@ -877,7 +877,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 value={deleteSearchQuery}
                 onChange={(e) => setDeleteSearchQuery(e.target.value)}
                 placeholder="Поиск упражнения..."
-                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500 pl-9"
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] pl-9"
                 autoComplete="off"
                 inputMode="search"
               />
@@ -912,7 +912,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             <div className="flex-1 min-h-0 overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
               {deleteDialogExercises.length > 0 ? (
                 deleteDialogExercises.map((exerciseName) => {
-                  const exerciseType = getExerciseType(exerciseName);
+                  const exerciseType = getExerciseTypeFromBase(exerciseName);
                   const exerciseColors = EXERCISE_TYPE_COLORS[exerciseType];
                   const exerciseMarker = EXERCISE_TYPE_MARKERS[exerciseType];
                   const isSelected = selectedDeleteExercises.includes(exerciseName);
@@ -967,10 +967,14 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       <ConfirmDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
-        title={selectedDeleteExercises.length === 1 ? `Удалить упражнение "${selectedDeleteExercises[0]}"?` : `Удалить упражнения?`}
-        description={selectedDeleteExercises.length === 1 
-          ? "Это удалит упражнение из базы, а также все подходы этого упражнения во всех тренировках. Это действие нельзя отменить."
-          : "Это удалит упражнения из базы, а также все подходы этих упражнений во всех тренировках. Это действие нельзя отменить."
+        title={selectedDeleteExercises.length === 1 ? `Удалить упражнение?` : `Удалить упражнения?`}
+        description={selectedDeleteExercises.length === 1
+          ? <>
+              Это удалит упражнение <strong className="text-white">"{selectedDeleteExercises[0]}"</strong>, а также все его подходы во всех тренировках на всех датах.<br />Это действие нельзя отменить.
+            </>
+          : <>
+              Это удалит <strong className="text-white">выделенные</strong> упражнения, а также все их подходы во всех тренировках на всех датах.<br />Это действие нельзя отменить.
+            </>
         }
         confirmText="Удалить"
         cancelText="Отмена"
@@ -1017,7 +1021,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 setDuplicateExerciseError(false);
               }}
               placeholder="Название упражнения"
-              className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500"
+              className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px]"
               autoComplete="off"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && newExerciseName.trim() && !duplicateExerciseError) {
@@ -1085,7 +1089,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       }}>
         <DialogContent
           className="bg-zinc-800 border h-[70vh] !top-[15vh] !translate-y-0 !p-0 !gap-0 flex flex-col"
-          style={{ borderColor: EXERCISE_TYPE_COLORS[getExerciseType(replacingExerciseName)]?.border || colors.border }}
+          style={{ borderColor: EXERCISE_TYPE_COLORS[getExerciseTypeFromBase(replacingExerciseName)]?.border || colors.border }}
           showCloseButton={false}
         >
           {/* Header */}
@@ -1106,7 +1110,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск упражнения..."
-                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500 pl-9"
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] pl-9"
                 autoComplete="off"
                 inputMode="search"
               />
@@ -1141,7 +1145,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             <div className="flex-1 min-h-0 overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50" style={{ touchAction: 'pan-y' }}>
               {displayedExercises.length > 0 ? (
                 displayedExercises.map((exerciseName) => {
-                  const exerciseType = getExerciseType(exerciseName);
+                  const exerciseType = getExerciseTypeFromBase(exerciseName);
                   const exerciseColors = EXERCISE_TYPE_COLORS[exerciseType];
                   const exerciseMarker = EXERCISE_TYPE_MARKERS[exerciseType];
                   const isSelected = selectedReplaceExercise === exerciseName;
@@ -1267,7 +1271,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         title="Заменить упражнение?"
         description={
           <>
-            Упражнение <span className="text-white">"{replacingExerciseName}"</span> будет заменено на <span className="text-white">"{pendingReplaceName}"</span>. Все подходы будут удалены.
+            Упражнение <span className="text-white">"{replacingExerciseName}"</span> будет заменено на <span className="text-white">"{pendingReplaceName}"</span>.<br />Все подходы заменяемого упражнения на текущей дате будут удалены.<br />Это действие нельзя отменить.
           </>
         }
         confirmText="Заменить"
@@ -1321,7 +1325,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 value={templateSearchQuery}
                 onChange={(e) => setTemplateSearchQuery(e.target.value)}
                 placeholder="Поиск шаблона..."
-                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500 pl-9"
+                className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] pl-9"
                 autoComplete="off"
                 inputMode="search"
               />
@@ -1343,7 +1347,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                           : "hover:bg-zinc-700/50 active:bg-zinc-700/50 text-zinc-300 hover:text-white active:text-white"
                       )}
                     >
-                      <span className="flex-1 truncate">{template.name}</span>
+                      <span className="flex-1">{template.name}</span>
                       <span className="text-xs text-zinc-500 shrink-0">{template.exerciseNames.length} упр.</span>
                     </button>
                   );
@@ -1358,7 +1362,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               placeholder="Имя нового шаблона"
-              className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] text-zinc-500"
+              className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px]"
               autoComplete="off"
             />
           </div>

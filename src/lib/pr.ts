@@ -1,4 +1,4 @@
-import { Workout, PersonalRecord, RecordData, WorkoutSet } from './types';
+import { Workout, PersonalRecord, RecordData, WorkoutSet, WorkoutType } from './types';
 import { getWorkouts } from './storage';
 
 // Проверка, совпадают ли два рекорда (один и тот же подход)

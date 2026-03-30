@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Trash2Icon, PlusIcon, CheckIcon, ClockIcon, RefreshCwIcon, UserIcon, WeightIcon, ChevronUpIcon, ChevronDownIcon, XIcon, ZapIcon, Repeat2Icon, TrendingUpIcon } from '@/components/icons/Icons';
-import { Exercise, WorkoutSet, getExerciseType, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EquipmentType, GripType, EQUIPMENT_TYPES, GRIP_TYPES } from '@/lib/types';
+import { Exercise, WorkoutSet, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EquipmentType, GripType, PositionType, EQUIPMENT_TYPES, GRIP_TYPES, POSITION_TYPES } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ import { getPersonalRecord, getRecordType } from '@/lib/pr';
 import { useFitnessStore } from '@/lib/store';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { getPreviousSetData } from '@/lib/storage';
+import { getPreviousSetData, getExerciseTypeFromBase } from '@/lib/storage';
 
 // Компонент для названия упражнения с авто-размером шрифта
 function ExerciseNameHeader({ name }: { name: string }) {
@@ -774,26 +774,31 @@ export function ExerciseCard({
   const [editTimeSeconds, setEditTimeSeconds] = useState('');
   const [editEquipment, setEditEquipment] = useState<EquipmentType | null>(null);
   const [editGrip, setEditGrip] = useState<GripType | null>(null);
+  const [editPosition, setEditPosition] = useState<PositionType | null>(null);
 
   // State for input type
   const [useBodyweight, setUseBodyweight] = useState(false);
   const [useReps, setUseReps] = useState(true);
   const [useTime, setUseTime] = useState(false);
-  
+
   // State for equipment and grip tags
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
   const [selectedGrip, setSelectedGrip] = useState<GripType | null>(null);
+  const [selectedPosition, setSelectedPosition] = useState<PositionType | null>(null);
   const [showEquipmentPicker, setShowEquipmentPicker] = useState(false);
   const [showGripPicker, setShowGripPicker] = useState(false);
+  const [showPositionPicker, setShowPositionPicker] = useState(false);
   const [pickerPosition, setPickerPosition] = useState({ top: 0, left: 0, width: 0, openUpward: false, bottom: 0 });
   const equipmentButtonRef = useRef<HTMLButtonElement>(null);
   const gripButtonRef = useRef<HTMLButtonElement>(null);
+  const positionButtonRef = useRef<HTMLButtonElement>(null);
   const editEquipmentButtonRef = useRef<HTMLButtonElement>(null);
   const editGripButtonRef = useRef<HTMLButtonElement>(null);
+  const editPositionButtonRef = useRef<HTMLButtonElement>(null);
   
   // Block scroll when picker is open
   useEffect(() => {
-    if (showEquipmentPicker || showGripPicker) {
+    if (showEquipmentPicker || showGripPicker || showPositionPicker) {
       document.body.style.overflow = 'hidden';
       document.body.style.touchAction = 'none';
     } else {
@@ -804,7 +809,7 @@ export function ExerciseCard({
       document.body.style.overflow = '';
       document.body.style.touchAction = '';
     };
-  }, [showEquipmentPicker, showGripPicker]);
+  }, [showEquipmentPicker, showGripPicker, showPositionPicker]);
   
   // State for delete confirmation
   const [showDeleteExerciseConfirm, setShowDeleteExerciseConfirm] = useState(false);
@@ -1108,7 +1113,7 @@ export function ExerciseCard({
   
   // Определяем тип упражнения для цветовой маркировки
   // Приоритет: 1) явный тип упражнения, 2) вычисленный по названию
-  const exerciseType = exercise.exerciseType || getExerciseType(exercise.name);
+  const exerciseType = exercise.exerciseType || getExerciseTypeFromBase(exercise.name);
   
   // Маппинг exerciseType к workoutType для получения ярких цветов
   const exerciseTypeToWorkoutType: Record<ExerciseType, WorkoutType> = {
@@ -1149,8 +1154,8 @@ export function ExerciseCard({
     if (!useBodyweight && useReps && weight <= 0 && !useTime) return;
     if (useTime && time <= 0 && !useReps) return;
 
-    addSet(workoutId, exercise.id, reps, weight, time > 0 ? time : undefined, isWarmup, selectedEquipment ?? undefined, selectedGrip ?? undefined);
-    
+    addSet(workoutId, exercise.id, reps, weight, time > 0 ? time : undefined, isWarmup, selectedEquipment ?? undefined, selectedGrip ?? undefined, selectedPosition ?? undefined);
+
     // Reset form
     setNewReps('');
     setNewWeight('');
@@ -1160,8 +1165,10 @@ export function ExerciseCard({
     setIsWarmup(false);
     setSelectedEquipment(null);
     setSelectedGrip(null);
+    setSelectedPosition(null);
     setShowEquipmentPicker(false);
     setShowGripPicker(false);
+    setShowPositionPicker(false);
   };
 
   const handleUpdateSet = (setId: string, originalSet: WorkoutSet) => {
@@ -1172,8 +1179,8 @@ export function ExerciseCard({
 
     if (reps <= 0 && time <= 0) return;
 
-    updateSet(workoutId, exercise.id, setId, reps, weight, time > 0 ? time : undefined, editEquipment !== null ? editEquipment ?? undefined : null, editGrip !== null ? editGrip ?? undefined : null);
-    
+    updateSet(workoutId, exercise.id, setId, reps, weight, time > 0 ? time : undefined, editEquipment !== null ? editEquipment ?? undefined : null, editGrip !== null ? editGrip ?? undefined : null, editPosition !== null ? editPosition ?? undefined : null);
+
     setEditingSetId(null);
     setEditReps('');
     setEditWeight('');
@@ -1181,8 +1188,10 @@ export function ExerciseCard({
     setEditTimeSeconds('');
     setEditEquipment(null);
     setEditGrip(null);
+    setEditPosition(null);
     setShowEquipmentPicker(false);
     setShowGripPicker(false);
+    setShowPositionPicker(false);
   };
 
   const handleRemoveSet = (setId: string) => {
@@ -1210,8 +1219,10 @@ export function ExerciseCard({
     }
     setEditEquipment(set.equipmentType || null);
     setEditGrip(set.gripType || null);
+    setEditPosition(set.positionType || null);
     setShowEquipmentPicker(false);
     setShowGripPicker(false);
+    setShowPositionPicker(false);
   };
 
   const handleDeleteExercise = () => {
@@ -1517,9 +1528,50 @@ export function ExerciseCard({
                     </div>
                   )}
                   
-                  {/* Третья и четвёртая строки при редактировании: снаряд и хват */}
+                  {/* Третья и четвёртая строки при редактировании: позиция, снаряд и хват */}
                   {editingSetId === set.id && (
                     <>
+                      {/* Позиция */}
+                      <div className="flex items-center gap-1 pl-10">
+                        <span className="text-[10px] text-zinc-500 w-14 shrink-0">Позиция</span>
+                        <button
+                          ref={editPositionButtonRef}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!showPositionPicker && editPositionButtonRef.current) {
+                              const rect = editPositionButtonRef.current.getBoundingClientRect();
+                              const viewportHeight = window.innerHeight;
+                              const listHeight = 200;
+                              const spaceBelow = viewportHeight - rect.bottom;
+                              const spaceAbove = rect.top;
+                              const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
+
+                              setPickerPosition({
+                                top: rect.bottom + 2,
+                                bottom: rect.top,
+                                left: rect.left,
+                                width: rect.width,
+                                openUpward
+                              });
+                            }
+                            setShowPositionPicker(!showPositionPicker);
+                            setShowEquipmentPicker(false);
+                            setShowGripPicker(false);
+                          }}
+                          className={cn(
+                            'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
+                            showPositionPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                          )}
+                        >
+                          <span className="truncate overflow-hidden">{editPosition ? POSITION_TYPES[editPosition].full : 'Не выбран'}</span>
+                          <ChevronDownIcon className={cn(
+                            'w-3 h-3 transition-transform shrink-0',
+                            showPositionPicker && 'rotate-180'
+                          )} />
+                        </button>
+                      </div>
+
                       {/* Снаряд */}
                       {set.weight > 0 && (
                         <div className="flex items-center gap-1 pl-10">
@@ -1547,6 +1599,7 @@ export function ExerciseCard({
                               }
                               setShowEquipmentPicker(!showEquipmentPicker);
                               setShowGripPicker(false);
+                              setShowPositionPicker(false);
                             }}
                             className={cn(
                               'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
@@ -1589,6 +1642,7 @@ export function ExerciseCard({
                               }
                               setShowGripPicker(!showGripPicker);
                               setShowEquipmentPicker(false);
+                              setShowPositionPicker(false);
                             }}
                             className={cn(
                               'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
@@ -1607,8 +1661,14 @@ export function ExerciseCard({
                   )}
                   
                   {/* Теги при просмотре */}
-                  {editingSetId !== set.id && (set.equipmentType || set.gripType) && (
+                  {editingSetId !== set.id && (set.positionType || set.equipmentType || set.gripType) && (
                     <div className="flex items-center gap-1 justify-end pr-11 w-full">
+                      {set.positionType && (
+                        <div className="h-5 min-w-[44px] px-1 rounded-lg text-[11px] font-medium flex items-center justify-center text-primary-foreground whitespace-nowrap"
+                             style={{ backgroundColor: exerciseColors.border }}>
+                          {POSITION_TYPES[set.positionType].short}
+                        </div>
+                      )}
                       {set.equipmentType && (
                         <div className="h-5 min-w-[44px] px-1 rounded-lg text-[11px] font-medium flex items-center justify-center text-primary-foreground whitespace-nowrap"
                              style={{ backgroundColor: exerciseColors.border }}>
@@ -1819,6 +1879,46 @@ export function ExerciseCard({
                     );
                   })()}
 
+                  {/* Position selection */}
+                  <div className="flex items-center gap-2 mb-2 -ml-9 pl-9">
+                    <span className="text-[10px] text-zinc-500 w-[60px] shrink-0">Позиция</span>
+                    <button
+                      ref={positionButtonRef}
+                      type="button"
+                      onClick={() => {
+                        if (!showPositionPicker && positionButtonRef.current) {
+                          const rect = positionButtonRef.current.getBoundingClientRect();
+                          const viewportHeight = window.innerHeight;
+                          const listHeight = 200;
+                          const spaceBelow = viewportHeight - rect.bottom;
+                          const spaceAbove = rect.top;
+                          const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
+
+                          setPickerPosition({
+                            top: rect.bottom + 2,
+                            bottom: rect.top,
+                            left: rect.left,
+                            width: rect.width,
+                            openUpward
+                          });
+                        }
+                        setShowPositionPicker(!showPositionPicker);
+                        setShowEquipmentPicker(false);
+                        setShowGripPicker(false);
+                      }}
+                      className={cn(
+                        'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
+                        showPositionPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                      )}
+                    >
+                      <span className="truncate overflow-hidden">{selectedPosition ? POSITION_TYPES[selectedPosition].full : 'Не выбран'}</span>
+                      <ChevronDownIcon className={cn(
+                        'w-3 h-3 transition-transform shrink-0',
+                        showPositionPicker && 'rotate-180'
+                      )} />
+                    </button>
+                  </div>
+
                   {/* Equipment and grip selection */}
                   {!useBodyweight && (
                     <div className="flex items-center gap-2 mb-2 -ml-9 pl-9">
@@ -1978,26 +2078,26 @@ export function ExerciseCard({
             {setToDelete && (() => {
               const setToDeleteData = exercise.sets.find(s => s.id === setToDelete);
               if (!setToDeleteData) return null;
-              
+
               if (setToDeleteData.isWarmup) {
                 return (
                   <>
-                    <strong className="text-white">Разминочный</strong> подход будет удалён.<br />
+                    <strong className="text-white">Разминочный</strong> подход упражнения <strong className="text-white">"{exercise.name}"</strong> на текущей дате будет удалён.<br />
                     Это действие нельзя отменить.
                   </>
                 );
               }
-              
+
               // Вычисляем номер рабочего подхода (как в UI)
               let workingSetNumber = 0;
               for (let i = 0; i < exercise.sets.length; i++) {
                 if (!exercise.sets[i].isWarmup) workingSetNumber++;
                 if (exercise.sets[i].id === setToDelete) break;
               }
-              
+
               return (
                 <>
-                  Подход <strong className="text-white">#{workingSetNumber}</strong> будет удалён.<br />
+                  Подход <strong className="text-white">#{workingSetNumber}</strong> упражнения <strong className="text-white">"{exercise.name}"</strong> на текущей дате будет удалён.<br />
                   Это действие нельзя отменить.
                 </>
               );
@@ -2051,13 +2151,14 @@ export function ExerciseCard({
       </Dialog>
 
       {/* Portal for dropdown pickers - rendered at top level for both add and edit modes */}
-      {(showEquipmentPicker || showGripPicker) && createPortal(
+      {(showEquipmentPicker || showGripPicker || showPositionPicker) && createPortal(
         <>
-          <div 
-            className="fixed inset-0 z-[10000]" 
+          <div
+            className="fixed inset-0 z-[10000]"
             onClick={() => {
               setShowEquipmentPicker(false);
               setShowGripPicker(false);
+              setShowPositionPicker(false);
             }}
           />
           <motion.div
@@ -2068,7 +2169,7 @@ export function ExerciseCard({
               "fixed bg-zinc-800 rounded-lg border border-zinc-700 shadow-xl z-[10001]",
               showEquipmentPicker ? "max-h-[320px] overflow-y-auto" : "overflow-hidden"
             )}
-            style={{ 
+            style={{
               top: pickerPosition.openUpward ? pickerPosition.bottom : pickerPosition.top,
               left: pickerPosition.left,
               minWidth: Math.max(pickerPosition.width, 160),
@@ -2076,7 +2177,48 @@ export function ExerciseCard({
             }}
           >
             <div className="flex flex-col gap-1 p-2">
-              {showEquipmentPicker ? (
+              {showPositionPicker ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (editingSetId) {
+                        setEditPosition(null);
+                      } else {
+                        setSelectedPosition(null);
+                      }
+                      setShowPositionPicker(false);
+                    }}
+                    className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                  >
+                    Не выбран
+                  </button>
+                  {(Object.keys(POSITION_TYPES) as PositionType[]).map((type) => {
+                    const currentPosition = editingSetId ? editPosition : selectedPosition;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => {
+                          if (editingSetId) {
+                            setEditPosition(type);
+                          } else {
+                            setSelectedPosition(type);
+                          }
+                          setShowPositionPicker(false);
+                        }}
+                        className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                        style={currentPosition === type ? {
+                          backgroundColor: '#3f3f46',
+                          color: '#fff'
+                        } : undefined}
+                      >
+                        {POSITION_TYPES[type].full}
+                      </button>
+                    );
+                  })}
+                </>
+              ) : showEquipmentPicker ? (
                 <>
                   <button
                     type="button"

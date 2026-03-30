@@ -4,7 +4,8 @@ import { useMemo, useRef, useState, useEffect } from 'react';
 import { calculatePersonalRecords } from '@/lib/pr';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { getExerciseType, EXERCISE_TYPE_COLORS, WORKOUT_TYPE_ICONS, ExerciseType } from '@/lib/types';
+import { EXERCISE_TYPE_COLORS, WORKOUT_TYPE_ICONS, ExerciseType } from '@/lib/types';
+import { getExerciseTypeFromBase } from '@/lib/storage';
 import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon } from '@/components/icons/Icons';
 
 // Компонент иконки типа упражнения
@@ -80,7 +81,7 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
       <ScrollArea>
         <div className="p-2 space-y-2">
           {records.map((record, index) => {
-            const exerciseType = getExerciseType(record.exerciseName);
+            const exerciseType = getExerciseTypeFromBase(record.exerciseName);
             const colors = EXERCISE_TYPE_COLORS[exerciseType];
             
             const hasWeight = !!record.weightRecord;

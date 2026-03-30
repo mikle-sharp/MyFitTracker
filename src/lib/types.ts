@@ -34,6 +34,9 @@ export type EquipmentType =
 // Типы хвата
 export type GripType = 'wide' | 'narrow' | 'parallel' | 'cross' | 'reverse';
 
+// Типы позиции
+export type PositionType = 'sitting' | 'lying' | 'standing';
+
 // Подход
 export interface WorkoutSet {
   id: string;
@@ -45,6 +48,7 @@ export interface WorkoutSet {
   timestamp?: string; // время добавления подхода (ISO string)
   equipmentType?: EquipmentType; // тип снаряда
   gripType?: GripType; // тип хвата
+  positionType?: PositionType; // позиция
 }
 
 // Константы для типов снаряда (упорядочены по полному названию)
@@ -71,6 +75,13 @@ export const GRIP_TYPES: Record<GripType, { short: string; full: string }> = {
   parallel: { short: 'пар', full: 'Параллельный' },
   cross: { short: 'пер', full: 'Перекрёстный' },
   reverse: { short: 'обр', full: 'Обратный' },
+};
+
+// Константы для типов позиции
+export const POSITION_TYPES: Record<PositionType, { short: string; full: string }> = {
+  sitting: { short: 'сидя', full: 'Сидя' },
+  lying: { short: 'лёжа', full: 'Лёжа' },
+  standing: { short: 'стоя', full: 'Стоя' },
 };
 
 // Упражнение
@@ -125,6 +136,7 @@ export type ExercisesBase = Record<ExerciseBaseKey, string[]>;
 export const DEFAULT_EXERCISES_BASE: ExercisesBase = {
   chest: [
     'Жим лежа',
+    'Жим штанги лёжа',
     'Жим на наклонной',
     'Разводка гантелей',
     'Кроссовер',
@@ -133,12 +145,14 @@ export const DEFAULT_EXERCISES_BASE: ExercisesBase = {
   back: [
     'Становая тяга',
     'Тяга штанги в наклоне',
-    'Подтягивания',
+    'Подтягивание на перекладине',
+    'Подтягивания на перекладине',
     'Тяга гантели',
     'Горизонтальная тяга',
   ],
   legs: [
     'Приседания',
+    'Приседания со штангой',
     'Жим ногами',
     'Выпады',
     'Разгибание ног',
@@ -148,6 +162,7 @@ export const DEFAULT_EXERCISES_BASE: ExercisesBase = {
     'Планка',
     'Скручивания на пресс',
     'Подъем ног в висе',
+    'Подъём ног в висе на перекладине',
     'Боковая планка',
     'Русский твист',
     'Велосипед',
@@ -155,6 +170,8 @@ export const DEFAULT_EXERCISES_BASE: ExercisesBase = {
     'Обратные скручивания',
     'Подъем корпуса',
     'V-up',
+    'Жим на плечи',
+    'Сгибания на бицепс',
   ],
 };
 
@@ -174,14 +191,7 @@ export const DEFAULT_EXERCISES: Record<WorkoutType, string[]> = {
 // Упражнения на пресс (требуют особого ввода)
 export const ABS_EXERCISES = DEFAULT_EXERCISES_BASE.common;
 
-// Проверка, является ли упражнение на пресс
-export const isAbsExercise = (name: string): boolean => {
-  const lowerName = name.toLowerCase();
-  return ABS_EXERCISES.some(e => lowerName.includes(e.toLowerCase())) ||
-         lowerName.includes('пресс') ||
-         lowerName.includes('скручив') ||
-         lowerName.includes('планк');
-};
+
 
 // Цвета для типов тренировок (hex без прозрачности)
 export const WORKOUT_TYPE_COLORS: Record<WorkoutType, { bg: string; text: string; border: string }> = {
@@ -261,43 +271,6 @@ export const EXERCISE_TYPE_NAMES: Record<ExerciseType, string> = {
   back: 'Спина',
   legs: 'Ноги',
   common: 'Общие',
-};
-
-// Функция определения типа упражнения по названию
-export const getExerciseType = (exerciseName: string): ExerciseType => {
-  const name = exerciseName.toLowerCase();
-  
-  // Проверяем упражнения на пресс/общие (сначала, так как они приоритетны)
-  if (isAbsExercise(exerciseName)) {
-    return 'common';
-  }
-  
-  // Общие упражнения (руки, плечи, предплечья) - проверяем до основных групп
-  const commonKeywords = ['бицепс', 'трицепс', 'плеч', 'запястий', 'предплеч', 'дельт'];
-  if (commonKeywords.some(k => name.includes(k))) {
-    return 'common';
-  }
-  
-  // Упражнения груди
-  const chestKeywords = ['жим лежа', 'жим штанги лёжа', 'жим на наклонной', 'жим в хаммере', 'разводка', 'сведение рук', 'отжимания', 'грудь', 'пек', 'грудн'];
-  if (chestKeywords.some(k => name.includes(k))) {
-    return 'chest';
-  }
-  
-  // Упражнения спины
-  const backKeywords = ['становая тяга', 'тяга штанги', 'подтягивания', 'тяга гантели', 'горизонтальная тяга', 'тяга вертикального', 'тяга блока', 'тяга т-грифа', 'рычажн', 'спина', 'широчайш', 'шраги', 'гиперэкстенз'];
-  if (backKeywords.some(k => name.includes(k))) {
-    return 'back';
-  }
-  
-  // Упражнения ног
-  const legsKeywords = ['приседания', 'присед', 'жим ногами', 'выпады', 'разгибание ног', 'разгибания ног', 'сгибание ног', 'сгибания ног', 'ноги', 'квадрицепс', 'бицепс бедра', 'ягодич', 'подъем на носки', 'подъем на носок', 'носки'];
-  if (legsKeywords.some(k => name.includes(k))) {
-    return 'legs';
-  }
-  
-  // По умолчанию - общие
-  return 'common';
 };
 
 // Шаблон тренировки

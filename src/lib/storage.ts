@@ -1,4 +1,4 @@
-import { Workout, Exercise, WorkoutSet, WorkoutType, ExerciseType, EquipmentType, GripType, WorkoutTemplate, ExercisesBase, ExerciseBaseKey, DEFAULT_EXERCISES_BASE } from './types';
+import { Workout, Exercise, WorkoutSet, WorkoutType, ExerciseType, EquipmentType, GripType, PositionType, WorkoutTemplate, ExercisesBase, ExerciseBaseKey, DEFAULT_EXERCISES_BASE, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES } from './types';
 
 const STORAGE_KEY = 'fitness-journal-workouts';
 const EXERCISES_BASE_KEY = 'fitness-journal-exercises-base';
@@ -195,6 +195,23 @@ export const getAllExercises = (): string[] => {
   });
   
   return Array.from(allExercises);
+};
+
+// Получение типа упражнения по названию (поиск в базе)
+export const getExerciseTypeFromBase = (exerciseName: string): ExerciseType => {
+  const base = getExercisesBase();
+  const allBase = getAllExercisesBase();
+  const name = exerciseName.trim();
+  
+  // Ищем в базе по точному совпадению
+  for (const type of ['chest', 'back', 'legs', 'common'] as ExerciseBaseKey[]) {
+    if (base[type].includes(name) || allBase[type].includes(name)) {
+      return type;
+    }
+  }
+  
+  // По умолчанию - общие
+  return 'common';
 };
 
 // === ТРЕНИРОВКИ ===
@@ -428,7 +445,8 @@ export const addSetToExercise = (
   time?: number,
   isWarmup?: boolean,
   equipmentType?: EquipmentType,
-  gripType?: GripType
+  gripType?: GripType,
+  positionType?: PositionType
 ): WorkoutSet | null => {
   const workouts = getWorkouts();
   const workout = workouts.find(w => w.id === workoutId);
@@ -447,6 +465,7 @@ export const addSetToExercise = (
     timestamp: new Date().toISOString(),
     equipmentType,
     gripType,
+    positionType,
   };
 
   // Разминочные подходы добавляем в начало списка
@@ -470,11 +489,12 @@ export const updateSet = (
   weight: number,
   time?: number,
   equipmentType?: EquipmentType,
-  gripType?: GripType
+  gripType?: GripType,
+  positionType?: PositionType
 ): void => {
   const workouts = getWorkouts();
   const workout = workouts.find(w => w.id === workoutId);
-  
+
   if (!workout) return;
 
   const exercise = workout.exercises.find(e => e.id === exerciseId);
@@ -493,6 +513,9 @@ export const updateSet = (
   }
   if (gripType !== undefined) {
     set.gripType = gripType || undefined;
+  }
+  if (positionType !== undefined) {
+    set.positionType = positionType || undefined;
   }
   workout.updatedAt = new Date().toISOString();
   saveWorkouts(workouts);
@@ -533,7 +556,7 @@ export const exportToCSV = (): string => {
     return '';
   }
 
-  const headers = ['Дата', 'Тип тренировки', 'Длительность (мин)', 'Вес пользователя (кг)', 'Упражнение', 'Подход', 'Повторения', 'Вес (кг)', 'Время (сек)', 'Разминка', 'Снаряд', 'Хват', 'Время добавления', 'Заметки'];
+  const headers = ['Дата', 'Тип тренировки', 'Длительность (мин)', 'Вес пользователя (кг)', 'Упражнение', 'Подход', 'Повторения', 'Вес (кг)', 'Время (сек)', 'Разминка', 'Позиция', 'Снаряд', 'Хват', 'Время добавления', 'Заметки'];
   const rows: string[][] = [headers];
 
   workouts
@@ -552,6 +575,7 @@ export const exportToCSV = (): string => {
             String(set.weight),
             set.time ? String(set.time) : '',
             set.isWarmup ? '1' : '0',
+            set.positionType || '',
             set.equipmentType || '',
             set.gripType || '',
             set.timestamp || '',
@@ -859,7 +883,7 @@ const DEFAULT_TEMPLATES: Omit<WorkoutTemplate, 'id' | 'createdAt'>[] = [
     exerciseNames: [
       'Жим штанги лёжа',
       'Жим в хаммере',
-      'Жим на плечи в тренажере сидя',
+      'Жим на плечи в тренажёре сидя',
       'Разгибания на трицепс в кроссовере',
       'Классическая планка',
     ],
@@ -868,8 +892,8 @@ const DEFAULT_TEMPLATES: Omit<WorkoutTemplate, 'id' | 'createdAt'>[] = [
     name: 'Базовая тренировка спины',
     workoutType: 'back',
     exerciseNames: [
-      'Подтягивания',
-      'Тяга вертикального блока в тренажере',
+      'Подтягивание на перекладине',
+      'Тяга вертикального блока в тренажёре',
       'Шраги в машине Смита',
       'Сгибания на бицепс',
       'Скручивания на пресс',
@@ -880,8 +904,8 @@ const DEFAULT_TEMPLATES: Omit<WorkoutTemplate, 'id' | 'createdAt'>[] = [
     workoutType: 'legs',
     exerciseNames: [
       'Приседания со штангой',
-      'Сгибания ног в тренажере сидя',
-      'Разгибания ног в тренажере сидя',
+      'Сгибания ног в тренажёре сидя',
+      'Разгибания ног в тренажёре сидя',
       'Подъем на носки сидя',
       'Сгибания запястий',
       'Подъём ног на брусьях',
@@ -892,11 +916,11 @@ const DEFAULT_TEMPLATES: Omit<WorkoutTemplate, 'id' | 'createdAt'>[] = [
     workoutType: 'fullbody',
     exerciseNames: [
       'Приседания со штангой',
-      'Подтягивания',
+      'Подтягивания на перекладине',
       'Жим штанги лёжа',
-      'Жим на плечи сидя',
+      'Жим на плечи',
       'Сгибания на бицепс',
-      'Подъём ног в висе',
+      'Подъём ног в висе на перекладине',
     ],
   },
 ];
