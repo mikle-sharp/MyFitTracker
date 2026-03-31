@@ -1255,7 +1255,7 @@ export function ExerciseCard({
     return (
       <div className="flex items-center">
         {/* Столбец 1: Вес / Иконка User */}
-        <span className="inline-block w-12 text-right font-medium text-xs pr-0.5">
+        <span className="inline-block w-12 text-right font-medium text-sm pr-0.5">
           {isBodyweight ? (
             <UserIcon className="w-4 h-4 inline" style={{ color: '#19a655' }} />
           ) : (
@@ -1264,12 +1264,12 @@ export function ExerciseCard({
         </span>
 
         {/* Столбец 2: "кг" */}
-        <span className="inline-flex w-5 h-7 items-center justify-center text-xs text-zinc-500">
+        <span className="inline-flex w-5 h-7 items-center justify-center text-sm text-zinc-500">
           {!isBodyweight && set.weight > 0 && 'кг'}
         </span>
 
         {/* Столбец 3: "×" / Иконка Clock */}
-        <span className="inline-flex w-4 h-7 items-center justify-center text-xs" style={{ color: '#71717a' }}>
+        <span className="inline-flex w-4 h-7 items-center justify-center text-sm" style={{ color: '#71717a' }}>
           {isTimeOnly ? (
             <ClockIcon className="w-2 h-2" />
           ) : hasReps ? (
@@ -1281,7 +1281,7 @@ export function ExerciseCard({
 
         {/* Столбец 4: Повторения / Время */}
         <span
-          className="inline-block w-6 text-left font-medium text-xs"
+          className="inline-block w-6 text-left font-medium text-sm"
           style={isTimeOnly ? { color: '#944ad4' } : recordType ? { color: getRecordColor() } : undefined}
         >
           {isTimeOnly ? formatTime(set.time!) : hasReps ? set.reps : ''}
@@ -1290,10 +1290,10 @@ export function ExerciseCard({
         {/* Столбец 5: Время (если есть и повторения, и время) */}
         {hasReps && hasTime && (
           <>
-            <span className="inline-flex w-4 h-7 items-center justify-center text-xs" style={{ color: '#71717a' }}>
+            <span className="inline-flex w-4 h-7 items-center justify-center text-sm" style={{ color: '#71717a' }}>
               <ClockIcon className="w-2 h-2" />
             </span>
-            <span className="inline-block font-medium text-xs" style={{ color: '#944ad4' }}>
+            <span className="inline-block font-medium text-sm" style={{ color: '#944ad4' }}>
               {formatTime(set.time!)}
             </span>
           </>

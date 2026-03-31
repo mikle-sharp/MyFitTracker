@@ -210,7 +210,7 @@ export function Calendar() {
       <div className="grid grid-cols-7 gap-1 mb-4">
         {/* Today button - в первой колонке, по центру "Пн" */}
         <div className="flex items-center justify-center">
-          {!isCurrentMonth && (
+          {!isCurrentMonth ? (
             <button
               onClick={goToToday}
               className="h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-150 active:scale-95 text-zinc-500 hover:text-white active:text-white hover:!bg-transparent active:!bg-transparent"
@@ -218,6 +218,8 @@ export function Calendar() {
             >
               <TodayIcon className="w-4 h-4" />
             </button>
+          ) : (
+            <div className="h-7 w-7" />
           )}
         </div>
         
