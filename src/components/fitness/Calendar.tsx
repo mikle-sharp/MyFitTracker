@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, isSameMonth, subMonths, addMonths } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { ChevronDownIcon } from '@/components/icons/Icons';
+import { ChevronDownIcon, TodayIcon } from '@/components/icons/Icons';
 import { cn } from '@/lib/utils';
 import { useFitnessStore } from '@/lib/store';
 import { WORKOUT_TYPE_COLORS, WorkoutType } from '@/lib/types';
@@ -74,6 +74,16 @@ export function Calendar() {
     }
   }, [currentMonth, selectedDate, setSelectedDate, loadWorkoutForDate]);
 
+  // Переключать месяц календаря при изменении выбранной даты (навигация из рекордов/статистики)
+  useEffect(() => {
+    if (selectedDate) {
+      const selected = new Date(selectedDate);
+      if (!isSameMonth(selected, currentMonth)) {
+        setCurrentMonth(selected);
+      }
+    }
+  }, [selectedDate, currentMonth]);
+
   const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
   const handleDateClick = (date: Date) => {
@@ -137,6 +147,19 @@ export function Calendar() {
     }
   };
 
+  const goToToday = () => {
+    const today = new Date();
+    const todayStr = format(today, 'yyyy-MM-dd');
+    setCurrentMonth(today);
+    setSelectedDate(todayStr);
+    loadWorkoutForDate(todayStr);
+    setShowMonthPicker(false);
+    setShowYearPicker(false);
+  };
+
+  // Проверяем, находимся ли мы на текущем месяце
+  const isCurrentMonth = isSameMonth(currentMonth, new Date());
+
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     touchStartRef.current = { x: touch.clientX, y: touch.clientY };
@@ -183,27 +206,49 @@ export function Calendar() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Month/Year selectors - справа */}
-      <div className="flex justify-end items-center gap-2 mb-4">
-        {/* Month selector */}
-        <div className="relative">
-          <button
-            onClick={() => {
-              setShowMonthPicker(!showMonthPicker);
-              setShowYearPicker(false);
-            }}
-            className={cn(
-              'flex items-center gap-1 px-2 py-1 rounded-lg transition-colors',
-              'text-xs text-zinc-400',
-              showMonthPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 active:bg-zinc-800 hover:text-zinc-300 active:text-zinc-300'
-            )}
-          >
-            {MONTHS[currentMonthIndex]}
-            <ChevronDownIcon className={cn(
-              'w-3 h-3 transition-transform',
-              showMonthPicker && 'rotate-180'
-            )} />
-          </button>
+      {/* Month/Year selectors */}
+      <div className="grid grid-cols-7 gap-1 mb-4">
+        {/* Today button - в первой колонке, по центру "Пн" */}
+        <div className="flex items-center justify-center">
+          {!isCurrentMonth && (
+            <button
+              onClick={goToToday}
+              className="h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-150 active:scale-95 text-zinc-500 hover:text-white active:text-white hover:!bg-transparent active:!bg-transparent"
+              title="Сегодня"
+            >
+              <TodayIcon className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        
+        {/* Пустые колонки 2-6 */}
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        
+        {/* Month/Year selectors - в 7-й колонке */}
+        <div className="flex items-center justify-end gap-2">
+          {/* Month selector */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShowMonthPicker(!showMonthPicker);
+                setShowYearPicker(false);
+              }}
+              className={cn(
+                'flex items-center gap-1 px-2 py-1 rounded-lg transition-colors',
+                'text-xs text-zinc-400',
+                showMonthPicker ? 'bg-zinc-700 text-zinc-300' : 'hover:bg-zinc-800 active:bg-zinc-800 hover:text-zinc-300 active:text-zinc-300'
+              )}
+            >
+              {MONTHS[currentMonthIndex]}
+              <ChevronDownIcon className={cn(
+                'w-3 h-3 transition-transform',
+                showMonthPicker && 'rotate-180'
+              )} />
+            </button>
           
           <AnimatePresence>
             {showMonthPicker && (
@@ -280,6 +325,7 @@ export function Calendar() {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
         </div>
       </div>
 

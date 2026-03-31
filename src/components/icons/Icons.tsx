@@ -2826,3 +2826,68 @@ export function ListIcon({ className, style }: IconProps) {
     </svg>
   );
 }
+
+export function TodayIcon({ className, style }: IconProps) {
+  const isRetro = useIconStyle();
+
+  if (isRetro) {
+    return (
+      <svg className={className} viewBox="0 0 17 17" fill="none" style={{ ...style, stroke: undefined }}>
+        <rect fill="currentColor" x="12" y="15" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="15" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="15" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="15" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="15" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="15" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="15" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="15" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="15" width="1" height="1"/>
+        <rect fill="currentColor" x="14" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="13" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="3" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="15" y="13" width="1" height="1"/>
+        <rect fill="currentColor" x="1" y="13" width="1" height="1"/>
+        <rect fill="currentColor" x="15" y="12" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="12" width="1" height="1"/>
+        <rect fill="currentColor" x="1" y="12" width="1" height="1"/>
+        <rect fill="currentColor" x="14" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="13" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="12" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="3" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="9" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="8" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="7" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="7" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="7" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="5" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="5" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="4" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="4" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="3" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="3" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="1" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="1" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="1" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="2" width="1" height="1"/>
+      </svg>
+    );
+  }
+
+  return (
+    <svg className={className} style={style} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <line stroke="currentColor" fill="none" x1="8" y1="11.94" x2="8" y2="7.17"/>
+        <ellipse stroke="currentColor" fill="none" cx="8" cy="4.34" rx="2.87" ry="2.84"/>
+        <path stroke="currentColor" fill="none" d="M5.13,10.35c-2.15.36-3.63,1.1-3.63,1.96,0,1.21,2.91,2.19,6.5,2.19s6.5-.98,6.5-2.19c0-.86-1.48-1.61-3.63-1.96"/>
+    </svg>
+  );
+}
