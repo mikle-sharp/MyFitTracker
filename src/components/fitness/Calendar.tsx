@@ -62,17 +62,23 @@ export function Calendar() {
     return [...prefixDays, ...allDays];
   }, [currentMonth]);
 
-  // Автоматически выделять сегодняшнюю дату при отображении текущего месяца
+  // При первом рендере: скорректировать месяц на клиентское время (исправление SSR)
+  // и установить сегодняшнюю дату только если дата ещё не выбрана
   useEffect(() => {
-    const today = new Date();
-    const todayStr = format(today, 'yyyy-MM-dd');
+    const clientToday = new Date();
 
-    // Если отображается текущий месяц и выбранная дата пустая
-    if (isSameMonth(currentMonth, today) && !selectedDate) {
+    // Корректируем currentMonth на клиентское время (при SSR сервер может быть в другом часовом поясе)
+    if (!isSameMonth(currentMonth, clientToday)) {
+      setCurrentMonth(clientToday);
+    }
+
+    // Устанавливаем сегодня только если дата ещё не выбрана
+    if (!selectedDate) {
+      const todayStr = format(clientToday, 'yyyy-MM-dd');
       setSelectedDate(todayStr);
       loadWorkoutForDate(todayStr);
     }
-  }, [currentMonth, selectedDate, setSelectedDate, loadWorkoutForDate]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Переключать месяц календаря при изменении выбранной даты (навигация из рекордов/статистики)
   useEffect(() => {
