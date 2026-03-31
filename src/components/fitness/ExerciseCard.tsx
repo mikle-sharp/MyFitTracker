@@ -39,6 +39,7 @@ function ExerciseNameHeader({ name }: { name: string }) {
 interface ChartDataPoint {
   date: string;
   maxWeight: number;
+  maxWeightSetId?: string; // id подхода с макс весом
   userWeight?: number;
   totalVolume: number;
   workoutId: string;
@@ -50,7 +51,7 @@ interface ExerciseStatsChartProps {
   textColor: string;
   currentWorkoutId: string;
   exerciseName: string;
-  onNavigateToDate?: (date: string, exerciseName: string) => void;
+  onNavigateToDate?: (date: string, exerciseName: string, setId?: string) => void;
 }
 
 const DEFAULT_VISIBLE_COUNT = 9;
@@ -285,7 +286,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
     
     // Если три клика - навигируем
     if (clickCountRef.current >= 3) {
-      onNavigateToDate(selectedData.date, exerciseName);
+      onNavigateToDate(selectedData.date, exerciseName, selectedData.maxWeightSetId);
       clickCountRef.current = 0;
     }
   };
@@ -730,6 +731,8 @@ interface ExerciseCardProps {
   onDragEnd?: () => void;
   // Highlight specific set (for navigation from records)
   highlightSetIndex?: number;
+  // Callback for highlighting set from chart
+  onHighlightSet?: (exerciseName: string, setId: string) => void;
 }
 
 // Форматирование времени из секунд в MM:SS
@@ -756,7 +759,8 @@ export function ExerciseCard({
   onDragMove,
   onDragEnd,
   // Highlight props
-  highlightSetIndex
+  highlightSetIndex,
+  onHighlightSet
 }: ExerciseCardProps) {
   // State for adding new set
   const [newReps, setNewReps] = useState('');
@@ -910,9 +914,12 @@ export function ExerciseCard({
         
         if (workingSets.length > 0) {
           const maxWeight = Math.max(...workingSets.map(s => s.weight));
+          // Находим id подхода с макс весом
+          const maxWeightSet = workingSets.find(s => s.weight === maxWeight);
           history.push({
             date: w.date,
             maxWeight,
+            maxWeightSetId: maxWeightSet?.id,
             userWeight: w.weight, // вес пользователя на дату тренировки
             totalVolume,
             workoutId: w.id
@@ -1248,7 +1255,7 @@ export function ExerciseCard({
     return (
       <div className="flex items-center">
         {/* Столбец 1: Вес / Иконка User */}
-        <span className="inline-block w-12 text-left font-medium text-xs">
+        <span className="inline-block w-12 text-right font-medium text-xs pr-0.5">
           {isBodyweight ? (
             <UserIcon className="w-4 h-4 inline" style={{ color: '#19a655' }} />
           ) : (
@@ -1471,7 +1478,7 @@ export function ExerciseCard({
                                 value={editWeight}
                                 onChange={(e) => setEditWeight(e.target.value)}
                                 placeholder="кг"
-                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs md:!text-xs !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center md:!text-xs !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
                             )}
                             
@@ -1787,7 +1794,7 @@ export function ExerciseCard({
                             value={newWeight}
                             onChange={(e) => setNewWeight(e.target.value)}
                             placeholder="кг"
-                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs md:!text-xs !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center md:!text-xs !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         )}
 
@@ -2133,9 +2140,12 @@ export function ExerciseCard({
                 textColor={exerciseColors.text}
                 currentWorkoutId={workoutId}
                 exerciseName={exercise.name}
-                onNavigateToDate={(date) => {
+                onNavigateToDate={(date, exerciseName, setId) => {
                   setShowStats(false);
                   setSelectedDate(date);
+                  if (setId && onHighlightSet) {
+                    onHighlightSet(exerciseName, setId);
+                  }
                 }}
               />
             ) : (

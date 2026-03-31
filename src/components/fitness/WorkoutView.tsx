@@ -67,9 +67,10 @@ const sortExerciseNamesByTagAndName = (names: string[]): string[] => {
 interface WorkoutViewProps {
   workout: Workout;
   highlightExercise?: { name: string; setId: string } | null;
+  onHighlightSet?: (exerciseName: string, setId: string) => void;
 }
 
-export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
+export function WorkoutView({ workout, highlightExercise, onHighlightSet }: WorkoutViewProps) {
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
   const [isDefaultStyle, setIsDefaultStyle] = useState(true);
   const [isCreateCustomOpen, setIsCreateCustomOpen] = useState(false);
@@ -720,6 +721,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
                 highlightSetIndex={highlightExercise?.name === exercise.name ? exercise.sets.findIndex(s => s.id === highlightExercise.setId) : undefined}
+                onHighlightSet={onHighlightSet}
               />
             </motion.div>
           );
@@ -1124,7 +1126,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-4 pt-4 shrink-0">
             <DialogTitle className="text-white font-medium text-base">
-              Заменить "{replacingExerciseName}" на
+              Заменить упражнение
             </DialogTitle>
             <DialogClose className="text-zinc-500 hover:text-white active:text-white transition-colors p-1">
               <XIcon className="w-5 h-5" />
@@ -1263,7 +1265,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
                   setWeightValue(normalized);
                 }}
                 placeholder="00.0"
-                className="w-16 bg-zinc-900/50 border border-zinc-700 rounded-lg px-2 py-1.5 mx-1 text-white placeholder-zinc-500 focus:outline-none text-center text-sm"
+                className="w-16 bg-zinc-900/50 border border-zinc-700 rounded-lg px-2 py-1.5 mx-1 text-white placeholder-zinc-500 focus:outline-none text-center text-sm placeholder:text-[10px]"
               />
               <span className="text-sm text-zinc-400">кг</span>
             </div>
@@ -1275,7 +1277,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
             value={notesValue}
             onChange={handleNotesChange}
             placeholder="Добавьте заметки к этой тренировке..."
-            className="w-[calc(100%-2rem)] bg-zinc-900/50 border border-zinc-700 rounded-lg p-2 mx-4 mt-4 text-white placeholder-zinc-500 resize-none focus:outline-none block"
+            className="w-[calc(100%-2rem)] bg-zinc-900/50 border border-zinc-700 rounded-lg p-2 mx-4 mt-4 text-white placeholder-zinc-500 resize-none focus:outline-none block placeholder:text-[10px]"
             style={{ overflow: 'hidden', height: 'auto', minHeight: '60px' }}
           />
 
@@ -1300,7 +1302,7 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
         title="Заменить упражнение?"
         description={
           <>
-            Упражнение <span className="text-white">"{replacingExerciseName}"</span> будет заменено на <span className="text-white">"{pendingReplaceName}"</span>.<br />Все подходы заменяемого упражнения на текущей дате будут удалены.<br />Это действие нельзя отменить.
+            Упражнение <strong className="text-white">"{replacingExerciseName}"</strong> будет заменено на <strong className="text-white">"{pendingReplaceName}"</strong>.<br />Все подходы заменяемого упражнения на текущей дате будут удалены.<br />Это действие нельзя отменить.
           </>
         }
         confirmText="Заменить"

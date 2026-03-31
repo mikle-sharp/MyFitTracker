@@ -38,6 +38,13 @@ export default function Home() {
     setTimeout(() => setHighlightExercise(null), 2000);
   };
 
+  // Подсветка подхода из статистики
+  const handleHighlightSet = (exerciseName: string, setId: string) => {
+    setHighlightExercise({ name: exerciseName, setId });
+    // Сбрасываем подсветку через 2 секунды
+    setTimeout(() => setHighlightExercise(null), 2000);
+  };
+
   useEffect(() => {
     if (!isInitialized) {
       init();
@@ -128,7 +135,7 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                   >
-                    <WorkoutView workout={currentWorkout} highlightExercise={highlightExercise} />
+                    <WorkoutView workout={currentWorkout} highlightExercise={highlightExercise} onHighlightSet={handleHighlightSet} />
                   </motion.div>
                 ) : (
                   <motion.div
