@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { WorkoutType } from '@/lib/types';
 import { WorkoutTypeSelector } from './WorkoutTypeSelector';
 import { motion } from 'framer-motion';
@@ -15,6 +15,19 @@ interface NewWorkoutFormProps {
 export function NewWorkoutForm({ date, onCreated }: NewWorkoutFormProps) {
   const [selectedType, setSelectedType] = useState<WorkoutType | null>(null);
   const { createWorkout } = useFitnessStore();
+  const startButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Скролл к кнопке "Начать" при выборе типа тренировки
+  useEffect(() => {
+    if (selectedType && startButtonRef.current) {
+      setTimeout(() => {
+        startButtonRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 100);
+    }
+  }, [selectedType]);
 
   const handleCreate = () => {
     if (selectedType) {
@@ -45,6 +58,7 @@ export function NewWorkoutForm({ date, onCreated }: NewWorkoutFormProps) {
 
         <div className="mt-4 flex justify-center">
           <Button
+            ref={startButtonRef}
             onClick={handleCreate}
             disabled={!selectedType}
             className="w-1/2"

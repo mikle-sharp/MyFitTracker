@@ -33,25 +33,18 @@ export const initExercisesBaseFromServer = async (): Promise<void> => {
     // Определяем basePath по текущему URL
     const basePath = window.location.pathname.startsWith('/MyFitTracker') ? '/MyFitTracker' : '';
     
-    // Загружаем основной файл упражнений (для создания дней)
-    const exercisesResponse = await fetch(`${basePath}/exercises.json`);
-    if (exercisesResponse.ok) {
-      const data = await exercisesResponse.json();
+    // Загружаем файл со всеми упражнениями
+    const allExercisesResponse = await fetch(`${basePath}/all-exercises.json`);
+    if (allExercisesResponse.ok) {
+      const data = await allExercisesResponse.json();
       if (data.chest && data.back && data.legs && data.common) {
+        // Сохраняем в обе базы (exercisesBase и allExercisesBase)
         saveExercisesBase({
           chest: data.chest,
           back: data.back,
           legs: data.legs,
           common: data.common,
         });
-      }
-    }
-    
-    // Загружаем файл со всеми упражнениями (для списка добавления)
-    const allExercisesResponse = await fetch(`${basePath}/all-exercises.json`);
-    if (allExercisesResponse.ok) {
-      const data = await allExercisesResponse.json();
-      if (data.chest && data.back && data.legs && data.common) {
         saveAllExercises({
           chest: data.chest,
           back: data.back,
@@ -65,9 +58,6 @@ export const initExercisesBaseFromServer = async (): Promise<void> => {
   } catch {
     // Игнорируем ошибки загрузки
   }
-  
-  // Fallback — сохраняем дефолтную базу
-  saveExercisesBase(DEFAULT_EXERCISES_BASE);
 };
 
 // Получение базы упражнений (из localStorage или дефолтная)
@@ -592,12 +582,14 @@ export const exportToCSV = (): string => {
 export const exportToJSON = (): string => {
   const workouts = getWorkouts();
   const exercisesBase = getExercisesBase();
+  const allExercisesBase = getAllExercisesBase();
   
   const exportData = {
     workouts,
     exercisesBase,
+    allExercisesBase,
     exportDate: new Date().toISOString(),
-    version: '2.0',
+    version: '2.1',
   };
   
   return JSON.stringify(exportData, null, 2);
@@ -612,9 +604,16 @@ export const importFromJSON = (jsonString: string): { success: boolean; message:
     if (data.workouts && Array.isArray(data.workouts)) {
       saveWorkouts(data.workouts);
       
-      // Импортируем базу упражнений
+      // Импортируем базу упражнений - ПОЛНОСТЬЮ заменяем
       if (data.exercisesBase) {
         saveExercisesBase(data.exercisesBase);
+        // Если есть allExercisesBase в бэкапе (версия 2.1+) - используем её
+        // Иначе allExercisesBase = exercisesBase (для совместимости со старыми бэкапами)
+        if (data.allExercisesBase) {
+          saveAllExercises(data.allExercisesBase);
+        } else {
+          saveAllExercises(data.exercisesBase);
+        }
       } else if (data.customExercisesByType) {
         // Миграция со старого формата
         const base = { ...DEFAULT_EXERCISES_BASE };
@@ -636,6 +635,7 @@ export const importFromJSON = (jsonString: string): { success: boolean; message:
         });
         
         saveExercisesBase(base);
+        saveAllExercises(base);
       }
       
       // Очищаем старые ключи

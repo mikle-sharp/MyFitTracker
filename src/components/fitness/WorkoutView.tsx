@@ -37,6 +37,33 @@ function WorkoutTypeIcon({ type, color, isDefaultStyle }: { type: WorkoutType; c
   }
 }
 
+// Порядок сортировки по типу упражнения
+const EXERCISE_TYPE_ORDER: Record<ExerciseType, number> = {
+  chest: 1,
+  back: 2,
+  legs: 3,
+  common: 4,
+};
+
+// Функция сортировки названий упражнений: сначала по тегу, потом по алфавиту
+const sortExerciseNamesByTagAndName = (names: string[]): string[] => {
+  return [...names].sort((a, b) => {
+    const typeA = getExerciseTypeFromBase(a);
+    const typeB = getExerciseTypeFromBase(b);
+    
+    // Сначала сортируем по типу
+    const orderA = EXERCISE_TYPE_ORDER[typeA] || 4;
+    const orderB = EXERCISE_TYPE_ORDER[typeB] || 4;
+    
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    
+    // Если тип одинаковый - сортируем по алфавиту
+    return a.localeCompare(b, 'ru');
+  });
+};
+
 interface WorkoutViewProps {
   workout: Workout;
   highlightExercise?: { name: string; setId: string } | null;
@@ -182,7 +209,8 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       result = result.filter(ex => getExerciseTypeFromBase(ex) === exerciseTypeFilter);
     }
 
-    return result;
+    // Сортируем по тегу, потом по алфавиту
+    return sortExerciseNamesByTagAndName(result);
   }, [allExercisesList, searchQuery, exerciseTypeFilter]);
 
   // Упражнения для отображения в диалоге удаления
@@ -199,7 +227,8 @@ export function WorkoutView({ workout, highlightExercise }: WorkoutViewProps) {
       result = result.filter(ex => getExerciseTypeFromBase(ex) === deleteTypeFilter);
     }
 
-    return result;
+    // Сортируем по тегу, потом по алфавиту
+    return sortExerciseNamesByTagAndName(result);
   }, [allExercisesList, deleteSearchQuery, deleteTypeFilter]);
 
   // Проверка на дубликат упражнения
