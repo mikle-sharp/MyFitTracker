@@ -990,6 +990,12 @@ export function ExerciseCard({
       } else {
         setSelectedGrip(null);
       }
+      // Позицию наследуем всегда
+      if (lastSet.positionType) {
+        setSelectedPosition(lastSet.positionType);
+      } else {
+        setSelectedPosition(null);
+      }
       return;
     }
     
@@ -1020,6 +1026,7 @@ export function ExerciseCard({
       // Теги не наследуем из предыдущих тренировок
       setSelectedEquipment(null);
       setSelectedGrip(null);
+      setSelectedPosition(null);
       return;
     }
     
@@ -1033,6 +1040,7 @@ export function ExerciseCard({
     setUseTime(false);
     setSelectedEquipment(null);
     setSelectedGrip(null);
+    setSelectedPosition(null);
   }, [exercise.sets, exercise.name]);
   
   // Автозаполнение при переключении типа подхода (разминочный/рабочий)

@@ -90,6 +90,16 @@ export function Calendar() {
     }
   }, [selectedDate, currentMonth]);
 
+  // При возврате на текущий месяц: если дата не выбрана - выделить сегодня
+  useEffect(() => {
+    const today = new Date();
+    if (isSameMonth(currentMonth, today) && !selectedDate) {
+      const todayStr = format(today, 'yyyy-MM-dd');
+      setSelectedDate(todayStr);
+      loadWorkoutForDate(todayStr);
+    }
+  }, [currentMonth, selectedDate, setSelectedDate, loadWorkoutForDate]);
+
   const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
   const handleDateClick = (date: Date) => {
