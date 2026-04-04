@@ -37,11 +37,21 @@ export type GripType = 'wide' | 'narrow' | 'parallel' | 'cross' | 'reverse';
 // Типы позиции
 export type PositionType = 'sitting' | 'lying' | 'standing';
 
+// Единицы измерения веса
+export type WeightUnit = 'kg' | 'lb' | 'lvl';
+
+// Константы для единиц измерения веса
+export const WEIGHT_UNITS: Record<WeightUnit, { short: string; full: string; placeholder: string }> = {
+  kg: { short: 'кг', full: 'Килограмм', placeholder: 'кг' },
+  lb: { short: 'ф', full: 'Фунт', placeholder: 'ф' },
+  lvl: { short: 'ур', full: 'Уровень', placeholder: 'ур' },
+};
+
 // Подход
 export interface WorkoutSet {
   id: string;
   reps: number;
-  weight: number; // в кг, может быть десятичным (0 для собственного веса)
+  weight: number; // значение веса (единица измерения в weightUnit)
   time?: number; // время в секундах
   inputType?: ExerciseInputType; // тип ввода для этого подхода
   isWarmup?: boolean; // разминочный подход
@@ -49,6 +59,7 @@ export interface WorkoutSet {
   equipmentType?: EquipmentType; // тип снаряда
   gripType?: GripType; // тип хвата
   positionType?: PositionType; // позиция
+  weightUnit?: WeightUnit; // единица измерения веса (по умолчанию kg)
 }
 
 // Константы для типов снаряда (упорядочены по полному названию)
@@ -114,18 +125,25 @@ export interface RecordData {
   date: string;         // дата установки рекорда
   workoutId: string;    // ID тренировки
   setId: string;        // ID подхода (уникальный идентификатор)
+  weightUnit?: WeightUnit; // единица измерения веса
 }
 
-// Личный рекорд
+// Рекорды для одной единицы измерения
+export interface UnitRecords {
+  weightRecord: RecordData | null;
+  prevWeightRecord: RecordData | null;
+  volumeRecord: RecordData | null;
+  prevVolumeRecord: RecordData | null;
+}
+
+// Личный рекорд (рекорды по каждой единице измерения отдельно)
 export interface PersonalRecord {
   exerciseName: string;
   workoutType: WorkoutType; // тип тренировки для цветовой индикации
-  // Рекорд по весу (важнее вес, потом повторы)
-  weightRecord: RecordData | null;
-  prevWeightRecord: RecordData | null;
-  // Рекорд по объёму (weight × reps)
-  volumeRecord: RecordData | null;
-  prevVolumeRecord: RecordData | null;
+  // Рекорды по единицам измерения
+  kg: UnitRecords;
+  lb: UnitRecords;
+  lvl: UnitRecords;
 }
 
 // Тип для базы упражнений (ключи - типы для цветовой маркировки)

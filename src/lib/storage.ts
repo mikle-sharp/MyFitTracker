@@ -1,4 +1,4 @@
-import { Workout, Exercise, WorkoutSet, WorkoutType, ExerciseType, EquipmentType, GripType, PositionType, WorkoutTemplate, ExercisesBase, ExerciseBaseKey, DEFAULT_EXERCISES_BASE, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES } from './types';
+import { Workout, Exercise, WorkoutSet, WorkoutType, ExerciseType, EquipmentType, GripType, PositionType, WorkoutTemplate, ExercisesBase, ExerciseBaseKey, DEFAULT_EXERCISES_BASE, EXERCISE_TYPE_COLORS, EXERCISE_TYPE_MARKERS, EXERCISE_TYPE_NAMES, WeightUnit } from './types';
 
 const STORAGE_KEY = 'fitness-journal-workouts';
 const EXERCISES_BASE_KEY = 'fitness-journal-exercises-base';
@@ -436,7 +436,8 @@ export const addSetToExercise = (
   isWarmup?: boolean,
   equipmentType?: EquipmentType,
   gripType?: GripType,
-  positionType?: PositionType
+  positionType?: PositionType,
+  weightUnit?: WeightUnit
 ): WorkoutSet | null => {
   const workouts = getWorkouts();
   const workout = workouts.find(w => w.id === workoutId);
@@ -456,6 +457,7 @@ export const addSetToExercise = (
     equipmentType,
     gripType,
     positionType,
+    weightUnit,
   };
 
   // Разминочные подходы добавляем в начало списка
@@ -480,7 +482,8 @@ export const updateSet = (
   time?: number,
   equipmentType?: EquipmentType,
   gripType?: GripType,
-  positionType?: PositionType
+  positionType?: PositionType,
+  weightUnit?: WeightUnit
 ): void => {
   const workouts = getWorkouts();
   const workout = workouts.find(w => w.id === workoutId);
@@ -506,6 +509,9 @@ export const updateSet = (
   }
   if (positionType !== undefined) {
     set.positionType = positionType || undefined;
+  }
+  if (weightUnit !== undefined) {
+    set.weightUnit = weightUnit || undefined;
   }
   workout.updatedAt = new Date().toISOString();
   saveWorkouts(workouts);
@@ -546,7 +552,7 @@ export const exportToCSV = (): string => {
     return '';
   }
 
-  const headers = ['Дата', 'Тип тренировки', 'Длительность (мин)', 'Вес пользователя (кг)', 'Упражнение', 'Подход', 'Повторения', 'Вес (кг)', 'Время (сек)', 'Разминка', 'Позиция', 'Снаряд', 'Хват', 'Время добавления', 'Заметки'];
+  const headers = ['Дата', 'Тип тренировки', 'Длительность (мин)', 'Вес пользователя (кг)', 'Упражнение', 'Подход', 'Повторения', 'Вес', 'Единица веса', 'Время (сек)', 'Разминка', 'Позиция', 'Снаряд', 'Хват', 'Время добавления', 'Заметки'];
   const rows: string[][] = [headers];
 
   workouts
@@ -563,6 +569,7 @@ export const exportToCSV = (): string => {
             String(index + 1),
             String(set.reps),
             String(set.weight),
+            set.weightUnit || 'kg',
             set.time ? String(set.time) : '',
             set.isWarmup ? '1' : '0',
             set.positionType || '',
@@ -678,18 +685,22 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
       if (parts.length < 6) continue;
 
       // Поддерживаем разные форматы CSV
-      // Новейший формат (14 колонок): Дата, Тип, Длительность, Вес пользователя, Упражнение, Подход, Повторения, Вес, Время, Разминка, Снаряд, Хват, Время добавления, Заметки
+      // Новейший формат (16 колонок): Дата, Тип, Длительность, Вес пользователя, Упражнение, Подход, Повторения, Вес, Единица веса, Время, Разминка, Снаряд, Хват, Время добавления, Заметки
+      // Формат v2.1 (14 колонок): Дата, Тип, Длительность, Вес пользователя, Упражнение, Подход, Повторения, Вес, Время, Разминка, Снаряд, Хват, Время добавления, Заметки
       // Формат с userWeight (10 колонок): Дата, Тип, Длительность, Вес пользователя, Упражнение, Подход, Повторения, Вес, Время, Заметки
       // Старый формат (9 колонок): Дата, Тип, Длительность, Упражнение, Подход, Повторения, Вес, Время, Заметки
       // Ещё старее (8 колонок): Дата, Тип, Упражнение, Подход, Повторения, Вес, Время, Заметки
       
       let date: string, type: string, duration: string | undefined, userWeight: string | undefined, 
-          exerciseName: string, reps: string, weight: string, time: string | undefined,
+          exerciseName: string, reps: string, weight: string, weightUnit: string | undefined, time: string | undefined,
           isWarmup: string | undefined, equipmentType: string | undefined, gripType: string | undefined,
           timestamp: string | undefined, notes: string | undefined;
 
-      if (parts.length >= 14) {
-        // Новейший формат с полными данными
+      if (parts.length >= 16) {
+        // Новейший формат с единицами измерения
+        [date, type, duration, userWeight, exerciseName, , reps, weight, weightUnit, time, isWarmup, equipmentType, gripType, timestamp, notes] = parts;
+      } else if (parts.length >= 14) {
+        // Формат v2.1 с полными данными
         [date, type, duration, userWeight, exerciseName, , reps, weight, time, isWarmup, equipmentType, gripType, timestamp, notes] = parts;
       } else if (parts.length >= 10) {
         // Формат с userWeight
@@ -743,6 +754,7 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
         equipmentType: equipmentType ? equipmentType.trim() as EquipmentType : undefined,
         gripType: gripType ? gripType.trim() as GripType : undefined,
         timestamp: timestamp ? timestamp.trim() : undefined,
+        weightUnit: weightUnit ? weightUnit.trim() as WeightUnit : 'kg',
       };
 
       exercise.sets.push(newSet);
@@ -766,40 +778,48 @@ export interface PreviousSetData {
   reps: number;
   time: number;
   isBodyweight: boolean;
+  weightUnit?: WeightUnit;
 }
 
 export const getPreviousSetData = (
   exerciseName: string,
   setNumber: number, // 0 = разминка, 1 = первый рабочий, 2 = второй рабочий и т.д.
-  isWarmup: boolean
+  isWarmup: boolean,
+  weightUnit?: WeightUnit // если указано, ищем подход с этой единицей измерения
 ): PreviousSetData | null => {
   const workouts = getWorkouts();
-  
+
   // Сортируем по дате (новые сначала)
   const sortedWorkouts = [...workouts].sort((a, b) => b.date.localeCompare(a.date));
-  
+
   for (const workout of sortedWorkouts) {
     const exercise = workout.exercises.find(e => e.name === exerciseName);
     if (!exercise) continue;
-    
+
     // Фильтруем подходы по типу (разминочные или рабочие)
-    const relevantSets = exercise.sets.filter(s => 
+    let relevantSets = exercise.sets.filter(s =>
       isWarmup ? s.isWarmup : !s.isWarmup
     );
-    
+
+    // Если указана единица измерения, фильтруем по ней
+    if (weightUnit) {
+      relevantSets = relevantSets.filter(s => (s.weightUnit || 'kg') === weightUnit);
+    }
+
     // Ищем подход с нужным номером (индекс setNumber - 1 или setNumber для разминки)
     const targetSet = relevantSets[setNumber - 1];
-    
+
     if (targetSet) {
       return {
         weight: targetSet.weight,
         reps: targetSet.reps,
         time: targetSet.time || 0,
         isBodyweight: targetSet.weight === 0,
+        weightUnit: targetSet.weightUnit,
       };
     }
   }
-  
+
   return null;
 };
 

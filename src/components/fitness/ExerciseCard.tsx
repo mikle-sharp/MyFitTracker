@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Trash2Icon, PlusIcon, CheckIcon, ClockIcon, RefreshCwIcon, UserIcon, WeightIcon, ChevronUpIcon, ChevronDownIcon, XIcon, ZapIcon, Repeat2Icon, TrendingUpIcon } from '@/components/icons/Icons';
-import { Exercise, WorkoutSet, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EquipmentType, GripType, PositionType, EQUIPMENT_TYPES, GRIP_TYPES, POSITION_TYPES } from '@/lib/types';
+import { Exercise, WorkoutSet, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EquipmentType, GripType, PositionType, EQUIPMENT_TYPES, GRIP_TYPES, POSITION_TYPES, WeightUnit, WEIGHT_UNITS } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -43,6 +43,7 @@ interface ChartDataPoint {
   userWeight?: number;
   totalVolume: number;
   workoutId: string;
+  weightUnit: WeightUnit; // единица измерения для этой точки
 }
 
 interface ExerciseStatsChartProps {
@@ -51,6 +52,7 @@ interface ExerciseStatsChartProps {
   textColor: string;
   currentWorkoutId: string;
   exerciseName: string;
+  currentUnit?: WeightUnit; // текущая единица измерения упражнения
   onNavigateToDate?: (date: string, exerciseName: string, setId?: string) => void;
 }
 
@@ -73,31 +75,53 @@ const TAG_ACTIVE_COLORS = {
   totalVolume: { bg: 'rgb(115, 66, 0)', text: 'rgb(255, 185, 0)' },
 };
 
-function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exerciseName, onNavigateToDate }: ExerciseStatsChartProps) {
+function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exerciseName, currentUnit, onNavigateToDate }: ExerciseStatsChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  
+
   // Состояние видимости графиков
   const [showMaxWeight, setShowMaxWeight] = useState(true);
   const [showUserWeight, setShowUserWeight] = useState(false);
   const [showTotalVolume, setShowTotalVolume] = useState(false);
-  
+
+  // Состояние для выбранной единицы измерения - по умолчанию текущая единица упражнения
+  const [selectedUnit, setSelectedUnit] = useState<WeightUnit>(currentUnit || 'kg');
+
+  // Синхронизация с текущей единицей при открытии модального окна
+  useEffect(() => {
+    if (currentUnit) {
+      setSelectedUnit(currentUnit);
+    }
+  }, [currentUnit]);
+
+  // Фильтруем данные по выбранной единице
+  const filteredData = useMemo(() => {
+    return data.filter(d => d.weightUnit === selectedUnit);
+  }, [data, selectedUnit]);
+
   // Состояние для диапазона отображаемых данных
   // Показываем последние N тренировок по умолчанию
-  const [rangeStart, setRangeStart] = useState(Math.max(0, data.length - DEFAULT_VISIBLE_COUNT));
-  const [rangeEnd, setRangeEnd] = useState(data.length);
-  
+  const [rangeStart, setRangeStart] = useState(Math.max(0, filteredData.length - DEFAULT_VISIBLE_COUNT));
+  const [rangeEnd, setRangeEnd] = useState(filteredData.length);
+
   // Refs для pinch-to-zoom
   const lastPinchDistanceRef = useRef<number | null>(null);
   const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
-  
+
   // Refs для тройного клика
   const clickCountRef = useRef(0);
   const lastClickTimeRef = useRef(0);
-  
+
+  // Сброс диапазона при смене единицы
+  useEffect(() => {
+    setRangeStart(Math.max(0, filteredData.length - DEFAULT_VISIBLE_COUNT));
+    setRangeEnd(filteredData.length);
+    setSelectedIndex(null);
+  }, [selectedUnit, filteredData.length]);
+
   // Видимые данные на основе диапазона
-  const visibleData = data.slice(rangeStart, rangeEnd);
+  const visibleData = filteredData.slice(rangeStart, rangeEnd);
   const visibleCount = rangeEnd - rangeStart;
   
   // Находим индекс текущей тренировки в видимых данных
@@ -123,7 +147,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
     }
   }, [visibleData.length, selectedIndex]);
   
-  if (data.length === 0) {
+  if (filteredData.length === 0) {
     return (
       <div className="text-center py-8 text-zinc-500">
         Нет данных для отображения
@@ -190,17 +214,17 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
       const currentDistance = getPinchDistance(e.touches);
       const scale = lastPinchDistanceRef.current / currentDistance;
       lastPinchDistanceRef.current = currentDistance;
-      
+
       // Вычисляем новый размер видимого диапазона
       const newCount = Math.round(visibleCount * scale);
-      const clampedCount = Math.max(3, Math.min(data.length, newCount));
-      
+      const clampedCount = Math.max(3, Math.min(filteredData.length, newCount));
+
       if (clampedCount !== visibleCount) {
         // Центрируем zoom вокруг текущей позиции
         const centerIndex = rangeStart + Math.floor(visibleCount / 2);
         let newStart = Math.round(centerIndex - clampedCount / 2);
-        newStart = Math.max(0, Math.min(data.length - clampedCount, newStart));
-        
+        newStart = Math.max(0, Math.min(filteredData.length - clampedCount, newStart));
+
         setRangeStart(newStart);
         setRangeEnd(newStart + clampedCount);
       }
@@ -209,7 +233,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
       const rect = containerRef.current.getBoundingClientRect();
       const x = e.touches[0].clientX - rect.left;
       const width = rect.width;
-      
+
       const relativeX = Math.max(0, Math.min(1, x / width));
       const newIndex = Math.round(relativeX * (visibleData.length - 1));
       setSelectedIndex(newIndex);
@@ -249,16 +273,16 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
   // Обработка колёсика мыши для zoom
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    
+
     const delta = e.deltaY > 0 ? 1 : -1;
-    const newCount = Math.max(3, Math.min(data.length, visibleCount + delta));
-    
+    const newCount = Math.max(3, Math.min(filteredData.length, visibleCount + delta));
+
     if (newCount !== visibleCount) {
       // Центрируем zoom
       const centerIndex = rangeStart + Math.floor(visibleCount / 2);
       let newStart = Math.round(centerIndex - newCount / 2);
-      newStart = Math.max(0, Math.min(data.length - newCount, newStart));
-      
+      newStart = Math.max(0, Math.min(filteredData.length - newCount, newStart));
+
       setRangeStart(newStart);
       setRangeEnd(newStart + newCount);
     }
@@ -324,16 +348,34 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
         <div className="flex items-center">
           <div className="w-[40px]"></div>
           <div className="text-sm text-zinc-400">{formatDateShort(selectedData.date)}</div>
+          {/* Селектор единиц */}
+          <div className="flex gap-1 ml-2">
+            {(['kg', 'lb', 'lvl'] as WeightUnit[]).map(unit => (
+              <button
+                key={unit}
+                type="button"
+                onClick={() => setSelectedUnit(unit)}
+                className={cn(
+                  'w-7 h-5 flex items-center justify-center rounded-lg text-[10px] transition-colors',
+                  selectedUnit === unit
+                    ? 'bg-zinc-600 text-white'
+                    : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700'
+                )}
+              >
+                {WEIGHT_UNITS[unit].short}
+              </button>
+            ))}
+          </div>
           <div className="flex-1"></div>
           <div className="flex gap-3 text-sm">
             {showMaxWeight && selectedData.maxWeight > 0 && (
-              <span className="font-medium" style={{ color: CHART_COLORS.maxWeight }}>{selectedData.maxWeight} кг</span>
+              <span className="font-medium" style={{ color: CHART_COLORS.maxWeight }}>{selectedData.maxWeight} {WEIGHT_UNITS[selectedUnit].short}</span>
             )}
             {showUserWeight && selectedData.userWeight && selectedData.userWeight > 0 && (
               <span className="font-medium" style={{ color: CHART_COLORS.userWeight }}>{selectedData.userWeight} кг</span>
             )}
             {showTotalVolume && selectedData.totalVolume > 0 && (
-              <span className="font-medium" style={{ color: CHART_COLORS.totalVolume }}>{selectedData.totalVolume} кг</span>
+              <span className="font-medium" style={{ color: CHART_COLORS.totalVolume }}>{selectedData.totalVolume} {WEIGHT_UNITS[selectedUnit].short}</span>
             )}
           </div>
         </div>
@@ -542,21 +584,21 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
           <div className="flex-1 relative py-2 px-2">
             <div className="relative w-full h-[10px] bg-zinc-600 rounded">
               {/* Выбранный диапазон */}
-              <div 
+              <div
                 className="absolute h-full rounded"
-                style={{ 
-                  left: `${(rangeStart / data.length) * 100}%`,
-                  width: `${((rangeEnd - rangeStart) / data.length) * 100}%`,
+                style={{
+                  left: `${(rangeStart / filteredData.length) * 100}%`,
+                  width: `${((rangeEnd - rangeStart) / filteredData.length) * 100}%`,
                   backgroundColor: textColor,
                   opacity: 0.5
                 }}
               />
-              
+
               {/* Левый ползунок */}
-              <div 
+              <div
                 className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded"
-                style={{ 
-                  left: `calc(${(rangeStart / data.length) * 100}% - 10px)`,
+                style={{
+                  left: `calc(${(rangeStart / filteredData.length) * 100}% - 10px)`,
                   backgroundColor: color,
                   border: '2px solid #18181b'
                 }}
@@ -565,18 +607,18 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
                   const startX = e.touches[0].clientX;
                   const startRange = rangeStart;
                   const sliderRect = (e.target as HTMLElement).parentElement!.getBoundingClientRect();
-                  
+
                   const handleMove = (moveE: TouchEvent) => {
-                    const delta = ((moveE.touches[0].clientX - startX) / sliderRect.width) * data.length;
+                    const delta = ((moveE.touches[0].clientX - startX) / sliderRect.width) * filteredData.length;
                     const newStart = Math.min(Math.round(startRange + delta), rangeEnd - 3);
                     setRangeStart(Math.max(0, newStart));
                   };
-                  
+
                   const handleEnd = () => {
                     document.removeEventListener('touchmove', handleMove);
                     document.removeEventListener('touchend', handleEnd);
                   };
-                  
+
                   document.addEventListener('touchmove', handleMove, { passive: false });
                   document.addEventListener('touchend', handleEnd);
                 }}
@@ -585,28 +627,28 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
                   const startX = e.clientX;
                   const startRange = rangeStart;
                   const sliderRect = (e.target as HTMLElement).parentElement!.getBoundingClientRect();
-                  
+
                   const handleMove = (moveE: MouseEvent) => {
-                    const delta = ((moveE.clientX - startX) / sliderRect.width) * data.length;
+                    const delta = ((moveE.clientX - startX) / sliderRect.width) * filteredData.length;
                     const newStart = Math.min(Math.round(startRange + delta), rangeEnd - 3);
                     setRangeStart(Math.max(0, newStart));
                   };
-                  
+
                   const handleUp = () => {
                     document.removeEventListener('mousemove', handleMove);
                     document.removeEventListener('mouseup', handleUp);
                   };
-                  
+
                   document.addEventListener('mousemove', handleMove);
                   document.addEventListener('mouseup', handleUp);
                 }}
               />
               
               {/* Правый ползунок */}
-              <div 
+              <div
                 className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded"
-                style={{ 
-                  left: `calc(${(rangeEnd / data.length) * 100}% - 10px)`,
+                style={{
+                  left: `calc(${(rangeEnd / filteredData.length) * 100}% - 10px)`,
                   backgroundColor: color,
                   border: '2px solid #18181b'
                 }}
@@ -615,18 +657,18 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
                   const startX = e.touches[0].clientX;
                   const startRange = rangeEnd;
                   const sliderRect = (e.target as HTMLElement).parentElement!.getBoundingClientRect();
-                  
+
                   const handleMove = (moveE: TouchEvent) => {
-                    const delta = ((moveE.touches[0].clientX - startX) / sliderRect.width) * data.length;
+                    const delta = ((moveE.touches[0].clientX - startX) / sliderRect.width) * filteredData.length;
                     const newEnd = Math.max(Math.round(startRange + delta), rangeStart + 3);
-                    setRangeEnd(Math.min(data.length, newEnd));
+                    setRangeEnd(Math.min(filteredData.length, newEnd));
                   };
-                  
+
                   const handleEnd = () => {
                     document.removeEventListener('touchmove', handleMove);
                     document.removeEventListener('touchend', handleEnd);
                   };
-                  
+
                   document.addEventListener('touchmove', handleMove, { passive: false });
                   document.addEventListener('touchend', handleEnd);
                 }}
@@ -635,18 +677,18 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
                   const startX = e.clientX;
                   const startRange = rangeEnd;
                   const sliderRect = (e.target as HTMLElement).parentElement!.getBoundingClientRect();
-                  
+
                   const handleMove = (moveE: MouseEvent) => {
-                    const delta = ((moveE.clientX - startX) / sliderRect.width) * data.length;
+                    const delta = ((moveE.clientX - startX) / sliderRect.width) * filteredData.length;
                     const newEnd = Math.max(Math.round(startRange + delta), rangeStart + 3);
-                    setRangeEnd(Math.min(data.length, newEnd));
+                    setRangeEnd(Math.min(filteredData.length, newEnd));
                   };
-                  
+
                   const handleUp = () => {
                     document.removeEventListener('mousemove', handleMove);
                     document.removeEventListener('mouseup', handleUp);
                   };
-                  
+
                   document.addEventListener('mousemove', handleMove);
                   document.addEventListener('mouseup', handleUp);
                 }}
@@ -789,20 +831,25 @@ export function ExerciseCard({
   const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
   const [selectedGrip, setSelectedGrip] = useState<GripType | null>(null);
   const [selectedPosition, setSelectedPosition] = useState<PositionType | null>(null);
+  const [selectedWeightUnit, setSelectedWeightUnit] = useState<WeightUnit>('kg');
+  const [editWeightUnit, setEditWeightUnit] = useState<WeightUnit>('kg');
   const [showEquipmentPicker, setShowEquipmentPicker] = useState(false);
   const [showGripPicker, setShowGripPicker] = useState(false);
   const [showPositionPicker, setShowPositionPicker] = useState(false);
+  const [showUnitPicker, setShowUnitPicker] = useState(false);
   const [pickerPosition, setPickerPosition] = useState({ top: 0, left: 0, width: 0, openUpward: false, bottom: 0 });
   const equipmentButtonRef = useRef<HTMLButtonElement>(null);
   const gripButtonRef = useRef<HTMLButtonElement>(null);
   const positionButtonRef = useRef<HTMLButtonElement>(null);
+  const unitButtonRef = useRef<HTMLButtonElement>(null);
   const editEquipmentButtonRef = useRef<HTMLButtonElement>(null);
   const editGripButtonRef = useRef<HTMLButtonElement>(null);
   const editPositionButtonRef = useRef<HTMLButtonElement>(null);
-  
+  const editUnitButtonRef = useRef<HTMLButtonElement>(null);
+
   // Block scroll when picker is open
   useEffect(() => {
-    if (showEquipmentPicker || showGripPicker || showPositionPicker) {
+    if (showEquipmentPicker || showGripPicker || showPositionPicker || showUnitPicker) {
       document.body.style.overflow = 'hidden';
       document.body.style.touchAction = 'none';
     } else {
@@ -813,7 +860,7 @@ export function ExerciseCard({
       document.body.style.overflow = '';
       document.body.style.touchAction = '';
     };
-  }, [showEquipmentPicker, showGripPicker, showPositionPicker]);
+  }, [showEquipmentPicker, showGripPicker, showPositionPicker, showUnitPicker]);
   
   // State for delete confirmation
   const [showDeleteExerciseConfirm, setShowDeleteExerciseConfirm] = useState(false);
@@ -901,33 +948,42 @@ export function ExerciseCard({
   // История упражнения для графика
   const exerciseHistory = useMemo(() => {
     if (!workouts) return [];
-    
+
     const history: ChartDataPoint[] = [];
-    
+
     workouts.forEach(w => {
       const exerciseInWorkout = w.exercises.find(e => e.name === exercise.name);
       if (exerciseInWorkout && exerciseInWorkout.sets.length > 0) {
-        // Находим максимальный вес среди рабочих подходов (не разминочных)
-        const workingSets = exerciseInWorkout.sets.filter(s => !s.isWarmup && s.weight > 0);
-        // Вычисляем общий объём (сумма вес × повторения для всех подходов)
-        const totalVolume = exerciseInWorkout.sets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
-        
-        if (workingSets.length > 0) {
-          const maxWeight = Math.max(...workingSets.map(s => s.weight));
-          // Находим id подхода с макс весом
-          const maxWeightSet = workingSets.find(s => s.weight === maxWeight);
+        // Группируем подходы по единицам измерения
+        const setsByUnit = new Map<WeightUnit, typeof exerciseInWorkout.sets>();
+
+        exerciseInWorkout.sets.forEach(set => {
+          if (set.isWarmup || set.weight === 0) return;
+          const unit = set.weightUnit || 'kg';
+          const existing = setsByUnit.get(unit) || [];
+          existing.push(set);
+          setsByUnit.set(unit, existing);
+        });
+
+        // Для каждой единицы создаём отдельную точку данных
+        setsByUnit.forEach((sets, unit) => {
+          const maxWeight = Math.max(...sets.map(s => s.weight));
+          const maxWeightSet = sets.find(s => s.weight === maxWeight);
+          const totalVolume = sets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+
           history.push({
             date: w.date,
             maxWeight,
             maxWeightSetId: maxWeightSet?.id,
-            userWeight: w.weight, // вес пользователя на дату тренировки
+            userWeight: w.weight,
             totalVolume,
-            workoutId: w.id
+            workoutId: w.id,
+            weightUnit: unit,
           });
-        }
+        });
       }
     });
-    
+
     // Сортируем по дате
     return history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [workouts, exercise.name]);
@@ -996,6 +1052,8 @@ export function ExerciseCard({
       } else {
         setSelectedPosition(null);
       }
+      // Единицу измерения наследуем всегда
+      setSelectedWeightUnit(lastSet.weightUnit || 'kg');
       return;
     }
     
@@ -1027,6 +1085,7 @@ export function ExerciseCard({
       setSelectedEquipment(null);
       setSelectedGrip(null);
       setSelectedPosition(null);
+      setSelectedWeightUnit(prevData.weightUnit || 'kg');
       return;
     }
     
@@ -1041,6 +1100,7 @@ export function ExerciseCard({
     setSelectedEquipment(null);
     setSelectedGrip(null);
     setSelectedPosition(null);
+    setSelectedWeightUnit('kg');
   }, [exercise.sets, exercise.name]);
   
   // Автозаполнение при переключении типа подхода (разминочный/рабочий)
@@ -1144,18 +1204,24 @@ export function ExerciseCard({
   // Вычисляем номер следующего подхода и получаем предыдущие значения
   const nextWorkingSetNumber = exercise.sets.filter(s => !s.isWarmup).length + 1;
   const nextWarmupSetNumber = exercise.sets.filter(s => s.isWarmup).length + 1;
-  
-  // Получаем предыдущие значения для следующего подхода
-  const prevWorkingSetData = getPreviousSetData(exercise.name, nextWorkingSetNumber, false);
-  const prevWarmupSetData = getPreviousSetData(exercise.name, nextWarmupSetNumber, true);
+
+  // Получаем предыдущие значения для следующего подхода с фильтрацией по выбранной единице
+  // Используем useMemo для обновления при смене единицы
+  const prevWorkingSetData = useMemo(() => {
+    return getPreviousSetData(exercise.name, nextWorkingSetNumber, false, selectedWeightUnit);
+  }, [exercise.name, nextWorkingSetNumber, selectedWeightUnit]);
+
+  const prevWarmupSetData = useMemo(() => {
+    return getPreviousSetData(exercise.name, nextWarmupSetNumber, true, selectedWeightUnit);
+  }, [exercise.name, nextWarmupSetNumber, selectedWeightUnit]);
   
   // Цвета для рекордов
   const WEIGHT_RECORD_COLOR = '#ffb900';
   const VOLUME_RECORD_COLOR = '#cd7f32';
 
   // Определение типа рекорда для подхода
-  const getSetRecordType = (weight: number, reps: number, setId: string, time?: number): 'weight' | 'volume' | null => {
-    return getRecordType(exercise.name, weight, reps, setId, workoutId, time);
+  const getSetRecordType = (weight: number, reps: number, setId: string, time?: number, weightUnit?: WeightUnit): 'weight' | 'volume' | null => {
+    return getRecordType(exercise.name, weight, reps, setId, workoutId, time, weightUnit);
   };
 
   const handleAddSet = () => {
@@ -1169,7 +1235,7 @@ export function ExerciseCard({
     if (!useBodyweight && useReps && weight <= 0 && !useTime) return;
     if (useTime && time <= 0 && !useReps) return;
 
-    addSet(workoutId, exercise.id, reps, weight, time > 0 ? time : undefined, isWarmup, selectedEquipment ?? undefined, selectedGrip ?? undefined, selectedPosition ?? undefined);
+    addSet(workoutId, exercise.id, reps, weight, time > 0 ? time : undefined, isWarmup, selectedEquipment ?? undefined, selectedGrip ?? undefined, selectedPosition ?? undefined, selectedWeightUnit);
 
     // Reset form
     setNewReps('');
@@ -1181,6 +1247,7 @@ export function ExerciseCard({
     setSelectedEquipment(null);
     setSelectedGrip(null);
     setSelectedPosition(null);
+    setSelectedWeightUnit('kg');
     setShowEquipmentPicker(false);
     setShowGripPicker(false);
     setShowPositionPicker(false);
@@ -1194,7 +1261,7 @@ export function ExerciseCard({
 
     if (reps <= 0 && time <= 0) return;
 
-    updateSet(workoutId, exercise.id, setId, reps, weight, time > 0 ? time : undefined, editEquipment !== null ? editEquipment ?? undefined : null, editGrip !== null ? editGrip ?? undefined : null, editPosition !== null ? editPosition ?? undefined : null);
+    updateSet(workoutId, exercise.id, setId, reps, weight, time > 0 ? time : undefined, editEquipment ?? undefined, editGrip ?? undefined, editPosition ?? undefined, editWeightUnit);
 
     setEditingSetId(null);
     setEditReps('');
@@ -1235,6 +1302,7 @@ export function ExerciseCard({
     setEditEquipment(set.equipmentType || null);
     setEditGrip(set.gripType || null);
     setEditPosition(set.positionType || null);
+    setEditWeightUnit(set.weightUnit || 'kg');
     setShowEquipmentPicker(false);
     setShowGripPicker(false);
     setShowPositionPicker(false);
@@ -1250,7 +1318,7 @@ export function ExerciseCard({
     const isBodyweight = set.weight === 0;
     const hasReps = set.reps > 0;
     const hasTime = set.time && set.time > 0;
-    const recordType = getSetRecordType(set.weight, set.reps, set.id, set.time);
+    const recordType = getSetRecordType(set.weight, set.reps, set.id, set.time, set.weightUnit);
     const isTimeOnly = hasTime && !hasReps;
 
     // Определяем цвет для рекорда
@@ -1273,7 +1341,7 @@ export function ExerciseCard({
 
         {/* Столбец 2: "кг" */}
         <span className="inline-flex w-5 h-7 items-center justify-center text-sm text-zinc-500">
-          {!isBodyweight && set.weight > 0 && 'кг'}
+          {!isBodyweight && set.weight > 0 && (set.weightUnit ? WEIGHT_UNITS[set.weightUnit].short : 'кг')}
         </span>
 
         {/* Столбец 3: "×" / Иконка Clock */}
@@ -1485,7 +1553,7 @@ export function ExerciseCard({
                                 min="0.1"
                                 value={editWeight}
                                 onChange={(e) => setEditWeight(e.target.value)}
-                                placeholder="кг"
+                                placeholder={WEIGHT_UNITS[editWeightUnit].placeholder}
                                 className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center md:!text-xs !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
                             )}
@@ -1543,9 +1611,53 @@ export function ExerciseCard({
                     </div>
                   )}
                   
-                  {/* Третья и четвёртая строки при редактировании: позиция, снаряд и хват */}
+                  {/* Третья и четвёртая строки при редактировании: единица, позиция, снаряд и хват */}
                   {editingSetId === set.id && (
                     <>
+                      {/* Единица измерения - первая */}
+                      {set.weight > 0 && (
+                        <div className="flex items-center gap-1 pl-10">
+                          <span className="text-[10px] text-zinc-500 w-14 shrink-0">Единица</span>
+                          <button
+                            ref={editUnitButtonRef}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!showUnitPicker && editUnitButtonRef.current) {
+                                const rect = editUnitButtonRef.current.getBoundingClientRect();
+                                const viewportHeight = window.innerHeight;
+                                const listHeight = 140;
+                                const spaceBelow = viewportHeight - rect.bottom;
+                                const spaceAbove = rect.top;
+                                const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
+
+                                setPickerPosition({
+                                  top: rect.bottom + 2,
+                                  bottom: rect.top,
+                                  left: rect.left,
+                                  width: rect.width,
+                                  openUpward
+                                });
+                              }
+                              setShowUnitPicker(!showUnitPicker);
+                              setShowEquipmentPicker(false);
+                              setShowGripPicker(false);
+                              setShowPositionPicker(false);
+                            }}
+                            className={cn(
+                              'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
+                              showUnitPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                            )}
+                          >
+                            <span className="truncate overflow-hidden">{WEIGHT_UNITS[editWeightUnit].full}</span>
+                            <ChevronDownIcon className={cn(
+                              'w-3 h-3 transition-transform shrink-0',
+                              showUnitPicker && 'rotate-180'
+                            )} />
+                          </button>
+                        </div>
+                      )}
+
                       {/* Позиция */}
                       <div className="flex items-center gap-1 pl-10">
                         <span className="text-[10px] text-zinc-500 w-14 shrink-0">Позиция</span>
@@ -1573,6 +1685,7 @@ export function ExerciseCard({
                             setShowPositionPicker(!showPositionPicker);
                             setShowEquipmentPicker(false);
                             setShowGripPicker(false);
+                            setShowUnitPicker(false);
                           }}
                           className={cn(
                             'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
@@ -1603,11 +1716,11 @@ export function ExerciseCard({
                                 const spaceBelow = viewportHeight - rect.bottom;
                                 const spaceAbove = rect.top;
                                 const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
-                                
-                                setPickerPosition({ 
+
+                                setPickerPosition({
                                   top: rect.bottom + 2,
                                   bottom: rect.top,
-                                  left: rect.left, 
+                                  left: rect.left,
                                   width: rect.width,
                                   openUpward
                                 });
@@ -1615,6 +1728,7 @@ export function ExerciseCard({
                               setShowEquipmentPicker(!showEquipmentPicker);
                               setShowGripPicker(false);
                               setShowPositionPicker(false);
+                              setShowUnitPicker(false);
                             }}
                             className={cn(
                               'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
@@ -1629,7 +1743,7 @@ export function ExerciseCard({
                           </button>
                         </div>
                       )}
-                      
+
                       {/* Тип хвата */}
                       {set.reps > 0 && (
                         <div className="flex items-center gap-1 pl-10">
@@ -1646,11 +1760,11 @@ export function ExerciseCard({
                                 const spaceBelow = viewportHeight - rect.bottom;
                                 const spaceAbove = rect.top;
                                 const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
-                                
-                                setPickerPosition({ 
+
+                                setPickerPosition({
                                   top: rect.bottom + 2,
                                   bottom: rect.top,
-                                  left: rect.left, 
+                                  left: rect.left,
                                   width: rect.width,
                                   openUpward
                                 });
@@ -1658,6 +1772,7 @@ export function ExerciseCard({
                               setShowGripPicker(!showGripPicker);
                               setShowEquipmentPicker(false);
                               setShowPositionPicker(false);
+                              setShowUnitPicker(false);
                             }}
                             className={cn(
                               'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
@@ -1801,7 +1916,7 @@ export function ExerciseCard({
                             min="0.1"
                             value={newWeight}
                             onChange={(e) => setNewWeight(e.target.value)}
-                            placeholder="кг"
+                            placeholder={WEIGHT_UNITS[selectedWeightUnit].placeholder}
                             className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center md:!text-xs !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                         )}
@@ -1852,6 +1967,8 @@ export function ExerciseCard({
                     const prevData = isWarmup ? prevWarmupSetData : prevWorkingSetData;
                     if (!prevData) return null;
 
+                    const prevUnit = prevData.weightUnit || 'kg';
+
                     return (
                       <div className="flex items-center text-[10px] text-zinc-500 -ml-9 gap-2 mb-2">
                         <div className="w-7 text-center">Было</div>
@@ -1862,7 +1979,7 @@ export function ExerciseCard({
                                 {prevData.isBodyweight ? (
                                   <span>Собст. вес</span>
                                 ) : prevData.weight > 0 ? (
-                                  <span>{prevData.weight} кг</span>
+                                  <span>{prevData.weight} {WEIGHT_UNITS[prevUnit].short}</span>
                                 ) : null}
                               </div>
                             )}
@@ -1891,6 +2008,49 @@ export function ExerciseCard({
                     );
                   })()}
 
+                  {/* Единица измерения - первая строка */}
+                  {!useBodyweight && (
+                    <div className="flex items-center gap-2 mb-2 -ml-9 pl-9">
+                      <span className="text-[10px] text-zinc-500 w-[60px] shrink-0">Единица</span>
+                      <button
+                        ref={unitButtonRef}
+                        type="button"
+                        onClick={() => {
+                          if (!showUnitPicker && unitButtonRef.current) {
+                            const rect = unitButtonRef.current.getBoundingClientRect();
+                            const viewportHeight = window.innerHeight;
+                            const listHeight = 140;
+                            const spaceBelow = viewportHeight - rect.bottom;
+                            const spaceAbove = rect.top;
+                            const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
+
+                            setPickerPosition({
+                              top: rect.bottom + 2,
+                              bottom: rect.top,
+                              left: rect.left,
+                              width: rect.width,
+                              openUpward
+                            });
+                          }
+                          setShowUnitPicker(!showUnitPicker);
+                          setShowEquipmentPicker(false);
+                          setShowGripPicker(false);
+                          setShowPositionPicker(false);
+                        }}
+                        className={cn(
+                          'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
+                          showUnitPicker ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+                        )}
+                      >
+                        <span className="truncate overflow-hidden">{WEIGHT_UNITS[selectedWeightUnit].full}</span>
+                        <ChevronDownIcon className={cn(
+                          'w-3 h-3 transition-transform shrink-0',
+                          showUnitPicker && 'rotate-180'
+                        )} />
+                      </button>
+                    </div>
+                  )}
+
                   {/* Position selection */}
                   <div className="flex items-center gap-2 mb-2 -ml-9 pl-9">
                     <span className="text-[10px] text-zinc-500 w-[60px] shrink-0">Позиция</span>
@@ -1917,6 +2077,7 @@ export function ExerciseCard({
                         setShowPositionPicker(!showPositionPicker);
                         setShowEquipmentPicker(false);
                         setShowGripPicker(false);
+                        setShowUnitPicker(false);
                       }}
                       className={cn(
                         'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
@@ -1931,7 +2092,7 @@ export function ExerciseCard({
                     </button>
                   </div>
 
-                  {/* Equipment and grip selection */}
+                  {/* Equipment selection */}
                   {!useBodyweight && (
                     <div className="flex items-center gap-2 mb-2 -ml-9 pl-9">
                       <span className="text-[10px] text-zinc-500 w-[60px] shrink-0">Снаряд</span>
@@ -1942,21 +2103,23 @@ export function ExerciseCard({
                           if (!showEquipmentPicker && equipmentButtonRef.current) {
                             const rect = equipmentButtonRef.current.getBoundingClientRect();
                             const viewportHeight = window.innerHeight;
-                            const listHeight = 320; // увеличенная высота для вертикальных устройств
+                            const listHeight = 320;
                             const spaceBelow = viewportHeight - rect.bottom;
                             const spaceAbove = rect.top;
                             const openUpward = spaceBelow < listHeight && spaceAbove > spaceBelow;
-                            
-                            setPickerPosition({ 
+
+                            setPickerPosition({
                               top: rect.bottom + 2,
                               bottom: rect.top,
-                              left: rect.left, 
+                              left: rect.left,
                               width: rect.width,
                               openUpward
                             });
                           }
                           setShowEquipmentPicker(!showEquipmentPicker);
                           setShowGripPicker(false);
+                          setShowUnitPicker(false);
+                          setShowPositionPicker(false);
                         }}
                         className={cn(
                           'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
@@ -1971,7 +2134,8 @@ export function ExerciseCard({
                       </button>
                     </div>
                   )}
-                  
+
+                  {/* Grip selection */}
                   <div className="flex items-center gap-2 mb-2 -ml-9 pl-9">
                     <span className="text-[10px] text-zinc-500 w-[60px] shrink-0">Тип хвата</span>
                     <button
@@ -1996,6 +2160,7 @@ export function ExerciseCard({
                         }
                         setShowGripPicker(!showGripPicker);
                         setShowEquipmentPicker(false);
+                        setShowUnitPicker(false);
                       }}
                       className={cn(
                         'flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs w-[160px]',
@@ -2148,6 +2313,11 @@ export function ExerciseCard({
                 textColor={exerciseColors.text}
                 currentWorkoutId={workoutId}
                 exerciseName={exercise.name}
+                currentUnit={(() => {
+                  // Берём единицу из последнего рабочего подхода
+                  const lastWorkingSet = [...exercise.sets].reverse().find(s => !s.isWarmup && s.weight > 0);
+                  return lastWorkingSet?.weightUnit || 'kg';
+                })()}
                 onNavigateToDate={(date, exerciseName, setId) => {
                   setShowStats(false);
                   setSelectedDate(date);
@@ -2166,7 +2336,7 @@ export function ExerciseCard({
       </Dialog>
 
       {/* Portal for dropdown pickers - rendered at top level for both add and edit modes */}
-      {(showEquipmentPicker || showGripPicker || showPositionPicker) && createPortal(
+      {(showEquipmentPicker || showGripPicker || showPositionPicker || showUnitPicker) && createPortal(
         <>
           <div
             className="fixed inset-0 z-[10000]"
@@ -2174,6 +2344,7 @@ export function ExerciseCard({
               setShowEquipmentPicker(false);
               setShowGripPicker(false);
               setShowPositionPicker(false);
+              setShowUnitPicker(false);
             }}
           />
           <motion.div
@@ -2192,7 +2363,34 @@ export function ExerciseCard({
             }}
           >
             <div className="flex flex-col gap-1 p-2">
-              {showPositionPicker ? (
+              {showUnitPicker ? (
+                <>
+                  {(Object.keys(WEIGHT_UNITS) as WeightUnit[]).map((unit) => {
+                    const currentUnit = editingSetId ? editWeightUnit : selectedWeightUnit;
+                    return (
+                      <button
+                        key={unit}
+                        type="button"
+                        onClick={() => {
+                          if (editingSetId) {
+                            setEditWeightUnit(unit);
+                          } else {
+                            setSelectedWeightUnit(unit);
+                          }
+                          setShowUnitPicker(false);
+                        }}
+                        className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                        style={currentUnit === unit ? {
+                          backgroundColor: '#3f3f46',
+                          color: '#fff'
+                        } : undefined}
+                      >
+                        {WEIGHT_UNITS[unit].full}
+                      </button>
+                    );
+                  })}
+                </>
+              ) : showPositionPicker ? (
                 <>
                   <button
                     type="button"

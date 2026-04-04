@@ -5,7 +5,7 @@ import { calculatePersonalRecords } from '@/lib/pr';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { EXERCISE_TYPE_COLORS, EXERCISE_TYPE_NAMES, ExerciseType } from '@/lib/types';
+import { EXERCISE_TYPE_COLORS, EXERCISE_TYPE_NAMES, ExerciseType, WEIGHT_UNITS, WeightUnit } from '@/lib/types';
 import { getExerciseTypeFromBase } from '@/lib/storage';
 import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, SearchIcon } from '@/components/icons/Icons';
 
@@ -162,8 +162,13 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                 const exerciseType = getExerciseTypeFromBase(record.exerciseName);
                 const colors = EXERCISE_TYPE_COLORS[exerciseType];
                 
-                const hasWeight = !!record.weightRecord;
-                const hasVolume = !!record.volumeRecord;
+                // Собираем все рекорды по единицам измерения
+                const units: WeightUnit[] = ['kg', 'lb', 'lvl'];
+                const recordsByUnit = units.map(unit => ({
+                  unit,
+                  weightRecord: record[unit].weightRecord,
+                  volumeRecord: record[unit].volumeRecord,
+                })).filter(r => r.weightRecord || r.volumeRecord);
                 
                 return (
                   <motion.div
@@ -184,31 +189,31 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                       <ExerciseName name={record.exerciseName} />
                     </div>
                     
-                    {/* Строка 2: Рекорды */}
-                    {(hasWeight || hasVolume) && (
-                      <div className="grid px-3 pb-2" style={{ 
+                    {/* Рекорды по каждой единице измерения */}
+                    {recordsByUnit.map(({ unit, weightRecord, volumeRecord }) => (
+                      <div key={unit} className="grid px-3 pb-2" style={{ 
                         gridTemplateColumns: '48px 1fr 1fr',
                       }}>
                         <div></div>
                         
                         {/* Рекорд по весу */}
                         <div className="flex flex-col items-start">
-                          {record.weightRecord && (
+                          {weightRecord && (
                             <>
                               <button
                                 onClick={() => onNavigateToWorkout?.(
-                                  record.weightRecord!.date,
+                                  weightRecord!.date,
                                   record.exerciseName,
-                                  record.weightRecord!.setId
+                                  weightRecord!.setId
                                 )}
                                 className="inline-flex items-center gap-1 hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg px-1 -ml-1"
                               >
                                 <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
-                                  {record.weightRecord.value} кг
+                                  {weightRecord.value} {WEIGHT_UNITS[unit].short}
                                 </span>
                                 <span className="text-zinc-500 text-sm">×</span>
                                 <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
-                                  {record.weightRecord.reps}
+                                  {weightRecord.reps}
                                 </span>
                               </button>
                               <span className="text-[10px] text-zinc-500">По весу</span>
@@ -218,8 +223,8 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                         
                         {/* Рекорд по объёму */}
                         <div className="flex flex-col items-start">
-                          {record.volumeRecord && (() => {
-                            const vr = record.volumeRecord;
+                          {volumeRecord && (() => {
+                            const vr = volumeRecord;
                             
                             let displayContent: React.ReactNode;
                             
@@ -250,7 +255,7 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                               displayContent = (
                                 <>
                                   <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
-                                    {weightStr} кг
+                                    {weightStr} {WEIGHT_UNITS[unit].short}
                                   </span>
                                   <span className="text-zinc-500 text-sm">×</span>
                                   <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
@@ -270,9 +275,9 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                               <>
                                 <button
                                   onClick={() => onNavigateToWorkout?.(
-                                    record.volumeRecord!.date,
+                                    volumeRecord!.date,
                                     record.exerciseName,
-                                    record.volumeRecord!.setId
+                                    volumeRecord!.setId
                                   )}
                                   className="inline-flex items-center gap-1 hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg px-1 -ml-1"
                                 >
@@ -284,7 +289,7 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                           })()}
                         </div>
                       </div>
-                    )}
+                    ))}
                   </motion.div>
                 );
               })
