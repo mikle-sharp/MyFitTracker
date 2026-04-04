@@ -4,13 +4,13 @@ import { useMemo, useRef, useState, useEffect } from 'react';
 import { calculatePersonalRecords } from '@/lib/pr';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { EXERCISE_TYPE_COLORS, WORKOUT_TYPE_ICONS, ExerciseType } from '@/lib/types';
+import { Input } from '@/components/ui/input';
+import { EXERCISE_TYPE_COLORS, EXERCISE_TYPE_NAMES, ExerciseType } from '@/lib/types';
 import { getExerciseTypeFromBase } from '@/lib/storage';
-import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon } from '@/components/icons/Icons';
+import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, SearchIcon } from '@/components/icons/Icons';
 
 // Компонент иконки типа упражнения
 function ExerciseTypeIcon({ type, color, isDefaultStyle }: { type: ExerciseType; color: string; isDefaultStyle: boolean }) {
-  // Используем color вместо stroke, т.к. иконки используют stroke="currentColor"
   const iconStyle = { color: color };
 
   if (isDefaultStyle) {
@@ -21,7 +21,6 @@ function ExerciseTypeIcon({ type, color, isDefaultStyle }: { type: ExerciseType;
       case 'common': return <HeartIcon className="w-6 h-6" style={iconStyle} />;
     }
   }
-  // Fallback для Retro стиля - пиксельные иконки
   switch (type) {
     case 'chest': return <DumbbellIcon className="w-6 h-6" style={iconStyle} />;
     case 'back': return <TargetIcon className="w-6 h-6" style={iconStyle} />;
@@ -40,7 +39,7 @@ function ExerciseName({ name }: { name: string }) {
       const lineHeight = parseFloat(getComputedStyle(ref.current).lineHeight);
       const height = ref.current.scrollHeight;
       const lines = height / lineHeight;
-      if (lines > 3) {
+      if (lines > 2) {
         setFontSize('text-sm');
       }
     }
@@ -59,8 +58,10 @@ interface PersonalRecordsProps {
 }
 
 export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
-  const records = useMemo(() => calculatePersonalRecords(), []);
+  const allRecords = useMemo(() => calculatePersonalRecords(), []);
   const [isDefaultStyle, setIsDefaultStyle] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [exerciseTypeFilter, setExerciseTypeFilter] = useState<ExerciseType | null>(null);
 
   // Проверяем стиль при монтировании
   useEffect(() => {
@@ -68,7 +69,43 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
     setIsDefaultStyle(!savedFont || savedFont === 'inter');
   }, []);
 
-  if (records.length === 0) {
+  // Фильтрация записей
+  const filteredRecords = useMemo(() => {
+    let result = allRecords;
+
+    // Фильтр по типу упражнения
+    if (exerciseTypeFilter) {
+      result = result.filter(record => {
+        const exerciseType = getExerciseTypeFromBase(record.exerciseName);
+        return exerciseType === exerciseTypeFilter;
+      });
+    }
+
+    // Фильтр по поиску
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(record => 
+        record.exerciseName.toLowerCase().includes(query)
+      );
+    }
+
+    // Сортировка: сначала по тегу, затем по алфавиту
+    const typeOrder: ExerciseType[] = ['chest', 'back', 'legs', 'common'];
+    result = [...result].sort((a, b) => {
+      const typeA = getExerciseTypeFromBase(a.exerciseName);
+      const typeB = getExerciseTypeFromBase(b.exerciseName);
+      const orderA = typeOrder.indexOf(typeA);
+      const orderB = typeOrder.indexOf(typeB);
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+      return a.exerciseName.localeCompare(b.exerciseName, 'ru');
+    });
+
+    return result;
+  }, [allRecords, exerciseTypeFilter, searchQuery]);
+
+  if (allRecords.length === 0) {
     return (
       <div className="bg-zinc-900/50 rounded-lg border border-zinc-800 p-4 text-center">
         <p className="text-zinc-500">У Вас пока нет рекордов</p>
@@ -77,141 +114,186 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
   }
 
   return (
-    <div className="bg-zinc-900/50 rounded-lg border border-zinc-800 overflow-hidden">
-      <ScrollArea>
-        <div className="p-2 space-y-2">
-          {records.map((record, index) => {
-            const exerciseType = getExerciseTypeFromBase(record.exerciseName);
-            const colors = EXERCISE_TYPE_COLORS[exerciseType];
-            
-            const hasWeight = !!record.weightRecord;
-            const hasVolume = !!record.volumeRecord;
-            const singleRecord = (hasWeight && !hasVolume) || (!hasWeight && hasVolume);
-            
-            return (
-              <motion.div
-                key={record.exerciseName}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="grid items-stretch rounded-lg bg-zinc-800 border-l-4 overflow-hidden"
-                style={{ 
-                  borderLeftColor: colors.border,
-                  gridTemplateColumns: '3fr 2fr'
-                }}
-              >
-                {/* Столбец 1: Иконка и название упражнения (3/5) */}
-                <div className="flex items-center gap-3 px-3 py-3">
-                  <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
-                    <ExerciseTypeIcon type={exerciseType} color={colors.border} isDefaultStyle={isDefaultStyle} />
-                  </div>
-                  <ExerciseName name={record.exerciseName} />
-                </div>
+    <div className="flex flex-col min-h-0 gap-4">
+      {/* Search */}
+      <div className="relative">
+        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+        <Input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Поиск упражнения..."
+          className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px] pl-9"
+          autoComplete="off"
+          inputMode="search"
+        />
+      </div>
+
+      {/* Type filter tags */}
+      <div className="flex gap-3">
+        {(['chest', 'back', 'legs', 'common'] as ExerciseType[]).map((type) => {
+          const typeColors = EXERCISE_TYPE_COLORS[type];
+          const isSelected = exerciseTypeFilter === type;
+          return (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setExerciseTypeFilter(isSelected ? null : type)}
+              className="flex items-center justify-center px-2 py-1 rounded-lg text-sm font-medium transition-colors flex-1"
+              style={isSelected ? {
+                backgroundColor: typeColors.bg,
+                color: typeColors.text,
+              } : {
+                backgroundColor: 'rgb(63 63 70 / 0.5)',
+                color: '#d4d4d8',
+              }}
+            >
+              <span className="truncate">{EXERCISE_TYPE_NAMES[type]}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Records list */}
+      <div className="flex-1 min-h-0 bg-zinc-900/50 rounded-lg border border-zinc-800 overflow-hidden">
+        <ScrollArea>
+          <div className="p-2 space-y-2">
+            {filteredRecords.length > 0 ? (
+              filteredRecords.map((record, index) => {
+                const exerciseType = getExerciseTypeFromBase(record.exerciseName);
+                const colors = EXERCISE_TYPE_COLORS[exerciseType];
                 
-                {/* Столбец 2: записи рекордов (2/5) */}
-                <div className={`flex flex-col mr-2 ${singleRecord ? 'justify-center' : ''}`}>
-                  {/* Рекорд по весу */}
-                  {record.weightRecord && (
-                    <>
-                      <button
-                        onClick={() => onNavigateToWorkout?.(
-                          record.weightRecord!.date,
-                          record.exerciseName,
-                          record.weightRecord!.setId
-                        )}
-                        className={`flex items-center gap-2 px-3 text-left hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg ${singleRecord ? '' : 'mt-2'}`}
-                      >
-                        <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium">
-                          {record.weightRecord.value} кг
-                        </span>
-                        <span className="text-zinc-500">×</span>
-                        <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium">
-                          {record.weightRecord.reps}
-                        </span>
-                      </button>
-                      <div className="flex items-center justify-end px-3 text-[10px] text-zinc-600">
-                        По весу
+                const hasWeight = !!record.weightRecord;
+                const hasVolume = !!record.volumeRecord;
+                
+                return (
+                  <motion.div
+                    key={record.exerciseName}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="rounded-lg bg-zinc-800 border-l-4 overflow-hidden"
+                    style={{ 
+                      borderLeftColor: colors.border,
+                    }}
+                  >
+                    {/* Строка 1: Иконка + Название */}
+                    <div className="flex items-center gap-3 px-3 py-2">
+                      <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
+                        <ExerciseTypeIcon type={exerciseType} color={colors.border} isDefaultStyle={isDefaultStyle} />
                       </div>
-                    </>
-                  )}
-                  
-                  {/* Рекорд по объёму */}
-                  {record.volumeRecord && (() => {
-                    const vr = record.volumeRecord;
+                      <ExerciseName name={record.exerciseName} />
+                    </div>
                     
-                    // Форматируем отображение в зависимости от типа
-                    let displayContent: React.ReactNode;
-                    
-                    if (vr.time && vr.time > 0) {
-                      // Упражнение на время
-                      const mins = Math.floor(vr.time / 60);
-                      const secs = vr.time % 60;
-                      const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
-                      displayContent = (
-                        <>
-                          <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium">
-                            {timeStr}
-                          </span>
-                          <span className="text-zinc-500 text-[10px] ml-1">мин</span>
-                        </>
-                      );
-                    } else if (vr.reps > 0 && vr.value === vr.reps) {
-                      // Собственный вес - объём = повторения
-                      displayContent = (
-                        <>
-                          <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium">
-                            {vr.reps}
-                          </span>
-                          <span className="text-zinc-500 text-[10px] ml-1">повт</span>
-                        </>
-                      );
-                    } else if (vr.reps > 0) {
-                      // Вес × повторения
-                      const weight = vr.value / vr.reps;
-                      const weightStr = Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
-                      displayContent = (
-                        <>
-                          <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium">
-                            {weightStr} кг
-                          </span>
-                          <span className="text-zinc-500">×</span>
-                          <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium">
-                            {vr.reps}
-                          </span>
-                        </>
-                      );
-                    } else {
-                      displayContent = (
-                        <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium">
-                          {vr.value}
-                        </span>
-                      );
-                    }
-                    
-                    return (
-                      <>
-                        <button
-                          onClick={() => onNavigateToWorkout?.(
-                            record.volumeRecord!.date,
-                            record.exerciseName,
-                            record.volumeRecord!.setId
+                    {/* Строка 2: Рекорды */}
+                    {(hasWeight || hasVolume) && (
+                      <div className="grid px-3 pb-2" style={{ 
+                        gridTemplateColumns: '48px 1fr 1fr',
+                      }}>
+                        <div></div>
+                        
+                        {/* Рекорд по весу */}
+                        <div className="flex flex-col items-start">
+                          {record.weightRecord && (
+                            <>
+                              <button
+                                onClick={() => onNavigateToWorkout?.(
+                                  record.weightRecord!.date,
+                                  record.exerciseName,
+                                  record.weightRecord!.setId
+                                )}
+                                className="inline-flex items-center gap-1 hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg px-1 -ml-1"
+                              >
+                                <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
+                                  {record.weightRecord.value} кг
+                                </span>
+                                <span className="text-zinc-500 text-sm">×</span>
+                                <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
+                                  {record.weightRecord.reps}
+                                </span>
+                              </button>
+                              <span className="text-[10px] text-zinc-500">По весу</span>
+                            </>
                           )}
-                          className="flex items-center gap-2 px-3 text-left hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg"
-                        >
-                          {displayContent}
-                        </button>
-                        <div className={`flex items-center justify-end px-3 text-[10px] text-zinc-600 ${hasWeight ? 'mb-2' : ''}`}>
-                          По объёму
                         </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </ScrollArea>
+                        
+                        {/* Рекорд по объёму */}
+                        <div className="flex flex-col items-start">
+                          {record.volumeRecord && (() => {
+                            const vr = record.volumeRecord;
+                            
+                            let displayContent: React.ReactNode;
+                            
+                            if (vr.time && vr.time > 0) {
+                              const mins = Math.floor(vr.time / 60);
+                              const secs = vr.time % 60;
+                              const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+                              displayContent = (
+                                <>
+                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                    {timeStr}
+                                  </span>
+                                  <span className="text-zinc-500 text-[10px] ml-1">мин</span>
+                                </>
+                              );
+                            } else if (vr.reps > 0 && vr.value === vr.reps) {
+                              displayContent = (
+                                <>
+                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                    {vr.reps}
+                                  </span>
+                                  <span className="text-zinc-500 text-[10px] ml-1">повт</span>
+                                </>
+                              );
+                            } else if (vr.reps > 0) {
+                              const weight = vr.value / vr.reps;
+                              const weightStr = Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
+                              displayContent = (
+                                <>
+                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                    {weightStr} кг
+                                  </span>
+                                  <span className="text-zinc-500 text-sm">×</span>
+                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                    {vr.reps}
+                                  </span>
+                                </>
+                              );
+                            } else {
+                              displayContent = (
+                                <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                  {vr.value}
+                                </span>
+                              );
+                            }
+                            
+                            return (
+                              <>
+                                <button
+                                  onClick={() => onNavigateToWorkout?.(
+                                    record.volumeRecord!.date,
+                                    record.exerciseName,
+                                    record.volumeRecord!.setId
+                                  )}
+                                  className="inline-flex items-center gap-1 hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg px-1 -ml-1"
+                                >
+                                  {displayContent}
+                                </button>
+                                <span className="text-[10px] text-zinc-500">По объёму</span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })
+            ) : (
+              <p className="text-center text-zinc-500 py-4">Нет упражнений</p>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }

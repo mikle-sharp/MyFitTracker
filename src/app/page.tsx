@@ -154,7 +154,7 @@ export default function Home() {
             </AnimatePresence>
           </TabsContent>
 
-          <TabsContent value="records" className="mt-0">
+          <TabsContent value="records" className="mt-0 flex flex-col" style={{ height: 'calc(100vh - 180px)' }}>
             <PersonalRecords onNavigateToWorkout={handleNavigateToWorkout} />
           </TabsContent>
         </Tabs>
