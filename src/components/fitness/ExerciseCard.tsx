@@ -1261,7 +1261,13 @@ export function ExerciseCard({
 
     if (reps <= 0 && time <= 0) return;
 
-    updateSet(workoutId, exercise.id, setId, reps, weight, time > 0 ? time : undefined, editEquipment ?? undefined, editGrip ?? undefined, editPosition ?? undefined, editWeightUnit);
+    // editEquipment/editGrip/editPosition могут быть:
+    // - null (пользователь выбрал "не выбран" или у подхода не было тэга)
+    // - конкретное значение (пользователь выбрал тэг)
+    // updateSet в storage.ts обрабатывает null как удаление тэга (set.equipmentType = undefined)
+    updateSet(workoutId, exercise.id, setId, reps, weight, time > 0 ? time : undefined,
+      editEquipment, editGrip, editPosition, editWeightUnit
+    );
 
     setEditingSetId(null);
     setEditReps('');
