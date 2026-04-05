@@ -182,6 +182,7 @@ export const calculatePersonalRecords = (): PersonalRecord[] => {
           workoutId: workout.id,
           setId: set.id,
           weightUnit: unit,
+          isBodyweight: set.weight === 0,
         };
 
         if (isBetterVolumeRecord(volume, unitRecords.volumeRecord)) {

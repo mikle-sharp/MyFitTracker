@@ -126,6 +126,7 @@ export interface RecordData {
   workoutId: string;    // ID тренировки
   setId: string;        // ID подхода (уникальный идентификатор)
   weightUnit?: WeightUnit; // единица измерения веса
+  isBodyweight?: boolean;  // true если собственный вес (weight=0)
 }
 
 // Рекорды для одной единицы измерения

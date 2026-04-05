@@ -240,7 +240,8 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                             let displayContent: React.ReactNode;
 
                             // Вес + время (без повторений): volume = weight * time
-                            if (vr.time && vr.time > 0 && vr.reps === 0) {
+                            // Но НЕ bodyweight (тогда weight=0, и это просто время)
+                            if (vr.time && vr.time > 0 && vr.reps === 0 && !vr.isBodyweight) {
                               const weight = vr.value / vr.time;
                               const weightStr = Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
                               const mins = Math.floor(vr.time / 60);
@@ -258,16 +259,16 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                                 </>
                               );
                             } else if (vr.time && vr.time > 0) {
-                              // Только время (без веса)
+                              // Только время (без веса) - bodyweight или просто время
                               const mins = Math.floor(vr.time / 60);
                               const secs = vr.time % 60;
                               const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
                               displayContent = (
                                 <>
+                                  <ClockIcon className="w-2 h-2 text-zinc-500" />
                                   <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
                                     {timeStr}
                                   </span>
-                                  <span className="text-zinc-500 text-[10px] ml-1">мин</span>
                                 </>
                               );
                             } else if (vr.reps > 0 && vr.value === vr.reps) {
