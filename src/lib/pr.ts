@@ -24,15 +24,28 @@ const isSameRecord = (rec1: RecordData | null, rec2: RecordData | null): boolean
 const isBetterWeightRecord = (
   newWeight: number,
   newReps: number,
+  newTime: number | undefined,
   currentRecord: RecordData | null
 ): boolean => {
   if (!currentRecord) return newWeight > 0;
-  
+
   // Больше вес = лучше
   if (newWeight > currentRecord.value) return true;
-  // При равном весе больше повторений = лучше
-  if (newWeight === currentRecord.value && newReps > currentRecord.reps) return true;
-  
+
+  // При равном весе сравниваем по времени или повторениям
+  if (newWeight === currentRecord.value) {
+    // Если оба подхода на время - больше время = лучше
+    if (newTime && currentRecord.time) {
+      return newTime > currentRecord.time;
+    }
+    // Если только новый на время - он лучше (время ценнее повторений для одной категории)
+    if (newTime && !currentRecord.time) {
+      return true;
+    }
+    // Иначе больше повторений = лучше
+    if (newReps > currentRecord.reps) return true;
+  }
+
   return false;
 };
 
@@ -46,12 +59,16 @@ const isBetterVolumeRecord = (
 };
 
 // Расчёт "объёма" для подхода
-// - Для подходов с весом: вес × повторения
+// - Для подходов с весом и повторениями: вес × повторения
+// - Для подходов с весом и временем (без повторений): вес × время
 // - Для собственного веса (weight=0): повторения
-// - Для времени: время в секундах
+// - Для времени без веса: время в секундах
 const calculateVolume = (set: WorkoutSet): number => {
-  if (set.weight > 0) {
+  if (set.weight > 0 && set.reps > 0) {
     return set.weight * set.reps;
+  }
+  if (set.weight > 0 && set.time && set.time > 0) {
+    return set.weight * set.time; // вес × время для упражнений на время с отягощением
   }
   if (set.reps > 0) {
     return set.reps; // собственный вес
@@ -140,7 +157,7 @@ export const calculatePersonalRecords = (): PersonalRecord[] => {
           weightUnit: unit,
         };
 
-        if (isBetterWeightRecord(set.weight, set.reps, unitRecords.weightRecord)) {
+        if (isBetterWeightRecord(set.weight, set.reps, set.time, unitRecords.weightRecord)) {
           if (unitRecords.weightRecord) {
             weightRecordHistoryByUnit[unit].push(unitRecords.weightRecord);
           }

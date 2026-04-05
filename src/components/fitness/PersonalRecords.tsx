@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { EXERCISE_TYPE_COLORS, EXERCISE_TYPE_NAMES, ExerciseType, WEIGHT_UNITS, WeightUnit } from '@/lib/types';
 import { getExerciseTypeFromBase } from '@/lib/storage';
-import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, SearchIcon } from '@/components/icons/Icons';
+import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, SearchIcon, ClockIcon } from '@/components/icons/Icons';
 
 // Компонент иконки типа упражнения
 function ExerciseTypeIcon({ type, color, isDefaultStyle }: { type: ExerciseType; color: string; isDefaultStyle: boolean }) {
@@ -211,10 +211,21 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                                 <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
                                   {weightRecord.value} {WEIGHT_UNITS[unit].short}
                                 </span>
-                                <span className="text-zinc-500 text-sm">×</span>
-                                <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
-                                  {weightRecord.reps}
-                                </span>
+                                {weightRecord.time && weightRecord.time > 0 ? (
+                                  <>
+                                    <ClockIcon className="w-2 h-2 text-zinc-500" />
+                                    <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
+                                      {Math.floor(weightRecord.time / 60)}:{(weightRecord.time % 60).toString().padStart(2, '0')}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="text-zinc-500 text-sm">×</span>
+                                    <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
+                                      {weightRecord.reps}
+                                    </span>
+                                  </>
+                                )}
                               </button>
                               <span className="text-[10px] text-zinc-500">По весу</span>
                             </>
@@ -225,10 +236,29 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                         <div className="flex flex-col items-start">
                           {volumeRecord && (() => {
                             const vr = volumeRecord;
-                            
+
                             let displayContent: React.ReactNode;
-                            
-                            if (vr.time && vr.time > 0) {
+
+                            // Вес + время (без повторений): volume = weight * time
+                            if (vr.time && vr.time > 0 && vr.reps === 0) {
+                              const weight = vr.value / vr.time;
+                              const weightStr = Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
+                              const mins = Math.floor(vr.time / 60);
+                              const secs = vr.time % 60;
+                              const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+                              displayContent = (
+                                <>
+                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                    {weightStr} {WEIGHT_UNITS[unit].short}
+                                  </span>
+                                  <ClockIcon className="w-2 h-2 text-zinc-500" />
+                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                    {timeStr}
+                                  </span>
+                                </>
+                              );
+                            } else if (vr.time && vr.time > 0) {
+                              // Только время (без веса)
                               const mins = Math.floor(vr.time / 60);
                               const secs = vr.time % 60;
                               const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -270,7 +300,7 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                                 </span>
                               );
                             }
-                            
+
                             return (
                               <>
                                 <button
