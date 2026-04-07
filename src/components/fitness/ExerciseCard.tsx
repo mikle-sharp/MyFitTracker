@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Trash2Icon, PlusIcon, CheckIcon, ClockIcon, RefreshCwIcon, UserIcon, WeightIcon, ChevronUpIcon, ChevronDownIcon, XIcon, ZapIcon, Repeat2Icon, TrendingUpIcon } from '@/components/icons/Icons';
+import { Trash2Icon, PlusIcon, CheckIcon, ClockIcon, RefreshCwIcon, UserIcon, WeightIcon, ChevronUpIcon, ChevronDownIcon, XIcon, ZapIcon, Repeat2Icon, TrendingUpIcon, HistoryIcon } from '@/components/icons/Icons';
 import { Exercise, WorkoutSet, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EquipmentType, GripType, PositionType, EQUIPMENT_TYPES, GRIP_TYPES, POSITION_TYPES, WeightUnit, WEIGHT_UNITS } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { useFitnessStore } from '@/lib/store';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { getPreviousSetData, getExerciseTypeFromBase } from '@/lib/storage';
+import { ExerciseHistoryModal } from './ExerciseHistoryModal';
 
 // Компонент для названия упражнения с авто-размером шрифта
 function ExerciseNameHeader({ name }: { name: string }) {
@@ -75,10 +76,17 @@ const TAG_ACTIVE_COLORS = {
   totalVolume: { bg: 'rgb(115, 66, 0)', text: 'rgb(255, 185, 0)' },
 };
 
-function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exerciseName, currentUnit, onNavigateToDate }: ExerciseStatsChartProps) {
+export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exerciseName, currentUnit, onNavigateToDate }: ExerciseStatsChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDefaultStyle, setIsDefaultStyle] = useState(true);
+
+  // Проверяем стиль при монтировании
+  useEffect(() => {
+    const savedFont = localStorage.getItem('app-font');
+    setIsDefaultStyle(!savedFont || savedFont === 'inter');
+  }, []);
 
   // Состояние видимости графиков
   const [showMaxWeight, setShowMaxWeight] = useState(true);
@@ -100,6 +108,13 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
     return data.filter(d => d.weightUnit === selectedUnit);
   }, [data, selectedUnit]);
 
+  // Определяем доступные единицы измерения (те, для которых есть данные)
+  const availableUnits = useMemo(() => {
+    const units = new Set<WeightUnit>();
+    data.forEach(d => units.add(d.weightUnit));
+    return units;
+  }, [data]);
+
   // Состояние для диапазона отображаемых данных
   // Показываем последние N тренировок по умолчанию
   const [rangeStart, setRangeStart] = useState(Math.max(0, filteredData.length - DEFAULT_VISIBLE_COUNT));
@@ -109,7 +124,7 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
   const lastPinchDistanceRef = useRef<number | null>(null);
   const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
 
-  // Refs для тройного клика
+  // Refs для двойного клика
   const clickCountRef = useRef(0);
   const lastClickTimeRef = useRef(0);
 
@@ -291,15 +306,15 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
   // Выбранные данные
   const selectedData = selectedIndex !== null ? visibleData[selectedIndex] : null;
   
-  // Обработчик тройного клика по маркеру
-  const handleMarkerClick = () => {
+  // Обработчик двойного клика по маркеру - открывает мини-карточку с подсветкой подхода
+  const handleMarkerDoubleClick = () => {
     if (!onNavigateToDate || !selectedData) return;
     
     const now = Date.now();
     const timeDiff = now - lastClickTimeRef.current;
     
-    // Если прошло меньше 500мс с последнего клика - увеличиваем счётчик
-    if (timeDiff < 500) {
+    // Если прошло меньше 400мс с последнего клика - увеличиваем счётчик
+    if (timeDiff < 400) {
       clickCountRef.current += 1;
     } else {
       // Иначе сбрасываем счётчик
@@ -308,8 +323,8 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
     
     lastClickTimeRef.current = now;
     
-    // Если три клика - навигируем
-    if (clickCountRef.current >= 3) {
+    // Если два клика - открываем мини-карточку
+    if (clickCountRef.current >= 2) {
       onNavigateToDate(selectedData.date, exerciseName, selectedData.maxWeightSetId);
       clickCountRef.current = 0;
     }
@@ -350,21 +365,27 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
           <div className="text-sm text-zinc-400">{formatDateShort(selectedData.date)}</div>
           {/* Селектор единиц */}
           <div className="flex gap-1 ml-2">
-            {(['kg', 'lb', 'lvl'] as WeightUnit[]).map(unit => (
-              <button
-                key={unit}
-                type="button"
-                onClick={() => setSelectedUnit(unit)}
-                className={cn(
-                  'w-7 h-5 flex items-center justify-center rounded-lg text-[10px] transition-colors',
-                  selectedUnit === unit
-                    ? 'bg-zinc-600 text-white'
-                    : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700'
-                )}
-              >
-                {WEIGHT_UNITS[unit].short}
-              </button>
-            ))}
+            {(['kg', 'lb', 'lvl'] as WeightUnit[]).map(unit => {
+              const isAvailable = availableUnits.has(unit);
+              return (
+                <button
+                  key={unit}
+                  type="button"
+                  onClick={() => isAvailable && setSelectedUnit(unit)}
+                  disabled={!isAvailable}
+                  className={cn(
+                    'w-7 h-5 flex items-center justify-center rounded-lg text-[10px] transition-colors',
+                    selectedUnit === unit
+                      ? 'bg-zinc-600 text-white'
+                      : isAvailable
+                        ? 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700'
+                        : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'
+                  )}
+                >
+                  {WEIGHT_UNITS[unit].short}
+                </button>
+              );
+            })}
           </div>
           <div className="flex-1"></div>
           <div className="flex gap-3 text-sm">
@@ -445,83 +466,139 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
                 opacity="0.7"
               />
             )}
-            
-            {/* Точки на графике - общий объём */}
-            {showTotalVolume && visibleData.map((d, i) => {
-              if (d.totalVolume <= 0) return null;
-              const x = getXPosition(i);
-              const y = getYPosition(d.totalVolume);
-              const isSelected = i === selectedIndex;
-              
-              return (
-                <circle
-                  key={`volume-${i}`}
-                  cx={x}
-                  cy={y}
-                  r={isSelected ? 1.2 : 0.6}
-                  fill={isSelected ? CHART_COLORS.totalVolume : '#71717a'}
-                  className="transition-all duration-150 cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedIndex(i);
-                  }}
-                />
-              );
-            })}
-            
-            {/* Точки на графике - вес пользователя */}
-            {showUserWeight && visibleData.map((d, i) => {
-              if (!d.userWeight || d.userWeight <= 0) return null;
-              const x = getXPosition(i);
-              const y = getYPosition(d.userWeight);
-              const isSelected = i === selectedIndex;
-              
-              return (
-                <circle
-                  key={`userweight-${i}`}
-                  cx={x}
-                  cy={y}
-                  r={isSelected ? 1.2 : 0.6}
-                  fill={isSelected ? CHART_COLORS.userWeight : '#71717a'}
-                  className="transition-all duration-150 cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedIndex(i);
-                  }}
-                />
-              );
-            })}
-            
-            {/* Точки на графике - максимальный вес */}
-            {showMaxWeight && visibleData.map((d, i) => {
-              if (d.maxWeight <= 0) return null;
-              const x = getXPosition(i);
-              const y = getYPosition(d.maxWeight);
-              const isSelected = i === selectedIndex;
-              const isCurrent = d.workoutId === currentWorkoutId;
-              
-              return (
-                <circle
-                  key={`maxweight-${i}`}
-                  cx={x}
-                  cy={y}
-                  r={isSelected ? 1.2 : 0.6}
-                  fill={isSelected || isCurrent ? CHART_COLORS.maxWeight : '#71717a'}
-                  className="transition-all duration-150 cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedIndex(i);
-                  }}
-                />
-              );
-            })}
           </svg>
 
-          {/* Выбранная точка - максимальный вес */}
+          {/* Точки на графике - общий объём (div для сохранения пропорций) */}
+          {showTotalVolume && visibleData.map((d, i) => {
+            if (d.totalVolume <= 0) return null;
+            const isSelected = i === selectedIndex;
+            const activeSize = 8; // w-2 = 8px
+            const inactiveSize = activeSize / 2;
+            const size = isSelected ? activeSize : inactiveSize;
+
+            // Инвертированные цвета для неактивных: fill=фон, stroke=цвет графика
+            const style: React.CSSProperties = isSelected ? {
+              left: `${getXPosition(i)}%`,
+              top: `${getYPosition(d.totalVolume)}%`,
+              width: size,
+              height: size,
+              backgroundColor: CHART_COLORS.totalVolume,
+              border: '2px solid #27272a',
+            } : {
+              left: `${getXPosition(i)}%`,
+              top: `${getYPosition(d.totalVolume)}%`,
+              width: size,
+              height: size,
+              backgroundColor: '#27272a',
+              border: `1px solid ${CHART_COLORS.totalVolume}`,
+            };
+
+            return (
+              <div
+                key={`volume-${i}`}
+                onClick={() => setSelectedIndex(i)}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer ${isDefaultStyle ? 'rounded-full' : 'rounded-sm'}`}
+                style={style}
+              />
+            );
+          })}
+          
+          {/* Точки на графике - вес пользователя (div для сохранения пропорций) */}
+          {showUserWeight && visibleData.map((d, i) => {
+            if (!d.userWeight || d.userWeight <= 0) return null;
+            const isSelected = i === selectedIndex;
+            const activeSize = 8;
+            const inactiveSize = activeSize / 2;
+            const size = isSelected ? activeSize : inactiveSize;
+
+            const style: React.CSSProperties = isSelected ? {
+              left: `${getXPosition(i)}%`,
+              top: `${getYPosition(d.userWeight!)}%`,
+              width: size,
+              height: size,
+              backgroundColor: CHART_COLORS.userWeight,
+              border: '2px solid #27272a',
+            } : {
+              left: `${getXPosition(i)}%`,
+              top: `${getYPosition(d.userWeight!)}%`,
+              width: size,
+              height: size,
+              backgroundColor: '#27272a',
+              border: `1px solid ${CHART_COLORS.userWeight}`,
+            };
+
+            return (
+              <div
+                key={`userweight-${i}`}
+                onClick={() => setSelectedIndex(i)}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer ${isDefaultStyle ? 'rounded-full' : 'rounded-sm'}`}
+                style={style}
+              />
+            );
+          })}
+          
+          {/* Точки на графике - максимальный вес (div для сохранения пропорций) */}
+          {showMaxWeight && visibleData.map((d, i) => {
+            if (d.maxWeight <= 0) return null;
+            const isSelected = i === selectedIndex;
+            const isCurrent = d.workoutId === currentWorkoutId;
+            const isActive = isSelected || isCurrent;
+            const activeSize = 8;
+            const inactiveSize = activeSize / 2;
+            const size = isActive ? activeSize : inactiveSize;
+
+            const style: React.CSSProperties = isActive ? {
+              left: `${getXPosition(i)}%`,
+              top: `${getYPosition(d.maxWeight)}%`,
+              width: size,
+              height: size,
+              backgroundColor: CHART_COLORS.maxWeight,
+              border: '2px solid #27272a',
+            } : {
+              left: `${getXPosition(i)}%`,
+              top: `${getYPosition(d.maxWeight)}%`,
+              width: size,
+              height: size,
+              backgroundColor: '#27272a',
+              border: `1px solid ${CHART_COLORS.maxWeight}`,
+            };
+
+            return (
+              <div
+                key={`maxweight-${i}`}
+                onClick={() => setSelectedIndex(i)}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer ${isDefaultStyle ? 'rounded-full' : 'rounded-sm'}`}
+                style={style}
+              />
+            );
+          })}
+
+          {/* Выбранная точка - максимальный вес (большой маркер) */}
           {selectedIndex !== null && selectedData && selectedData.maxWeight > 0 && showMaxWeight && (
             <div
-              onClick={handleMarkerClick}
-              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                if (onNavigateToDate && selectedData) {
+                  onNavigateToDate(selectedData.date, exerciseName, selectedData.maxWeightSetId);
+                }
+              }}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+                const now = Date.now();
+                if (now - lastClickTimeRef.current < 300) {
+                  // Двойной тап
+                  if (onNavigateToDate && selectedData) {
+                    onNavigateToDate(selectedData.date, exerciseName, selectedData.maxWeightSetId);
+                  }
+                  lastClickTimeRef.current = 0;
+                } else {
+                  lastClickTimeRef.current = now;
+                }
+              }}
+              className={`absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer z-10 ${isDefaultStyle ? 'rounded-full' : 'rounded-sm'}`}
               style={{
                 left: `${getXPosition(selectedIndex)}%`,
                 top: `${getYPosition(selectedData.maxWeight)}%`,
@@ -531,11 +608,31 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
             />
           )}
 
-          {/* Выбранная точка - вес пользователя */}
+          {/* Выбранная точка - вес пользователя (большой маркер) */}
           {selectedIndex !== null && selectedData && selectedData.userWeight && selectedData.userWeight > 0 && showUserWeight && (
             <div
-              onClick={handleMarkerClick}
-              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                if (onNavigateToDate && selectedData) {
+                  onNavigateToDate(selectedData.date, exerciseName, selectedData.maxWeightSetId);
+                }
+              }}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+                const now = Date.now();
+                if (now - lastClickTimeRef.current < 300) {
+                  if (onNavigateToDate && selectedData) {
+                    onNavigateToDate(selectedData.date, exerciseName, selectedData.maxWeightSetId);
+                  }
+                  lastClickTimeRef.current = 0;
+                } else {
+                  lastClickTimeRef.current = now;
+                }
+              }}
+              className={`absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer z-10 ${isDefaultStyle ? 'rounded-full' : 'rounded-sm'}`}
               style={{
                 left: `${getXPosition(selectedIndex)}%`,
                 top: `${getYPosition(selectedData.userWeight)}%`,
@@ -545,11 +642,31 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
             />
           )}
 
-          {/* Выбранная точка - общий объём */}
+          {/* Выбранная точка - общий объём (большой маркер) */}
           {selectedIndex !== null && selectedData && selectedData.totalVolume > 0 && showTotalVolume && (
             <div
-              onClick={handleMarkerClick}
-              className="absolute w-4 h-4 rounded-full -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                if (onNavigateToDate && selectedData) {
+                  onNavigateToDate(selectedData.date, exerciseName, selectedData.maxWeightSetId);
+                }
+              }}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+                const now = Date.now();
+                if (now - lastClickTimeRef.current < 300) {
+                  if (onNavigateToDate && selectedData) {
+                    onNavigateToDate(selectedData.date, exerciseName, selectedData.maxWeightSetId);
+                  }
+                  lastClickTimeRef.current = 0;
+                } else {
+                  lastClickTimeRef.current = now;
+                }
+              }}
+              className={`absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 transition-all duration-150 cursor-pointer z-10 ${isDefaultStyle ? 'rounded-full' : 'rounded-sm'}`}
               style={{
                 left: `${getXPosition(selectedIndex)}%`,
                 top: `${getYPosition(selectedData.totalVolume)}%`,
@@ -562,11 +679,11 @@ function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, exercise
       </div>
 
       {/* Даты по оси X - выровнены с графиком */}
-      <div className="flex items-center">
-        <div className="w-[40px] pr-2" style={{ visibility: 'hidden' }}>
+      <div className="flex items-center -mt-1">
+        <div className="w-[40px]" style={{ visibility: 'hidden' }}>
           <span className="text-xs">00000</span>
         </div>
-        <div className="flex-1 flex text-xs text-zinc-500 leading-tight">
+        <div className="flex-1 flex text-xs text-zinc-500 leading-tight px-0">
           {visibleData.length > 0 && (
             <>
               <span>{formatDisplayDate(visibleData[0].date)}</span>
@@ -869,6 +986,14 @@ export function ExerciseCard({
   
   // State for statistics modal
   const [showStats, setShowStats] = useState(false);
+
+  // State for history modal
+  const [showHistory, setShowHistory] = useState(false);
+
+  // State for history modal from stats (without swipe, with highlight)
+  const [showHistoryFromStats, setShowHistoryFromStats] = useState(false);
+  const [historyFromDate, setHistoryFromDate] = useState<string>('');
+  const [historyHighlightSetId, setHistoryHighlightSetId] = useState<string | undefined>(undefined);
 
   // Drag-and-drop state
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -1467,11 +1592,11 @@ export function ExerciseCard({
                 <div className="flex items-center gap-3">
                   <Button
                     variant="ghost"
-                    onClick={() => setShowStats(true)}
+                    onClick={() => setShowHistory(true)}
                     className="text-zinc-500 hover:text-white active:text-white hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent h-7 w-7 p-0"
-                    title="Статистика упражнения"
+                    title="История упражнения"
                   >
-                    <TrendingUpIcon className="w-4 h-4" />
+                    <HistoryIcon className="w-4 h-4" />
                   </Button>
 
                   {onReplace && (
@@ -2326,10 +2451,10 @@ export function ExerciseCard({
                 })()}
                 onNavigateToDate={(date, exerciseName, setId) => {
                   setShowStats(false);
-                  setSelectedDate(date);
-                  if (setId && onHighlightSet) {
-                    onHighlightSet(exerciseName, setId);
-                  }
+                  // Открываем мини-карточку без свайпа, с подсветкой подхода
+                  setHistoryFromDate(date);
+                  setHistoryHighlightSetId(setId);
+                  setShowHistoryFromStats(true);
                 }}
               />
             ) : (
@@ -2525,6 +2650,32 @@ export function ExerciseCard({
         </>,
         document.body
       )}
+
+      {/* Exercise history modal */}
+      <ExerciseHistoryModal
+        open={showHistory}
+        onOpenChange={setShowHistory}
+        exerciseName={exercise.name}
+        enableSwipe={true}
+        onNavigateToDate={(date) => {
+          setShowHistory(false);
+          setSelectedDate(date);
+        }}
+      />
+
+      {/* Exercise history modal from stats (no swipe, with highlight) */}
+      <ExerciseHistoryModal
+        open={showHistoryFromStats}
+        onOpenChange={setShowHistoryFromStats}
+        exerciseName={exercise.name}
+        initialDate={historyFromDate}
+        highlightSetId={historyHighlightSetId}
+        enableSwipe={false}
+        onNavigateToDate={(date) => {
+          setShowHistoryFromStats(false);
+          setSelectedDate(date);
+        }}
+      />
     </>
   );
 }

@@ -7,7 +7,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { EXERCISE_TYPE_COLORS, EXERCISE_TYPE_NAMES, ExerciseType, WEIGHT_UNITS, WeightUnit } from '@/lib/types';
 import { getExerciseTypeFromBase } from '@/lib/storage';
-import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, SearchIcon, ClockIcon } from '@/components/icons/Icons';
+import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, SearchIcon, ClockIcon, TrendingUpIcon } from '@/components/icons/Icons';
+import { ExerciseStatsChart } from './ExerciseCard';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { XIcon } from '@/components/icons/Icons';
+import { useFitnessStore } from '@/lib/store';
+import { ExerciseHistoryModal } from './ExerciseHistoryModal';
 
 // Компонент иконки типа упражнения
 function ExerciseTypeIcon({ type, color, isDefaultStyle }: { type: ExerciseType; color: string; isDefaultStyle: boolean }) {
@@ -57,11 +62,32 @@ interface PersonalRecordsProps {
   onNavigateToWorkout?: (date: string, exerciseName: string, setId: string) => void;
 }
 
+// Интерфейс для данных графика
+interface ChartDataPoint {
+  date: string;
+  maxWeight: number;
+  maxWeightSetId?: string;
+  userWeight?: number;
+  totalVolume: number;
+  workoutId: string;
+  weightUnit: WeightUnit;
+}
+
 export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
   const allRecords = useMemo(() => calculatePersonalRecords(), []);
   const [isDefaultStyle, setIsDefaultStyle] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [exerciseTypeFilter, setExerciseTypeFilter] = useState<ExerciseType | null>(null);
+  
+  // Состояние для статистики
+  const [statsExercise, setStatsExercise] = useState<string | null>(null);
+  const { workouts } = useFitnessStore();
+
+  // Состояние для мини-карточки из статистики
+  const [showHistoryFromStats, setShowHistoryFromStats] = useState(false);
+  const [historyFromDate, setHistoryFromDate] = useState<string>('');
+  const [historyHighlightSetId, setHistoryHighlightSetId] = useState<string | undefined>(undefined);
+  const [historyExerciseName, setHistoryExerciseName] = useState<string>('');
 
   // Проверяем стиль при монтировании
   useEffect(() => {
@@ -104,6 +130,56 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
 
     return result;
   }, [allRecords, exerciseTypeFilter, searchQuery]);
+
+  // Получаем историю упражнения для статистики
+  const statsExerciseHistory = useMemo(() => {
+    if (!statsExercise || !workouts) return [];
+
+    const history: ChartDataPoint[] = [];
+
+    workouts.forEach(w => {
+      const exerciseInWorkout = w.exercises.find(e => e.name === statsExercise);
+      if (exerciseInWorkout && exerciseInWorkout.sets.length > 0) {
+        const setsByUnit = new Map<WeightUnit, typeof exerciseInWorkout.sets>();
+
+        exerciseInWorkout.sets.forEach(set => {
+          if (set.isWarmup || set.weight === 0) return;
+          const unit = set.weightUnit || 'kg';
+          const existing = setsByUnit.get(unit) || [];
+          existing.push(set);
+          setsByUnit.set(unit, existing);
+        });
+
+        setsByUnit.forEach((sets, unit) => {
+          const maxWeight = Math.max(...sets.map(s => s.weight));
+          const maxWeightSet = sets.find(s => s.weight === maxWeight);
+          const totalVolume = sets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+
+          history.push({
+            date: w.date,
+            maxWeight,
+            maxWeightSetId: maxWeightSet?.id,
+            userWeight: w.weight,
+            totalVolume,
+            workoutId: w.id,
+            weightUnit: unit,
+          });
+        });
+      }
+    });
+
+    return history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [statsExercise, workouts]);
+
+  // Получаем цвета для упражнения статистики
+  const statsExerciseType = statsExercise ? getExerciseTypeFromBase(statsExercise) : 'common';
+  const statsExerciseTypeToWorkoutType: Record<ExerciseType, 'chest' | 'back' | 'legs' | 'fullbody'> = {
+    chest: 'chest',
+    back: 'back',
+    legs: 'legs',
+    common: 'fullbody',
+  };
+  const statsColors = EXERCISE_TYPE_COLORS[statsExerciseType];
 
   if (allRecords.length === 0) {
     return (
@@ -182,8 +258,8 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                     }}
                   >
                     {/* Строка 1: Иконка + Название */}
-                    <div className="flex items-center gap-3 px-3 py-2">
-                      <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
+                    <div className="flex items-start gap-3 px-3 py-2">
+                      <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}>
                         <ExerciseTypeIcon type={exerciseType} color={colors.border} isDefaultStyle={isDefaultStyle} />
                       </div>
                       <ExerciseName name={record.exerciseName} />
@@ -194,7 +270,18 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                       <div key={unit} className="grid px-3 pb-2" style={{ 
                         gridTemplateColumns: '48px 1fr 1fr',
                       }}>
-                        <div></div>
+                        {/* Кнопка статистики по центру под иконкой */}
+                        <div className="flex justify-start">
+                          <button
+                            type="button"
+                            data-slot="button"
+                            onClick={() => setStatsExercise(record.exerciseName)}
+                            className="inline-flex items-center justify-center shrink-0 text-zinc-500 hover:text-white active:text-white hover:!bg-transparent active:!bg-transparent h-7 w-7 p-0 ml-1"
+                            title="Статистика упражнения"
+                          >
+                            <TrendingUpIcon className="w-4 h-4" />
+                          </button>
+                        </div>
                         
                         {/* Рекорд по весу */}
                         <div className="flex flex-col items-start">
@@ -330,6 +417,62 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
           </div>
         </ScrollArea>
       </div>
+
+      {/* Statistics modal */}
+      <Dialog open={!!statsExercise} onOpenChange={(open) => !open && setStatsExercise(null)}>
+        <DialogContent
+          className="bg-zinc-900 border !p-0 !gap-0 max-w-[95vw]"
+          style={{ borderColor: statsColors.border }}
+          showCloseButton={false}
+        >
+          <div className="flex items-center justify-between px-4 pt-4">
+            <DialogTitle className="text-white font-medium text-base">Динамика весов упражнения</DialogTitle>
+            <button
+              type="button"
+              onClick={() => setStatsExercise(null)}
+              className="text-zinc-500 hover:text-white active:text-white transition-colors p-1"
+              data-slot="dialog-close"
+            >
+              <XIcon className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-4">
+            {statsExerciseHistory.length > 0 ? (
+              <ExerciseStatsChart
+                data={statsExerciseHistory}
+                color={statsColors.border}
+                textColor={statsColors.text}
+                currentWorkoutId=""
+                exerciseName={statsExercise || ''}
+                currentUnit="kg"
+                onNavigateToDate={(date, exerciseName, setId) => {
+                  // Сначала сохраняем имя упражнения, потом закрываем статистику
+                  setHistoryExerciseName(exerciseName);
+                  setHistoryFromDate(date);
+                  setHistoryHighlightSetId(setId);
+                  setStatsExercise(null); // Закрываем статистику
+                  setShowHistoryFromStats(true);
+                }}
+              />
+            ) : (
+              <div className="text-center py-8 text-zinc-500">
+                Нет данных для отображения
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Exercise history modal from stats */}
+      <ExerciseHistoryModal
+        open={showHistoryFromStats}
+        onOpenChange={setShowHistoryFromStats}
+        exerciseName={historyExerciseName}
+        initialDate={historyFromDate}
+        highlightSetId={historyHighlightSetId}
+        enableSwipe={false}
+      />
     </div>
   );
 }

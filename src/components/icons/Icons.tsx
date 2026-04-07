@@ -2891,3 +2891,51 @@ export function TodayIcon({ className, style }: IconProps) {
     </svg>
   );
 }
+
+export function HistoryIcon({ className, style }: IconProps) {
+  const isRetro = useIconStyle();
+
+  if (isRetro) {
+    return (
+      <svg className={className} viewBox="0 0 13 13" fill="none" style={{ ...style, stroke: undefined }}>
+        <rect fill="currentColor" x="6" y="1" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="1" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="1" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="3" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="3" width="1" height="1"/>
+        <rect fill="currentColor" x="3" y="4" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="4" width="1" height="1"/>
+        <rect fill="currentColor" x="3" y="5" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="5" width="1" height="1"/>
+        <rect fill="currentColor" x="3" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="3" y="7" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="7" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="7" width="1" height="1"/>
+        <rect fill="currentColor" x="3" y="8" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="8" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="8" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="9" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="9" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="11" width="1" height="1"/>
+      </svg>
+    );
+  }
+
+  return (
+    <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 8 14"/>
+      <path d="M2 12h2"/>
+      <path d="M12 2v2"/>
+    </svg>
+  );
+}
