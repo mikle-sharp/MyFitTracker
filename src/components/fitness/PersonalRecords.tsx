@@ -271,12 +271,12 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                         gridTemplateColumns: '48px 1fr 1fr',
                       }}>
                         {/* Кнопка статистики по центру под иконкой */}
-                        <div className="flex justify-start">
+                        <div className="w-9 h-9 flex items-center justify-center shrink-0">
                           <button
                             type="button"
                             data-slot="button"
                             onClick={() => setStatsExercise(record.exerciseName)}
-                            className="inline-flex items-center justify-center shrink-0 text-zinc-500 hover:text-white active:text-white hover:!bg-transparent active:!bg-transparent h-7 w-7 p-0 ml-1"
+                            className="inline-flex items-center justify-center shrink-0 text-zinc-500 hover:text-white active:text-white hover:!bg-transparent active:!bg-transparent p-0 w-7 h-7"
                             title="Статистика упражнения"
                           >
                             <TrendingUpIcon className="w-4 h-4" />

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { XIcon, ClockIcon } from '@/components/icons/Icons';
+import { XIcon, ClockIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/icons/Icons';
 import { Exercise, Workout, WorkoutSet, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EQUIPMENT_TYPES, GRIP_TYPES, POSITION_TYPES, WEIGHT_UNITS, WeightUnit } from '@/lib/types';
 import { useFitnessStore } from '@/lib/store';
 import { getExerciseTypeFromBase } from '@/lib/storage';
@@ -288,13 +288,13 @@ export function ExerciseHistoryModal({
               }}
               disabled={currentIndex >= workoutHistory.length - 1}
               className={cn(
-                "text-xs px-2 py-1 rounded transition-colors",
+                "p-1 rounded transition-colors",
                 currentIndex < workoutHistory.length - 1
                   ? "text-zinc-500 hover:text-white hover:bg-zinc-800 cursor-pointer"
                   : "text-zinc-700 cursor-default"
               )}
             >
-              ◀
+              <ChevronLeftIcon className="w-4 h-4" />
             </button>
             <span className="text-xs text-zinc-500">
               {workoutHistory.length - currentIndex} из {workoutHistory.length}
@@ -309,13 +309,13 @@ export function ExerciseHistoryModal({
               }}
               disabled={currentIndex <= 0}
               className={cn(
-                "text-xs px-2 py-1 rounded transition-colors",
+                "p-1 rounded transition-colors",
                 currentIndex > 0
                   ? "text-zinc-500 hover:text-white hover:bg-zinc-800 cursor-pointer"
                   : "text-zinc-700 cursor-default"
               )}
             >
-              ▶
+              <ChevronRightIcon className="w-4 h-4" />
             </button>
           </div>
         )}

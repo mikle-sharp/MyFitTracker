@@ -327,6 +327,58 @@ export function ChevronUpIcon({ className, style }: IconProps) {
   );
 }
 
+export function ChevronLeftIcon({ className, style }: IconProps) {
+  const isRetro = useIconStyle();
+
+  if (isRetro) {
+    return (
+      <svg className={className} viewBox="0 0 17 17" fill="none" style={{ ...style, stroke: undefined }}>
+        <rect fill="currentColor" x="6" y="9" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="8" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="7" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="5" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="12" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="4" width="1" height="1"/>
+      </svg>
+    );
+  }
+
+  return (
+    <svg className={className} style={style} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path stroke="currentColor" fill="none" d="M10,4L6,8l4,4"/>
+    </svg>
+  );
+}
+
+export function ChevronRightIcon({ className, style }: IconProps) {
+  const isRetro = useIconStyle();
+
+  if (isRetro) {
+    return (
+      <svg className={className} viewBox="0 0 17 17" fill="none" style={{ ...style, stroke: undefined }}>
+        <rect fill="currentColor" x="10" y="9" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="8" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="7" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="5" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="12" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="4" width="1" height="1"/>
+      </svg>
+    );
+  }
+
+  return (
+    <svg className={className} style={style} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path stroke="currentColor" fill="none" d="M6,12l4-4L6,4"/>
+    </svg>
+  );
+}
+
 export function CopyIcon({ className, style }: IconProps) {
   const isRetro = useIconStyle();
 
@@ -2897,45 +2949,60 @@ export function HistoryIcon({ className, style }: IconProps) {
 
   if (isRetro) {
     return (
-      <svg className={className} viewBox="0 0 13 13" fill="none" style={{ ...style, stroke: undefined }}>
-        <rect fill="currentColor" x="6" y="1" width="1" height="1"/>
-        <rect fill="currentColor" x="7" y="1" width="1" height="1"/>
-        <rect fill="currentColor" x="8" y="1" width="1" height="1"/>
-        <rect fill="currentColor" x="5" y="2" width="1" height="1"/>
-        <rect fill="currentColor" x="9" y="2" width="1" height="1"/>
-        <rect fill="currentColor" x="4" y="3" width="1" height="1"/>
-        <rect fill="currentColor" x="10" y="3" width="1" height="1"/>
-        <rect fill="currentColor" x="3" y="4" width="1" height="1"/>
-        <rect fill="currentColor" x="11" y="4" width="1" height="1"/>
+      <svg className={className} viewBox="0 0 17 17" fill="none" style={{ ...style, stroke: undefined }}>
+        <rect fill="currentColor" x="5" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="14" width="1" height="1"/>
+        <rect fill="currentColor" x="14" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="13" width="1" height="1"/>
+        <rect fill="currentColor" x="12" y="13" width="1" height="1"/>
+        <rect fill="currentColor" x="3" y="12" width="1" height="1"/>
+        <rect fill="currentColor" x="13" y="12" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="14" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="14" y="8" width="1" height="1"/>
+        <rect fill="currentColor" x="14" y="9" width="1" height="1"/>
+        <rect fill="currentColor" x="14" y="7" width="1" height="1"/>
+        <rect fill="currentColor" x="14" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="5" width="1" height="1"/>
         <rect fill="currentColor" x="3" y="5" width="1" height="1"/>
-        <rect fill="currentColor" x="11" y="5" width="1" height="1"/>
-        <rect fill="currentColor" x="3" y="6" width="1" height="1"/>
-        <rect fill="currentColor" x="6" y="6" width="1" height="1"/>
-        <rect fill="currentColor" x="7" y="6" width="1" height="1"/>
-        <rect fill="currentColor" x="11" y="6" width="1" height="1"/>
-        <rect fill="currentColor" x="3" y="7" width="1" height="1"/>
-        <rect fill="currentColor" x="7" y="7" width="1" height="1"/>
-        <rect fill="currentColor" x="11" y="7" width="1" height="1"/>
-        <rect fill="currentColor" x="3" y="8" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="5" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="5" width="1" height="1"/>
+        <rect fill="currentColor" x="14" y="5" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="4" width="1" height="1"/>
+        <rect fill="currentColor" x="3" y="4" width="1" height="1"/>
+        <rect fill="currentColor" x="13" y="4" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="3" width="1" height="1"/>
+        <rect fill="currentColor" x="4" y="3" width="1" height="1"/>
+        <rect fill="currentColor" x="12" y="3" width="1" height="1"/>
+        <rect fill="currentColor" x="2" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="5" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="6" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="7" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="2" width="1" height="1"/>
+        <rect fill="currentColor" x="10" y="10" width="1" height="1"/>
+        <rect fill="currentColor" x="11" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="9" y="9" width="1" height="1"/>
         <rect fill="currentColor" x="8" y="8" width="1" height="1"/>
-        <rect fill="currentColor" x="11" y="8" width="1" height="1"/>
-        <rect fill="currentColor" x="4" y="9" width="1" height="1"/>
-        <rect fill="currentColor" x="10" y="9" width="1" height="1"/>
-        <rect fill="currentColor" x="5" y="10" width="1" height="1"/>
-        <rect fill="currentColor" x="9" y="10" width="1" height="1"/>
-        <rect fill="currentColor" x="6" y="11" width="1" height="1"/>
-        <rect fill="currentColor" x="7" y="11" width="1" height="1"/>
-        <rect fill="currentColor" x="8" y="11" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="7" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="6" width="1" height="1"/>
+        <rect fill="currentColor" x="8" y="5" width="1" height="1"/>
       </svg>
     );
   }
 
   return (
-    <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <polyline points="12 6 12 12 8 14"/>
-      <path d="M2 12h2"/>
-      <path d="M12 2v2"/>
+    <svg className={className} style={style} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path stroke="currentColor" fill="none" d="M5.3,5.3H2V2"/>
+      <path stroke="currentColor" fill="none" d="M8,5.8V8l2.7,1.3"/>
+      <path stroke="currentColor" fill="none" d="M2,5.3c0,0,1.3-1.2,1.8-1.6C4.9,2.7,6.3,2,8,2s3.2,0.7,4.2,1.8S14,6.3,14,8s-0.7,3.2-1.8,4.2S9.7,14,8,14s-3.2-0.7-4.2-1.8"/>
     </svg>
   );
 }
