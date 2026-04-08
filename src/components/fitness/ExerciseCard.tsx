@@ -617,9 +617,18 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
           ref={containerRef}
           className="relative flex-1 h-48 bg-zinc-800 rounded-lg overflow-hidden touch-none select-none"
           style={(showUnitFilter || showPositionFilter || showEquipmentFilter || showGripFilter) ? { pointerEvents: 'none' } : undefined}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+          onTouchStart={(e) => {
+            if (showUnitFilter || showPositionFilter || showEquipmentFilter || showGripFilter) return;
+            handleTouchStart(e);
+          }}
+          onTouchMove={(e) => {
+            if (showUnitFilter || showPositionFilter || showEquipmentFilter || showGripFilter) return;
+            handleTouchMove(e);
+          }}
+          onTouchEnd={(e) => {
+            if (showUnitFilter || showPositionFilter || showEquipmentFilter || showGripFilter) return;
+            handleTouchEnd();
+          }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -1083,15 +1092,6 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
         <>
           <div
             className="fixed inset-0 z-[99998]"
-            style={{ touchAction: 'none' }}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            onTouchMove={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
             onClick={() => {
               setShowUnitFilter(false);
               setShowPositionFilter(false);
@@ -1105,10 +1105,9 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
               top: filterPickerPosition.top,
               left: filterPickerPosition.left,
               minWidth: Math.max(filterPickerPosition.width, 100),
-              touchAction: 'pan-y',
+              touchAction: 'manipulation',
+              pointerEvents: 'auto',
             }}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col gap-1 p-2">
               {showUnitFilter ? (
@@ -1120,18 +1119,18 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
                         key={unit}
                         type="button"
                         disabled={!isAvailable}
-                        style={{ touchAction: 'manipulation' }}
-                        onClick={() => { 
+                        style={{ touchAction: 'manipulation', pointerEvents: 'auto' }}
+                        onClick={() => {
                           if (isAvailable) {
-                            setSelectedUnit(unit); 
+                            setSelectedUnit(unit);
                             setShowUnitFilter(false);
                           }
                         }}
                         className={cn(
                           'px-3 py-1.5 text-xs rounded-lg transition-colors text-left',
-                          selectedUnit === unit 
-                            ? 'bg-zinc-600 text-white' 
-                            : isAvailable 
+                          selectedUnit === unit
+                            ? 'bg-zinc-600 text-white'
+                            : isAvailable
                               ? 'text-zinc-300 hover:bg-zinc-700'
                               : 'text-zinc-600 cursor-not-allowed'
                         )}
@@ -1145,7 +1144,7 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
                 <>
                   <button
                     type="button"
-                    style={{ touchAction: 'manipulation', ...(filterPosition === 'all' ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
+                    style={{ touchAction: 'manipulation', pointerEvents: 'auto', ...(filterPosition === 'all' ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
                     onClick={() => { setFilterPosition('all'); setShowPositionFilter(false); }}
                     className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
                   >
@@ -1155,7 +1154,7 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
                     <button
                       key={pos}
                       type="button"
-                      style={{ touchAction: 'manipulation', ...(filterPosition === pos ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
+                      style={{ touchAction: 'manipulation', pointerEvents: 'auto', ...(filterPosition === pos ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
                       onClick={() => { setFilterPosition(pos); setShowPositionFilter(false); }}
                       className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
                     >
@@ -1167,7 +1166,7 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
                 <>
                   <button
                     type="button"
-                    style={{ touchAction: 'manipulation', ...(filterEquipment === 'all' ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
+                    style={{ touchAction: 'manipulation', pointerEvents: 'auto', ...(filterEquipment === 'all' ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
                     onClick={() => { setFilterEquipment('all'); setShowEquipmentFilter(false); }}
                     className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
                   >
@@ -1177,7 +1176,7 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
                     <button
                       key={eq}
                       type="button"
-                      style={{ touchAction: 'manipulation', ...(filterEquipment === eq ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
+                      style={{ touchAction: 'manipulation', pointerEvents: 'auto', ...(filterEquipment === eq ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
                       onClick={() => { setFilterEquipment(eq); setShowEquipmentFilter(false); }}
                       className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
                     >
@@ -1189,7 +1188,7 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
                 <>
                   <button
                     type="button"
-                    style={{ touchAction: 'manipulation', ...(filterGrip === 'all' ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
+                    style={{ touchAction: 'manipulation', pointerEvents: 'auto', ...(filterGrip === 'all' ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
                     onClick={() => { setFilterGrip('all'); setShowGripFilter(false); }}
                     className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
                   >
@@ -1199,7 +1198,7 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
                     <button
                       key={grip}
                       type="button"
-                      style={{ touchAction: 'manipulation', ...(filterGrip === grip ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
+                      style={{ touchAction: 'manipulation', pointerEvents: 'auto', ...(filterGrip === grip ? { backgroundColor: '#3f3f46', color: '#fff' } : {}) }}
                       onClick={() => { setFilterGrip(grip); setShowGripFilter(false); }}
                       className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
                     >
