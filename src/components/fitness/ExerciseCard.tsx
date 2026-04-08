@@ -37,14 +37,31 @@ function ExerciseNameHeader({ name }: { name: string }) {
 }
 
 // Компонент графика статистики упражнения
-interface ChartDataPoint {
+
+// Информация о подходе для фильтрации
+export interface SetInfo {
+  weight: number;
+  reps: number;
+  time?: number;
+  equipmentType?: EquipmentType;
+  gripType?: GripType;
+  positionType?: PositionType;
+  setId: string;
+}
+
+export interface ChartDataPoint {
   date: string;
-  maxWeight: number;
-  maxWeightSetId?: string; // id подхода с макс весом
+  setsInfo: SetInfo[]; // информация о всех подходах
   userWeight?: number;
-  totalVolume: number;
   workoutId: string;
   weightUnit: WeightUnit; // единица измерения для этой точки
+}
+
+// Данные графика с вычисленными значениями
+interface ProcessedChartDataPoint extends ChartDataPoint {
+  maxWeight: number;
+  maxWeightSetId?: string;
+  totalVolume: number;
 }
 
 interface ExerciseStatsChartProps {
@@ -96,6 +113,22 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
   // Состояние для выбранной единицы измерения - по умолчанию текущая единица упражнения
   const [selectedUnit, setSelectedUnit] = useState<WeightUnit>(currentUnit || 'kg');
 
+  // Фильтры по тегам
+  const [filterPosition, setFilterPosition] = useState<PositionType | 'all'>('all');
+  const [filterEquipment, setFilterEquipment] = useState<EquipmentType | 'all'>('all');
+  const [filterGrip, setFilterGrip] = useState<GripType | 'all'>('all');
+
+  // Состояния для открытия пикеров фильтров
+  const [showUnitFilter, setShowUnitFilter] = useState(false);
+  const [showPositionFilter, setShowPositionFilter] = useState(false);
+  const [showEquipmentFilter, setShowEquipmentFilter] = useState(false);
+  const [showGripFilter, setShowGripFilter] = useState(false);
+  const [filterPickerPosition, setFilterPickerPosition] = useState({ top: 0, left: 0, width: 0, openUpward: false, bottom: 0 });
+  const unitFilterRef = useRef<HTMLButtonElement>(null);
+  const positionFilterRef = useRef<HTMLButtonElement>(null);
+  const equipmentFilterRef = useRef<HTMLButtonElement>(null);
+  const gripFilterRef = useRef<HTMLButtonElement>(null);
+
   // Синхронизация с текущей единицей при открытии модального окна
   useEffect(() => {
     if (currentUnit) {
@@ -103,10 +136,53 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
     }
   }, [currentUnit]);
 
-  // Фильтруем данные по выбранной единице
-  const filteredData = useMemo(() => {
-    return data.filter(d => d.weightUnit === selectedUnit);
-  }, [data, selectedUnit]);
+  // Определяем доступные теги в данных
+  const availableTags = useMemo(() => {
+    const positions = new Set<PositionType>();
+    const equipments = new Set<EquipmentType>();
+    const grips = new Set<GripType>();
+    
+    data.forEach(d => {
+      d.setsInfo.forEach(set => {
+        if (set.positionType) positions.add(set.positionType);
+        if (set.equipmentType) equipments.add(set.equipmentType);
+        if (set.gripType) grips.add(set.gripType);
+      });
+    });
+    
+    return { positions, equipments, grips };
+  }, [data]);
+
+  // Функция для вычисления maxWeight и totalVolume из подходов с учётом фильтров
+  const computeSetStats = useMemo(() => {
+    return (setsInfo: SetInfo[]) => {
+      // Фильтруем подходы по выбранным тегам
+      const filteredSets = setsInfo.filter(set => {
+        if (filterPosition !== 'all' && set.positionType !== filterPosition) return false;
+        if (filterEquipment !== 'all' && set.equipmentType !== filterEquipment) return false;
+        if (filterGrip !== 'all' && set.gripType !== filterGrip) return false;
+        return true;
+      });
+
+      if (filteredSets.length === 0) {
+        return { maxWeight: 0, maxWeightSetId: undefined, totalVolume: 0 };
+      }
+
+      const maxWeight = Math.max(...filteredSets.map(s => s.weight));
+      const maxWeightSet = filteredSets.find(s => s.weight === maxWeight);
+      const totalVolume = filteredSets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+
+      return { maxWeight, maxWeightSetId: maxWeightSet?.setId, totalVolume };
+    };
+  }, [filterPosition, filterEquipment, filterGrip]);
+
+  // Фильтруем данные по выбранной единице и вычисляем значения
+  const filteredData = useMemo((): ProcessedChartDataPoint[] => {
+    return data.filter(d => d.weightUnit === selectedUnit).map(d => ({
+      ...d,
+      ...computeSetStats(d.setsInfo),
+    }));
+  }, [data, selectedUnit, computeSetStats]);
 
   // Определяем доступные единицы измерения (те, для которых есть данные)
   const availableUnits = useMemo(() => {
@@ -128,12 +204,12 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
   const clickCountRef = useRef(0);
   const lastClickTimeRef = useRef(0);
 
-  // Сброс диапазона при смене единицы
+  // Сброс диапазона при смене единицы или фильтров
   useEffect(() => {
     setRangeStart(Math.max(0, filteredData.length - DEFAULT_VISIBLE_COUNT));
     setRangeEnd(filteredData.length);
     setSelectedIndex(null);
-  }, [selectedUnit, filteredData.length]);
+  }, [selectedUnit, filterPosition, filterEquipment, filterGrip, filteredData.length]);
 
   // Видимые данные на основе диапазона
   const visibleData = filteredData.slice(rangeStart, rangeEnd);
@@ -341,7 +417,7 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
   };
 
   // Генерируем точки для линий графиков
-  const generateLinePoints = (getValue: (d: ChartDataPoint) => number, show: boolean) => {
+  const generateLinePoints = (getValue: (d: ProcessedChartDataPoint) => number, show: boolean) => {
     if (!show) return '';
     return visibleData.map((d, i) => {
       const value = getValue(d);
@@ -363,30 +439,6 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
         <div className="flex items-center">
           <div className="w-[40px]"></div>
           <div className="text-sm text-zinc-400">{formatDateShort(selectedData.date)}</div>
-          {/* Селектор единиц */}
-          <div className="flex gap-1 ml-2">
-            {(['kg', 'lb', 'lvl'] as WeightUnit[]).map(unit => {
-              const isAvailable = availableUnits.has(unit);
-              return (
-                <button
-                  key={unit}
-                  type="button"
-                  onClick={() => isAvailable && setSelectedUnit(unit)}
-                  disabled={!isAvailable}
-                  className={cn(
-                    'w-7 h-5 flex items-center justify-center rounded-lg text-[10px] transition-colors',
-                    selectedUnit === unit
-                      ? 'bg-zinc-600 text-white'
-                      : isAvailable
-                        ? 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700'
-                        : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'
-                  )}
-                >
-                  {WEIGHT_UNITS[unit].short}
-                </button>
-              );
-            })}
-          </div>
           <div className="flex-1"></div>
           <div className="flex gap-3 text-sm">
             {showMaxWeight && selectedData.maxWeight > 0 && (
@@ -401,6 +453,152 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
           </div>
         </div>
       )}
+
+      {/* Фильтры по тегам - селекторы (всегда видны, неактивны если нет тегов) */}
+      <div className="flex">
+        <div className="w-[40px] shrink-0"></div>
+        <div className="flex-1 flex gap-1">
+          {/* Фильтр единиц измерения */}
+          <button
+            ref={unitFilterRef}
+            type="button"
+            onClick={() => {
+              if (!showUnitFilter && unitFilterRef.current) {
+                const rect = unitFilterRef.current.getBoundingClientRect();
+                setFilterPickerPosition({
+                  top: rect.bottom + 2,
+                  bottom: rect.top,
+                  left: rect.left,
+                  width: rect.width,
+                  openUpward: false
+                });
+              }
+              setShowUnitFilter(!showUnitFilter);
+              setShowPositionFilter(false);
+              setShowEquipmentFilter(false);
+              setShowGripFilter(false);
+            }}
+            className={cn(
+              'flex-1 flex items-center justify-between gap-1 px-2 py-1 transition-colors text-xs',
+              isDefaultStyle ? 'rounded-lg' : 'rounded-sm',
+              showUnitFilter
+                ? 'bg-zinc-700 text-zinc-300'
+                : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+            )}
+          >
+            <span className="truncate">{WEIGHT_UNITS[selectedUnit].short}</span>
+            <ChevronDownIcon className={cn('w-3 h-3 transition-transform shrink-0', showUnitFilter && 'rotate-180')} />
+          </button>
+
+          {/* Фильтр позиции */}
+          <button
+            ref={positionFilterRef}
+            type="button"
+            disabled={availableTags.positions.size === 0}
+            onClick={() => {
+              if (availableTags.positions.size === 0) return;
+              if (!showPositionFilter && positionFilterRef.current) {
+                const rect = positionFilterRef.current.getBoundingClientRect();
+                setFilterPickerPosition({
+                  top: rect.bottom + 2,
+                  bottom: rect.top,
+                  left: rect.left,
+                  width: rect.width,
+                  openUpward: false
+                });
+              }
+              setShowPositionFilter(!showPositionFilter);
+              setShowUnitFilter(false);
+              setShowEquipmentFilter(false);
+              setShowGripFilter(false);
+            }}
+            className={cn(
+              'flex-1 flex items-center justify-between gap-1 px-2 py-1 transition-colors text-xs',
+              isDefaultStyle ? 'rounded-lg' : 'rounded-sm',
+              availableTags.positions.size === 0
+                ? 'bg-zinc-800/30 text-zinc-600 cursor-not-allowed'
+                : showPositionFilter
+                  ? 'bg-zinc-700 text-zinc-300'
+                  : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+            )}
+          >
+            <span className="truncate">{filterPosition === 'all' ? 'Позиция' : POSITION_TYPES[filterPosition].short}</span>
+            <ChevronDownIcon className={cn('w-3 h-3 transition-transform shrink-0', showPositionFilter && 'rotate-180')} />
+          </button>
+
+          {/* Фильтр снаряда */}
+          <button
+            ref={equipmentFilterRef}
+            type="button"
+            disabled={availableTags.equipments.size === 0}
+            onClick={() => {
+              if (availableTags.equipments.size === 0) return;
+              if (!showEquipmentFilter && equipmentFilterRef.current) {
+                const rect = equipmentFilterRef.current.getBoundingClientRect();
+                setFilterPickerPosition({
+                  top: rect.bottom + 2,
+                  bottom: rect.top,
+                  left: rect.left,
+                  width: rect.width,
+                  openUpward: false
+                });
+              }
+              setShowEquipmentFilter(!showEquipmentFilter);
+              setShowUnitFilter(false);
+              setShowPositionFilter(false);
+              setShowGripFilter(false);
+            }}
+            className={cn(
+              'flex-1 flex items-center justify-between gap-1 px-2 py-1 transition-colors text-xs',
+              isDefaultStyle ? 'rounded-lg' : 'rounded-sm',
+              availableTags.equipments.size === 0
+                ? 'bg-zinc-800/30 text-zinc-600 cursor-not-allowed'
+                : showEquipmentFilter
+                  ? 'bg-zinc-700 text-zinc-300'
+                  : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+            )}
+          >
+            <span className="truncate">{filterEquipment === 'all' ? 'Снаряд' : EQUIPMENT_TYPES[filterEquipment].short}</span>
+            <ChevronDownIcon className={cn('w-3 h-3 transition-transform shrink-0', showEquipmentFilter && 'rotate-180')} />
+          </button>
+
+          {/* Фильтр хвата */}
+          <button
+            ref={gripFilterRef}
+            type="button"
+            disabled={availableTags.grips.size === 0}
+            onClick={() => {
+              if (availableTags.grips.size === 0) return;
+              if (!showGripFilter && gripFilterRef.current) {
+                const rect = gripFilterRef.current.getBoundingClientRect();
+                setFilterPickerPosition({
+                  top: rect.bottom + 2,
+                  bottom: rect.top,
+                  left: rect.left,
+                  width: rect.width,
+                  openUpward: false
+                });
+              }
+              setShowGripFilter(!showGripFilter);
+              setShowUnitFilter(false);
+              setShowPositionFilter(false);
+              setShowEquipmentFilter(false);
+            }}
+            className={cn(
+              'flex-1 flex items-center justify-between gap-1 px-2 py-1 transition-colors text-xs',
+              isDefaultStyle ? 'rounded-lg' : 'rounded-sm',
+              availableTags.grips.size === 0
+                ? 'bg-zinc-800/30 text-zinc-600 cursor-not-allowed'
+                : showGripFilter
+                  ? 'bg-zinc-700 text-zinc-300'
+                  : 'bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
+            )}
+          >
+            <span className="truncate">{filterGrip === 'all' ? 'Хват' : GRIP_TYPES[filterGrip].short}</span>
+            <ChevronDownIcon className={cn('w-3 h-3 transition-transform shrink-0', showGripFilter && 'rotate-180')} />
+          </button>
+        </div>
+      </div>
 
       {/* График */}
       <div className="flex">
@@ -868,6 +1066,129 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
         </div>
         </div>
       </div>
+
+      {/* Портал для выпадающих списков фильтров */}
+      {(showUnitFilter || showPositionFilter || showEquipmentFilter || showGripFilter) && createPortal(
+        <>
+          <div
+            className="fixed inset-0 z-[99998]"
+            onClick={() => {
+              setShowUnitFilter(false);
+              setShowPositionFilter(false);
+              setShowEquipmentFilter(false);
+              setShowGripFilter(false);
+            }}
+          />
+          <div
+            className="fixed bg-zinc-800 rounded-lg border border-zinc-700 shadow-xl z-[99999] max-h-[320px] overflow-y-auto"
+            style={{
+              top: filterPickerPosition.top,
+              left: filterPickerPosition.left,
+              minWidth: Math.max(filterPickerPosition.width, 100),
+            }}
+          >
+            <div className="flex flex-col gap-1 p-2">
+              {showUnitFilter ? (
+                <>
+                  {(['kg', 'lb', 'lvl'] as WeightUnit[]).map(unit => {
+                    const isAvailable = availableUnits.has(unit);
+                    return (
+                      <button
+                        key={unit}
+                        type="button"
+                        disabled={!isAvailable}
+                        onClick={() => { 
+                          if (isAvailable) {
+                            setSelectedUnit(unit); 
+                            setShowUnitFilter(false);
+                          }
+                        }}
+                        className={cn(
+                          'px-3 py-1.5 text-xs rounded-lg transition-colors text-left',
+                          selectedUnit === unit 
+                            ? 'bg-zinc-600 text-white' 
+                            : isAvailable 
+                              ? 'text-zinc-300 hover:bg-zinc-700'
+                              : 'text-zinc-600 cursor-not-allowed'
+                        )}
+                      >
+                        {WEIGHT_UNITS[unit].full}
+                      </button>
+                    );
+                  })}
+                </>
+              ) : showPositionFilter ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => { setFilterPosition('all'); setShowPositionFilter(false); }}
+                    className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                    style={filterPosition === 'all' ? { backgroundColor: '#3f3f46', color: '#fff' } : undefined}
+                  >
+                    Все
+                  </button>
+                  {Array.from(availableTags.positions).map(pos => (
+                    <button
+                      key={pos}
+                      type="button"
+                      onClick={() => { setFilterPosition(pos); setShowPositionFilter(false); }}
+                      className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                      style={filterPosition === pos ? { backgroundColor: '#3f3f46', color: '#fff' } : undefined}
+                    >
+                      {POSITION_TYPES[pos].full}
+                    </button>
+                  ))}
+                </>
+              ) : showEquipmentFilter ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => { setFilterEquipment('all'); setShowEquipmentFilter(false); }}
+                    className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                    style={filterEquipment === 'all' ? { backgroundColor: '#3f3f46', color: '#fff' } : undefined}
+                  >
+                    Все
+                  </button>
+                  {Array.from(availableTags.equipments).map(eq => (
+                    <button
+                      key={eq}
+                      type="button"
+                      onClick={() => { setFilterEquipment(eq); setShowEquipmentFilter(false); }}
+                      className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                      style={filterEquipment === eq ? { backgroundColor: '#3f3f46', color: '#fff' } : undefined}
+                    >
+                      {EQUIPMENT_TYPES[eq].full}
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => { setFilterGrip('all'); setShowGripFilter(false); }}
+                    className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                    style={filterGrip === 'all' ? { backgroundColor: '#3f3f46', color: '#fff' } : undefined}
+                  >
+                    Все
+                  </button>
+                  {Array.from(availableTags.grips).map(grip => (
+                    <button
+                      key={grip}
+                      type="button"
+                      onClick={() => { setFilterGrip(grip); setShowGripFilter(false); }}
+                      className="px-3 py-1.5 text-xs rounded-lg transition-colors text-left text-zinc-300 hover:bg-zinc-700"
+                      style={filterGrip === grip ? { backgroundColor: '#3f3f46', color: '#fff' } : undefined}
+                    >
+                      {GRIP_TYPES[grip].full}
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
     </div>
   );
 }
@@ -1092,16 +1413,21 @@ export function ExerciseCard({
 
         // Для каждой единицы создаём отдельную точку данных
         setsByUnit.forEach((sets, unit) => {
-          const maxWeight = Math.max(...sets.map(s => s.weight));
-          const maxWeightSet = sets.find(s => s.weight === maxWeight);
-          const totalVolume = sets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+          // Сохраняем информацию о всех подходах для фильтрации
+          const setsInfo: SetInfo[] = sets.map(s => ({
+            weight: s.weight,
+            reps: s.reps,
+            time: s.time,
+            equipmentType: s.equipmentType,
+            gripType: s.gripType,
+            positionType: s.positionType,
+            setId: s.id,
+          }));
 
           history.push({
             date: w.date,
-            maxWeight,
-            maxWeightSetId: maxWeightSet?.id,
+            setsInfo,
             userWeight: w.weight,
-            totalVolume,
             workoutId: w.id,
             weightUnit: unit,
           });

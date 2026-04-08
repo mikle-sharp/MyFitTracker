@@ -5,10 +5,10 @@ import { calculatePersonalRecords } from '@/lib/pr';
 import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { EXERCISE_TYPE_COLORS, EXERCISE_TYPE_NAMES, ExerciseType, WEIGHT_UNITS, WeightUnit } from '@/lib/types';
+import { EXERCISE_TYPE_COLORS, EXERCISE_TYPE_NAMES, ExerciseType, WEIGHT_UNITS, WeightUnit, EquipmentType, GripType, PositionType } from '@/lib/types';
 import { getExerciseTypeFromBase } from '@/lib/storage';
 import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, SearchIcon, ClockIcon, TrendingUpIcon } from '@/components/icons/Icons';
-import { ExerciseStatsChart } from './ExerciseCard';
+import { ExerciseStatsChart, SetInfo, ChartDataPoint } from './ExerciseCard';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { XIcon } from '@/components/icons/Icons';
 import { useFitnessStore } from '@/lib/store';
@@ -62,16 +62,6 @@ interface PersonalRecordsProps {
   onNavigateToWorkout?: (date: string, exerciseName: string, setId: string) => void;
 }
 
-// Интерфейс для данных графика
-interface ChartDataPoint {
-  date: string;
-  maxWeight: number;
-  maxWeightSetId?: string;
-  userWeight?: number;
-  totalVolume: number;
-  workoutId: string;
-  weightUnit: WeightUnit;
-}
 
 export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
   const allRecords = useMemo(() => calculatePersonalRecords(), []);
@@ -151,16 +141,21 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
         });
 
         setsByUnit.forEach((sets, unit) => {
-          const maxWeight = Math.max(...sets.map(s => s.weight));
-          const maxWeightSet = sets.find(s => s.weight === maxWeight);
-          const totalVolume = sets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+          // Сохраняем информацию о всех подходах для фильтрации
+          const setsInfo: SetInfo[] = sets.map(s => ({
+            weight: s.weight,
+            reps: s.reps,
+            time: s.time,
+            equipmentType: s.equipmentType,
+            gripType: s.gripType,
+            positionType: s.positionType,
+            setId: s.id,
+          }));
 
           history.push({
             date: w.date,
-            maxWeight,
-            maxWeightSetId: maxWeightSet?.id,
+            setsInfo,
             userWeight: w.weight,
-            totalVolume,
             workoutId: w.id,
             weightUnit: unit,
           });
