@@ -613,9 +613,10 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
           <span>{chartMinValue.toFixed(0)}</span>
         </div>
         
-        <div 
+        <div
           ref={containerRef}
           className="relative flex-1 h-48 bg-zinc-800 rounded-lg overflow-hidden touch-none select-none"
+          style={(showUnitFilter || showPositionFilter || showEquipmentFilter || showGripFilter) ? { pointerEvents: 'none' } : undefined}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -896,7 +897,10 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
       </div>
 
       {/* Слайдер для выбора диапазона */}
-      <div className="flex">
+      <div
+        className="flex"
+        style={(showUnitFilter || showPositionFilter || showEquipmentFilter || showGripFilter) ? { pointerEvents: 'none' } : undefined}
+      >
         <div className="w-[40px] pr-2" style={{ visibility: 'hidden' }}>
           <span className="text-xs">00000</span>
         </div>
@@ -1017,7 +1021,10 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
         </div>
 
       {/* Тэги включения/отключения графиков */}
-      <div className="flex gap-3">
+      <div
+        className="flex gap-3"
+        style={(showUnitFilter || showPositionFilter || showEquipmentFilter || showGripFilter) ? { pointerEvents: 'none' } : undefined}
+      >
         <div className="w-[40px]"></div>
         <div className="flex-1 flex justify-center gap-3">
         <div
