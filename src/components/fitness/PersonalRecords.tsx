@@ -261,148 +261,151 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
                     </div>
                     
                     {/* Рекорды по каждой единице измерения */}
-                    {recordsByUnit.map(({ unit, weightRecord, volumeRecord }) => (
-                      <div key={unit} className="grid px-3 pb-2" style={{ 
-                        gridTemplateColumns: '48px 1fr 1fr',
-                      }}>
-                        {/* Кнопка статистики по центру под иконкой */}
-                        <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                          <button
-                            type="button"
-                            data-slot="button"
-                            onClick={() => setStatsExercise(record.exerciseName)}
-                            className="inline-flex items-center justify-center shrink-0 text-zinc-500 hover:text-white active:text-white hover:!bg-transparent active:!bg-transparent p-0 w-7 h-7"
-                            title="Статистика упражнения"
-                          >
-                            <TrendingUpIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                        
-                        {/* Рекорд по весу */}
-                        <div className="flex flex-col items-start">
-                          {weightRecord && (
-                            <>
-                              <button
-                                onClick={() => onNavigateToWorkout?.(
-                                  weightRecord!.date,
-                                  record.exerciseName,
-                                  weightRecord!.setId
-                                )}
-                                className="inline-flex items-center gap-1 hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg px-1 -ml-1"
-                              >
-                                <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
-                                  {weightRecord.value} {WEIGHT_UNITS[unit].short}
-                                </span>
-                                {weightRecord.time && weightRecord.time > 0 ? (
-                                  <>
-                                    <ClockIcon className="w-2 h-2 text-zinc-500" />
-                                    <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
-                                      {Math.floor(weightRecord.time / 60)}:{(weightRecord.time % 60).toString().padStart(2, '0')}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <span className="text-zinc-500 text-sm">×</span>
-                                    <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
-                                      {weightRecord.reps}
-                                    </span>
-                                  </>
-                                )}
-                              </button>
-                              <span className="text-[10px] text-zinc-500">По весу</span>
-                            </>
-                          )}
-                        </div>
-                        
-                        {/* Рекорд по объёму */}
-                        <div className="flex flex-col items-start">
-                          {volumeRecord && (() => {
-                            const vr = volumeRecord;
-
-                            let displayContent: React.ReactNode;
-
-                            // Вес + время (без повторений): volume = weight * time
-                            // Но НЕ bodyweight (тогда weight=0, и это просто время)
-                            if (vr.time && vr.time > 0 && vr.reps === 0 && !vr.isBodyweight) {
-                              const weight = vr.value / vr.time;
-                              const weightStr = Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
-                              const mins = Math.floor(vr.time / 60);
-                              const secs = vr.time % 60;
-                              const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
-                              displayContent = (
-                                <>
-                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
-                                    {weightStr} {WEIGHT_UNITS[unit].short}
-                                  </span>
-                                  <ClockIcon className="w-2 h-2 text-zinc-500" />
-                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
-                                    {timeStr}
-                                  </span>
-                                </>
-                              );
-                            } else if (vr.time && vr.time > 0) {
-                              // Только время (без веса) - bodyweight или просто время
-                              const mins = Math.floor(vr.time / 60);
-                              const secs = vr.time % 60;
-                              const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
-                              displayContent = (
-                                <>
-                                  <ClockIcon className="w-2 h-2 text-zinc-500" />
-                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
-                                    {timeStr}
-                                  </span>
-                                </>
-                              );
-                            } else if (vr.reps > 0 && vr.value === vr.reps) {
-                              displayContent = (
-                                <>
-                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
-                                    {vr.reps}
-                                  </span>
-                                  <span className="text-zinc-500 text-[10px] ml-1">повт</span>
-                                </>
-                              );
-                            } else if (vr.reps > 0) {
-                              const weight = vr.value / vr.reps;
-                              const weightStr = Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
-                              displayContent = (
-                                <>
-                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
-                                    {weightStr} {WEIGHT_UNITS[unit].short}
-                                  </span>
-                                  <span className="text-zinc-500 text-sm">×</span>
-                                  <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
-                                    {vr.reps}
-                                  </span>
-                                </>
-                              );
-                            } else {
-                              displayContent = (
-                                <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
-                                  {vr.value}
-                                </span>
-                              );
-                            }
-
-                            return (
-                              <>
-                                <button
-                                  onClick={() => onNavigateToWorkout?.(
-                                    volumeRecord!.date,
-                                    record.exerciseName,
-                                    volumeRecord!.setId
-                                  )}
-                                  className="inline-flex items-center gap-1 hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg px-1 -ml-1"
-                                >
-                                  {displayContent}
-                                </button>
-                                <span className="text-[10px] text-zinc-500">По объёму</span>
-                              </>
-                            );
-                          })()}
-                        </div>
+                    <div className="flex px-3 pb-2 gap-1">
+                      {/* Кнопка статистики - по вертикальному центру всех строк */}
+                      <div className="w-9 flex items-center justify-center shrink-0 self-center">
+                        <button
+                          type="button"
+                          data-slot="button"
+                          onClick={() => setStatsExercise(record.exerciseName)}
+                          className="inline-flex items-center justify-center shrink-0 text-zinc-500 hover:text-white active:text-white hover:!bg-transparent active:!bg-transparent p-0 w-7 h-7"
+                          title="Статистика упражнения"
+                        >
+                          <TrendingUpIcon className="w-4 h-4" />
+                        </button>
                       </div>
-                    ))}
+                      
+                      {/* Рекорды */}
+                      <div className="flex-1 flex flex-col gap-0.5">
+                        {recordsByUnit.map(({ unit, weightRecord, volumeRecord }) => (
+                          <div key={unit} className="grid grid-cols-2 gap-1">
+                            {/* Рекорд по весу */}
+                            <div className="flex flex-col items-start">
+                              {weightRecord && (
+                                <>
+                                  <button
+                                    onClick={() => onNavigateToWorkout?.(
+                                      weightRecord!.date,
+                                      record.exerciseName,
+                                      weightRecord!.setId
+                                    )}
+                                    className="inline-flex items-center gap-1 hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg px-1 -ml-1"
+                                  >
+                                    <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
+                                      {weightRecord.value} {WEIGHT_UNITS[unit].short}
+                                    </span>
+                                    {weightRecord.time && weightRecord.time > 0 ? (
+                                      <>
+                                        <ClockIcon className="w-2 h-2 text-zinc-500" />
+                                        <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
+                                          {Math.floor(weightRecord.time / 60)}:{(weightRecord.time % 60).toString().padStart(2, '0')}
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span className="text-zinc-500 text-sm">×</span>
+                                        <span style={{ color: WEIGHT_RECORD_COLOR }} className="font-medium text-sm">
+                                          {weightRecord.reps}
+                                        </span>
+                                      </>
+                                    )}
+                                  </button>
+                                  <span className="text-[10px] text-zinc-500">По весу</span>
+                                </>
+                              )}
+                            </div>
+                            
+                            {/* Рекорд по объёму */}
+                            <div className="flex flex-col items-start">
+                              {volumeRecord && (() => {
+                                const vr = volumeRecord;
+
+                                let displayContent: React.ReactNode;
+
+                                // Вес + время (без повторений): volume = weight * time
+                                // Но НЕ bodyweight (тогда weight=0, и это просто время)
+                                if (vr.time && vr.time > 0 && vr.reps === 0 && !vr.isBodyweight) {
+                                  const weight = vr.value / vr.time;
+                                  const weightStr = Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
+                                  const mins = Math.floor(vr.time / 60);
+                                  const secs = vr.time % 60;
+                                  const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+                                  displayContent = (
+                                    <>
+                                      <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                        {weightStr} {WEIGHT_UNITS[unit].short}
+                                      </span>
+                                      <ClockIcon className="w-2 h-2 text-zinc-500" />
+                                      <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                        {timeStr}
+                                      </span>
+                                    </>
+                                  );
+                                } else if (vr.time && vr.time > 0) {
+                                  // Только время (без веса) - bodyweight или просто время
+                                  const mins = Math.floor(vr.time / 60);
+                                  const secs = vr.time % 60;
+                                  const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+                                  displayContent = (
+                                    <>
+                                      <ClockIcon className="w-2 h-2 text-zinc-500" />
+                                      <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                        {timeStr}
+                                      </span>
+                                    </>
+                                  );
+                                } else if (vr.reps > 0 && vr.value === vr.reps) {
+                                  displayContent = (
+                                    <>
+                                      <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                        {vr.reps}
+                                      </span>
+                                      <span className="text-zinc-500 text-[10px] ml-1">повт</span>
+                                    </>
+                                  );
+                                } else if (vr.reps > 0) {
+                                  const weight = vr.value / vr.reps;
+                                  const weightStr = Number.isInteger(weight) ? String(weight) : weight.toFixed(1);
+                                  displayContent = (
+                                    <>
+                                      <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                        {weightStr} {WEIGHT_UNITS[unit].short}
+                                      </span>
+                                      <span className="text-zinc-500 text-sm">×</span>
+                                      <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                        {vr.reps}
+                                      </span>
+                                    </>
+                                  );
+                                } else {
+                                  displayContent = (
+                                    <span style={{ color: VOLUME_RECORD_COLOR }} className="font-medium text-sm">
+                                      {vr.value}
+                                    </span>
+                                  );
+                                }
+
+                                return (
+                                  <>
+                                    <button
+                                      onClick={() => onNavigateToWorkout?.(
+                                        volumeRecord!.date,
+                                        record.exerciseName,
+                                        volumeRecord!.setId
+                                      )}
+                                      className="inline-flex items-center gap-1 hover:bg-zinc-700/50 active:bg-zinc-700/50 transition-colors rounded-lg px-1 -ml-1"
+                                    >
+                                      {displayContent}
+                                    </button>
+                                    <span className="text-[10px] text-zinc-500">По объёму</span>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </motion.div>
                 );
               })
