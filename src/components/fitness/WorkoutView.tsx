@@ -517,18 +517,16 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
       return workout.duration;
     }
 
-    // Проверяем, что дата тренировки = сегодня
-    const today = new Date().toISOString().split('T')[0];
-    if (workout.date !== today) {
-      return null;
-    }
-
-    // Собираем все timestamps из подходов
+    // Собираем timestamps только для подходов, добавленных в дату тренировки
     const timestamps: number[] = [];
     workout.exercises.forEach(ex => {
       ex.sets.forEach(set => {
         if (set.timestamp) {
-          timestamps.push(new Date(set.timestamp).getTime());
+          const tsDate = new Date(set.timestamp).toISOString().split('T')[0];
+          // Учитываем только подходы, добавленные в тот же день, что и дата тренировки
+          if (tsDate === workout.date) {
+            timestamps.push(new Date(set.timestamp).getTime());
+          }
         }
       });
     });
