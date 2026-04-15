@@ -1044,6 +1044,7 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
             {/* Name input */}
             <Input
               value={newExerciseName}
+              maxLength={50}
               onChange={(e) => {
                 setNewExerciseName(e.target.value);
                 setDuplicateExerciseError(false);
@@ -1248,6 +1249,7 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
               <input
                 type="text"
                 inputMode="decimal"
+                maxLength={6}
                 value={weightValue}
                 onChange={(e) => {
                   // Разрешаем только цифры и одну точку/запятую
@@ -1257,6 +1259,10 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
                   // Проверяем максимум один знак после точки
                   const parts = normalized.split('.');
                   if (parts.length > 1 && parts[1] && parts[1].length > 1) {
+                    return;
+                  }
+                  // Ограничиваем максимальный вес 500 кг
+                  if (parseFloat(normalized) > 500) {
                     return;
                   }
                   setWeightValue(normalized);
@@ -1272,6 +1278,7 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
           <textarea
             ref={notesTextareaRef}
             value={notesValue}
+            maxLength={500}
             onChange={handleNotesChange}
             placeholder="Добавьте заметки к этой тренировке..."
             className="w-[calc(100%-2rem)] bg-zinc-900/50 border border-zinc-700 rounded-lg p-2 mx-4 mt-4 text-white placeholder-zinc-500 resize-none focus:outline-none block placeholder:text-[10px]"
@@ -1388,6 +1395,7 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
             {/* Template name input for save */}
             <Input
               value={templateName}
+              maxLength={30}
               onChange={(e) => setTemplateName(e.target.value)}
               placeholder="Имя нового шаблона"
               className="!bg-zinc-900/50 border border-zinc-700 rounded-lg text-white placeholder:text-[10px]"

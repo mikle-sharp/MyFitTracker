@@ -525,15 +525,8 @@ export function ExerciseCard({
     const time = useTime ? ((parseInt(newTimeMinutes) || 0) * 60 + (parseInt(newTimeSeconds) || 0)) : 0;
 
     // Validate - нужен хотя бы один показатель
-    if (!useReps && !useTime) return;
-    // Валидация: вес не может быть отрицательным
-    if (!useBodyweight && weight < 0) return;
-    // Валидация: повторения должны быть от 0 до 999
-    if (useReps && (reps < 0 || reps > 999)) return;
     if (useReps && reps <= 0 && !useBodyweight) return;
     if (!useBodyweight && useReps && weight <= 0 && !useTime) return;
-    // Валидация: время не может быть отрицательным
-    if (useTime && time < 0) return;
     if (useTime && time <= 0 && !useReps) return;
 
     addSet(workoutId, exercise.id, reps, weight, time > 0 ? time : undefined, isWarmup, selectedEquipment ?? undefined, selectedGrip ?? undefined, selectedPosition ?? undefined, selectedWeightUnit);
@@ -560,12 +553,7 @@ export function ExerciseCard({
     const weight = originalSet.weight > 0 ? (parseFloat(editWeight) || 0) : 0;
     const time = ((parseInt(editTimeMinutes) || 0) * 60 + (parseInt(editTimeSeconds) || 0));
 
-    // Валидация: повторения должны быть от 0 до 999
-    if (reps < 0 || reps > 999) return;
-    // Валидация: вес не может быть отрицательным
-    if (weight < 0) return;
-    // Валидация: время не может быть отрицательным
-    if (time < 0) return;
+    // Validate - нужен хотя бы один показатель
     if (reps <= 0 && time <= 0) return;
 
     // editEquipment/editGrip/editPosition могут быть:
@@ -864,8 +852,9 @@ export function ExerciseCard({
                                 type="number"
                                 step="0.5"
                                 min="0.1"
+                                max="9999"
                                 value={editWeight}
-                                onChange={(e) => setEditWeight(e.target.value)}
+                                onChange={(e) => setEditWeight(e.target.value.slice(0, 6))}
                                 placeholder={WEIGHT_UNITS[editWeightUnit].placeholder}
                                 className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center md:!text-xs !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
@@ -879,8 +868,9 @@ export function ExerciseCard({
                               <Input
                                 type="number"
                                 min="1"
+                                max="999"
                                 value={editReps}
-                                onChange={(e) => setEditReps(e.target.value)}
+                                onChange={(e) => setEditReps(e.target.value.slice(0, 3))}
                                 placeholder="повт."
                                 className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center md:!text-xs !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
@@ -905,8 +895,9 @@ export function ExerciseCard({
                         <Input
                           type="number"
                           min="0"
+                          max="999"
                           value={editTimeMinutes}
-                          onChange={(e) => setEditTimeMinutes(e.target.value)}
+                          onChange={(e) => setEditTimeMinutes(e.target.value.slice(0, 3))}
                           placeholder="мин."
                           className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs md:!text-xs text-center !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
@@ -916,7 +907,7 @@ export function ExerciseCard({
                           min="0"
                           max={59}
                           value={editTimeSeconds}
-                          onChange={(e) => setEditTimeSeconds(e.target.value)}
+                          onChange={(e) => setEditTimeSeconds(e.target.value.slice(0, 2))}
                           placeholder="сек."
                           className="w-12 h-7 bg-zinc-700 border-zinc-600 text-white text-xs md:!text-xs text-center !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
@@ -1227,8 +1218,9 @@ export function ExerciseCard({
                             type="number"
                             step="0.5"
                             min="0.1"
+                            max="9999"
                             value={newWeight}
-                            onChange={(e) => setNewWeight(e.target.value)}
+                            onChange={(e) => setNewWeight(e.target.value.slice(0, 6))}
                             placeholder={WEIGHT_UNITS[selectedWeightUnit].placeholder}
                             className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center md:!text-xs !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
@@ -1242,8 +1234,9 @@ export function ExerciseCard({
                           <Input
                             type="number"
                             min="1"
+                            max="999"
                             value={newReps}
-                            onChange={(e) => setNewReps(e.target.value)}
+                            onChange={(e) => setNewReps(e.target.value.slice(0, 3))}
                             placeholder="повт."
                             className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs text-center md:!text-xs !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
@@ -1256,8 +1249,9 @@ export function ExerciseCard({
                         <Input
                           type="number"
                           min="0"
+                          max="999"
                           value={newTimeMinutes}
-                          onChange={(e) => setNewTimeMinutes(e.target.value)}
+                          onChange={(e) => setNewTimeMinutes(e.target.value.slice(0, 3))}
                           placeholder="мин."
                           className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs md:!text-xs text-center !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
@@ -1267,7 +1261,7 @@ export function ExerciseCard({
                           min="0"
                           max={59}
                           value={newTimeSeconds}
-                          onChange={(e) => setNewTimeSeconds(e.target.value)}
+                          onChange={(e) => setNewTimeSeconds(e.target.value.slice(0, 2))}
                           placeholder="сек."
                           className="w-14 h-7 bg-zinc-700 border-zinc-600 text-white text-xs md:!text-xs text-center !px-1 !shadow-none focus-visible:!ring-0 placeholder:text-[10px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
