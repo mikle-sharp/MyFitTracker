@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { EXERCISE_TYPE_COLORS, EXERCISE_TYPE_NAMES, ExerciseType, WEIGHT_UNITS, WeightUnit, EquipmentType, GripType, PositionType } from '@/lib/types';
 import { getExerciseTypeFromBase } from '@/lib/storage';
 import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, SearchIcon, ClockIcon, TrendingUpIcon } from '@/components/icons/Icons';
-import { ExerciseStatsChart, SetInfo, ChartDataPoint } from './ExerciseCard';
+import { ExerciseStatsChart, SetInfo, ChartDataPoint } from './ExerciseStatsChart';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { XIcon } from '@/components/icons/Icons';
 import { useFitnessStore } from '@/lib/store';
