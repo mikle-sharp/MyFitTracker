@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getAppFont } from '@/lib/storage';
 
 // Базовые пропсы для всех иконок
 interface IconProps {
@@ -13,7 +14,7 @@ function useIconStyle() {
   const [isRetro, setIsRetro] = useState(false);
   useEffect(() => {
     const checkStyle = () => {
-      const savedFont = localStorage.getItem("app-font");
+      const savedFont = getAppFont();
       setIsRetro(savedFont === "retro");
     };
     checkStyle();

@@ -13,7 +13,7 @@ import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFitnessStore } from '@/lib/store';
-import { getAllExercisesForType, getAllExercises, getExerciseTypeFromBase } from '@/lib/storage';
+import { getAllExercisesForType, getAllExercises, getExerciseTypeFromBase, isDefaultFont } from '@/lib/storage';
 
 // Компонент иконки типа тренировки
 function WorkoutTypeIcon({ type, color, isDefaultStyle }: { type: WorkoutType; color: string; isDefaultStyle: boolean }) {
@@ -130,8 +130,7 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
 
   // Проверяем стиль при монтировании
   useEffect(() => {
-    const savedFont = localStorage.getItem('app-font');
-    setIsDefaultStyle(!savedFont || savedFont === 'inter');
+    setIsDefaultStyle(isDefaultFont());
   }, []);
 
   // Auto-resize notes textarea when dialog opens

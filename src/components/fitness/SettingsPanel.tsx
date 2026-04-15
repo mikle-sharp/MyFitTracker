@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogClose, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
-import { exportToCSV, exportToJSON, getWorkouts, saveWorkouts } from '@/lib/storage';
+import { exportToCSV, exportToJSON, getWorkouts, saveWorkouts, getAppFont, setAppFont } from '@/lib/storage';
 import { useFitnessStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
@@ -145,7 +145,7 @@ export function SettingsPanel() {
 
   // Load saved font on mount
   useEffect(() => {
-    const savedFont = localStorage.getItem('app-font') as FontId | null;
+    const savedFont = getAppFont() as FontId | null;
     if (savedFont && AVAILABLE_FONTS.some(f => f.id === savedFont)) {
       setSelectedFont(savedFont);
       applyFont(savedFont);
@@ -173,7 +173,7 @@ export function SettingsPanel() {
   const handleFontChange = (fontId: string) => {
     const typedFontId = fontId as FontId;
     setSelectedFont(typedFontId);
-    localStorage.setItem('app-font', fontId);
+    setAppFont(fontId);
     applyFont(typedFontId);
     setIsDefaultStyle(fontId === 'inter');
   };

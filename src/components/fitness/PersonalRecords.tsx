@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { EXERCISE_TYPE_COLORS, EXERCISE_TYPE_NAMES, ExerciseType, WEIGHT_UNITS, WeightUnit, EquipmentType, GripType, PositionType } from '@/lib/types';
-import { getExerciseTypeFromBase } from '@/lib/storage';
+import { getExerciseTypeFromBase, isDefaultFont } from '@/lib/storage';
 import { DumbbellIcon, TargetIcon, LegsIcon, HeartIcon, SearchIcon, ClockIcon, TrendingUpIcon } from '@/components/icons/Icons';
 import { ExerciseStatsChart, SetInfo, ChartDataPoint } from './ExerciseStatsChart';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -81,8 +81,7 @@ export function PersonalRecords({ onNavigateToWorkout }: PersonalRecordsProps) {
 
   // Проверяем стиль при монтировании
   useEffect(() => {
-    const savedFont = localStorage.getItem('app-font');
-    setIsDefaultStyle(!savedFont || savedFont === 'inter');
+    setIsDefaultStyle(isDefaultFont());
   }, []);
 
   // Фильтрация записей

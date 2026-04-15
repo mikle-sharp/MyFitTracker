@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MainIcon, TrophyIcon, CalendarIcon } from '@/components/icons/Icons';
 
 import { useFitnessStore } from '@/lib/store';
+import { isDefaultFont } from '@/lib/storage';
 import { Calendar } from '@/components/fitness/Calendar';
 import { WorkoutView } from '@/components/fitness/WorkoutView';
 import { NewWorkoutForm } from '@/components/fitness/NewWorkoutForm';
@@ -50,8 +51,7 @@ export default function Home() {
       init();
     }
     // Проверяем текущий стиль
-    const savedFont = localStorage.getItem('app-font');
-    setIsDefaultStyle(!savedFont || savedFont === 'inter');
+    setIsDefaultStyle(isDefaultFont());
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, [init, isInitialized]);

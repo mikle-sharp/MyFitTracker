@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { ChevronDownIcon } from '@/components/icons/Icons';
 import { EquipmentType, GripType, PositionType, EQUIPMENT_TYPES, GRIP_TYPES, POSITION_TYPES, WeightUnit, WEIGHT_UNITS } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { isDefaultFont } from '@/lib/storage';
 
 // Информация о подходе для фильтрации
 export interface SetInfo {
@@ -69,8 +70,7 @@ export function ExerciseStatsChart({ data, color, textColor, currentWorkoutId, e
 
   // Проверяем стиль при монтировании
   useEffect(() => {
-    const savedFont = localStorage.getItem('app-font');
-    setIsDefaultStyle(!savedFont || savedFont === 'inter');
+    setIsDefaultStyle(isDefaultFont());
   }, []);
 
   // Состояние видимости графиков

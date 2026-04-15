@@ -4,6 +4,9 @@ const STORAGE_KEY = 'fitness-journal-workouts';
 const EXERCISES_BASE_KEY = 'fitness-journal-exercises-base';
 const ALL_EXERCISES_KEY = 'fitness-journal-all-exercises';
 const TEMPLATES_KEY = 'fitness-journal-templates';
+const APP_FONT_KEY = 'app-font';
+
+const DEFAULT_FONT = 'inter';
 
 // Старые ключи (для миграции при импорте старых данных)
 const CUSTOM_EXERCISES_KEY = 'fitness-journal-custom-exercises-by-type';
@@ -12,6 +15,26 @@ const DELETED_EXERCISES_KEY = 'fitness-journal-deleted-exercises';
 // Генерация уникального ID
 export const generateId = (): string => {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+};
+
+// === НАСТРОЙКИ ШРИФТА ===
+
+// Получение текущего шрифта приложения
+export const getAppFont = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(APP_FONT_KEY);
+};
+
+// Сохранение шрифта приложения
+export const setAppFont = (fontId: string): void => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(APP_FONT_KEY, fontId);
+};
+
+// Проверка, используется ли стандартный шрифт
+export const isDefaultFont = (): boolean => {
+  const font = getAppFont();
+  return !font || font === DEFAULT_FONT;
 };
 
 // === БАЗА УПРАЖНЕНИЙ ===
