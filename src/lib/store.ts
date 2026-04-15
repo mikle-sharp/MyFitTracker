@@ -56,6 +56,19 @@ const updateWorkoutState = (
   set({ workouts, currentWorkout });
 };
 
+// Helper для обновления состояния с сохранением текущей тренировки
+const refreshState = (
+  set: (partial: Partial<FitnessStore>) => void,
+  get: () => FitnessStore
+) => {
+  const workouts = storage.getWorkouts();
+  const currentWorkout = get().currentWorkout;
+  const updatedCurrentWorkout = currentWorkout 
+    ? workouts.find(w => w.id === currentWorkout.id) || null 
+    : null;
+  set({ workouts, currentWorkout: updatedCurrentWorkout });
+};
+
 export const useFitnessStore = create<FitnessStore>((set, get) => ({
   // Начальное состояние
   workouts: [],
@@ -192,8 +205,7 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
 
   // Обновление списка тренировок
   refreshWorkouts: () => {
-    const workouts = storage.getWorkouts();
-    set({ workouts });
+    refreshState(set, get);
   },
 
   // Импорт данных
@@ -234,12 +246,6 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   // Удаление упражнения из предустановок
   deleteExerciseFromPresets: (exerciseName: string) => {
     storage.deleteExerciseFromPresets(exerciseName);
-    const workouts = storage.getWorkouts();
-    const currentWorkout = get().currentWorkout;
-    // Обновляем текущую тренировку если она изменилась
-    const updatedCurrentWorkout = currentWorkout 
-      ? workouts.find(w => w.id === currentWorkout.id) || null 
-      : null;
-    set({ workouts, currentWorkout: updatedCurrentWorkout });
+    refreshState(set, get);
   },
 }));

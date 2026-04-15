@@ -778,11 +778,16 @@ export const importFromCSV = (csvString: string): { success: boolean; message: s
         workout.exercises.push(exercise);
       }
 
+      // Санитизация данных
+      const sanitizedReps = Math.min(999, Math.max(0, parseInt(reps) || 0));
+      const sanitizedWeight = Math.min(9999, Math.max(0, parseFloat(weight) || 0));
+      const sanitizedTime = time ? Math.min(59999, Math.max(0, parseInt(time) || 0)) : undefined;
+
       const newSet: WorkoutSet = {
         id: generateId(),
-        reps: parseInt(reps) || 0,
-        weight: parseFloat(weight) || 0,
-        time: time ? parseInt(time) : undefined,
+        reps: sanitizedReps,
+        weight: sanitizedWeight,
+        time: sanitizedTime,
         isWarmup: isWarmup === '1',
         equipmentType: equipmentType ? equipmentType.trim() as EquipmentType : undefined,
         gripType: gripType ? gripType.trim() as GripType : undefined,
