@@ -98,16 +98,12 @@ export const calculatePersonalRecords = (): PersonalRecord[] => {
   sortedWorkouts.forEach(workout => {
     workout.exercises.forEach(exercise => {
       const existing = setsByExercise.get(exercise.name) || [];
-      workout.exercises.forEach(ex => {
-        if (ex.name === exercise.name) {
-          ex.sets.forEach(set => {
-            existing.push({
-              set,
-              workout,
-              exercise: { name: ex.name, type: workout.type }
-            });
-          });
-        }
+      exercise.sets.forEach(set => {
+        existing.push({
+          set,
+          workout,
+          exercise: { name: exercise.name, type: workout.type }
+        });
       });
       setsByExercise.set(exercise.name, existing);
     });

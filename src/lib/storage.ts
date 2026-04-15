@@ -11,7 +11,7 @@ const DELETED_EXERCISES_KEY = 'fitness-journal-deleted-exercises';
 
 // Генерация уникального ID
 export const generateId = (): string => {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 // === БАЗА УПРАЖНЕНИЙ ===
@@ -544,6 +544,16 @@ export const getWorkoutDates = (): Set<string> => {
 
 // === ЭКСПОРТ / ИМПОРТ ===
 
+// Экранирование поля для CSV (добавляет кавычки при необходимости)
+const escapeCSVField = (field: string): string => {
+  // Если поле содержит запятую, кавычку или перенос строки — оборачиваем в кавычки
+  if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+    // Кавычки внутри поля экранируются удвоением
+    return `"${field.replace(/"/g, '""')}"`;
+  }
+  return field;
+};
+
 // Экспорт данных в CSV
 export const exportToCSV = (): string => {
   const workouts = getWorkouts();
@@ -565,7 +575,7 @@ export const exportToCSV = (): string => {
             workout.type,
             workout.duration ? String(workout.duration) : '',
             workout.weight ? String(workout.weight) : '',
-            exercise.name,
+            escapeCSVField(exercise.name),
             String(index + 1),
             String(set.reps),
             String(set.weight),
@@ -576,7 +586,7 @@ export const exportToCSV = (): string => {
             set.equipmentType || '',
             set.gripType || '',
             set.timestamp || '',
-            workout.notes || '',
+            workout.notes ? escapeCSVField(workout.notes) : '',
           ]);
         });
       });

@@ -44,6 +44,18 @@ const getTodayDate = (): string => {
   return today.toISOString().split('T')[0];
 };
 
+// Helper для обновления состояния после изменений в тренировке
+const updateWorkoutState = (
+  set: (partial: Partial<FitnessStore>) => void,
+  workoutId?: string
+) => {
+  const workouts = storage.getWorkouts();
+  const currentWorkout = workoutId 
+    ? workouts.find(w => w.id === workoutId) || null 
+    : null;
+  set({ workouts, currentWorkout });
+};
+
 export const useFitnessStore = create<FitnessStore>((set, get) => ({
   // Начальное состояние
   workouts: [],
@@ -112,26 +124,20 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   // Обновление заметок к тренировке
   updateWorkoutNotes: (workoutId: string, notes: string) => {
     storage.updateWorkoutNotes(workoutId, notes);
-    const workouts = storage.getWorkouts();
-    const currentWorkout = workouts.find(w => w.id === workoutId) || null;
-    set({ workouts, currentWorkout });
+    updateWorkoutState(set, workoutId);
   },
 
   // Обновление веса пользователя в тренировке
   updateWorkoutWeight: (workoutId: string, weight: number | undefined) => {
     storage.updateWorkoutWeight(workoutId, weight);
-    const workouts = storage.getWorkouts();
-    const currentWorkout = workouts.find(w => w.id === workoutId) || null;
-    set({ workouts, currentWorkout });
+    updateWorkoutState(set, workoutId);
   },
 
   // Добавление упражнения
   addExercise: (workoutId: string, name: string, exerciseType?: ExerciseType) => {
     const exercise = storage.addExerciseToWorkout(workoutId, name, exerciseType);
     if (exercise) {
-      const workouts = storage.getWorkouts();
-      const currentWorkout = workouts.find(w => w.id === workoutId) || null;
-      set({ workouts, currentWorkout });
+      updateWorkoutState(set, workoutId);
     }
     return exercise;
   },
@@ -140,9 +146,7 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   replaceExercise: (workoutId: string, oldExerciseId: string, newName: string, exerciseType?: ExerciseType) => {
     const exercise = storage.replaceExerciseInWorkout(workoutId, oldExerciseId, newName, exerciseType);
     if (exercise) {
-      const workouts = storage.getWorkouts();
-      const currentWorkout = workouts.find(w => w.id === workoutId) || null;
-      set({ workouts, currentWorkout });
+      updateWorkoutState(set, workoutId);
     }
     return exercise;
   },
@@ -150,34 +154,26 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   // Удаление упражнения
   removeExercise: (workoutId: string, exerciseId: string) => {
     storage.removeExerciseFromWorkout(workoutId, exerciseId);
-    const workouts = storage.getWorkouts();
-    const currentWorkout = workouts.find(w => w.id === workoutId) || null;
-    set({ workouts, currentWorkout });
+    updateWorkoutState(set, workoutId);
   },
 
   // Перемещение упражнения вверх
   moveExerciseUp: (workoutId: string, exerciseId: string) => {
     storage.moveExerciseUp(workoutId, exerciseId);
-    const workouts = storage.getWorkouts();
-    const currentWorkout = workouts.find(w => w.id === workoutId) || null;
-    set({ workouts, currentWorkout });
+    updateWorkoutState(set, workoutId);
   },
 
   // Перемещение упражнения вниз
   moveExerciseDown: (workoutId: string, exerciseId: string) => {
     storage.moveExerciseDown(workoutId, exerciseId);
-    const workouts = storage.getWorkouts();
-    const currentWorkout = workouts.find(w => w.id === workoutId) || null;
-    set({ workouts, currentWorkout });
+    updateWorkoutState(set, workoutId);
   },
 
   // Добавление подхода
   addSet: (workoutId: string, exerciseId: string, reps: number, weight: number, time?: number, isWarmup?: boolean, equipmentType?: EquipmentType, gripType?: GripType, positionType?: PositionType, weightUnit?: WeightUnit) => {
     const workoutSet = storage.addSetToExercise(workoutId, exerciseId, reps, weight, time, isWarmup, equipmentType, gripType, positionType, weightUnit);
     if (workoutSet) {
-      const workouts = storage.getWorkouts();
-      const currentWorkout = workouts.find(w => w.id === workoutId) || null;
-      set({ workouts, currentWorkout });
+      updateWorkoutState(set, workoutId);
     }
     return workoutSet;
   },
@@ -185,17 +181,13 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   // Обновление подхода
   updateSet: (workoutId: string, exerciseId: string, setId: string, reps: number, weight: number, time?: number, equipmentType?: EquipmentType, gripType?: GripType, positionType?: PositionType, weightUnit?: WeightUnit) => {
     storage.updateSet(workoutId, exerciseId, setId, reps, weight, time, equipmentType, gripType, positionType, weightUnit);
-    const workouts = storage.getWorkouts();
-    const currentWorkout = workouts.find(w => w.id === workoutId) || null;
-    set({ workouts, currentWorkout });
+    updateWorkoutState(set, workoutId);
   },
 
   // Удаление подхода
   removeSet: (workoutId: string, exerciseId: string, setId: string) => {
     storage.removeSet(workoutId, exerciseId, setId);
-    const workouts = storage.getWorkouts();
-    const currentWorkout = workouts.find(w => w.id === workoutId) || null;
-    set({ workouts, currentWorkout });
+    updateWorkoutState(set, workoutId);
   },
 
   // Обновление списка тренировок
@@ -230,8 +222,7 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   loadTemplate: (workoutId: string, templateId: string) => {
     const workout = storage.loadTemplateToWorkout(workoutId, templateId);
     if (workout) {
-      const workouts = storage.getWorkouts();
-      set({ workouts, currentWorkout: workout });
+      updateWorkoutState(set, workoutId);
     }
     return workout;
   },

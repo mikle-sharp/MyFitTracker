@@ -1705,8 +1705,14 @@ export function ExerciseCard({
 
     // Validate - нужен хотя бы один показатель
     if (!useReps && !useTime) return;
+    // Валидация: вес не может быть отрицательным
+    if (!useBodyweight && weight < 0) return;
+    // Валидация: повторения должны быть от 0 до 999
+    if (useReps && (reps < 0 || reps > 999)) return;
     if (useReps && reps <= 0 && !useBodyweight) return;
     if (!useBodyweight && useReps && weight <= 0 && !useTime) return;
+    // Валидация: время не может быть отрицательным
+    if (useTime && time < 0) return;
     if (useTime && time <= 0 && !useReps) return;
 
     addSet(workoutId, exercise.id, reps, weight, time > 0 ? time : undefined, isWarmup, selectedEquipment ?? undefined, selectedGrip ?? undefined, selectedPosition ?? undefined, selectedWeightUnit);
@@ -1733,6 +1739,12 @@ export function ExerciseCard({
     const weight = originalSet.weight > 0 ? (parseFloat(editWeight) || 0) : 0;
     const time = ((parseInt(editTimeMinutes) || 0) * 60 + (parseInt(editTimeSeconds) || 0));
 
+    // Валидация: повторения должны быть от 0 до 999
+    if (reps < 0 || reps > 999) return;
+    // Валидация: вес не может быть отрицательным
+    if (weight < 0) return;
+    // Валидация: время не может быть отрицательным
+    if (time < 0) return;
     if (reps <= 0 && time <= 0) return;
 
     // editEquipment/editGrip/editPosition могут быть:
