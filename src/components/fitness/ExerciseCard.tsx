@@ -1833,9 +1833,16 @@ export function ExerciseCard({
         onOpenChange={setShowHistory}
         exerciseName={exercise.name}
         enableSwipe={true}
-        onNavigateToDate={(date) => {
+        onNavigateToDate={(date, exerciseName) => {
           setShowHistory(false);
           setSelectedDate(date);
+          // Подсветить первый подход упражнения после навигации
+          setTimeout(() => {
+            const exerciseInWorkout = useFitnessStore.getState().currentWorkout?.exercises.find(e => e.name === exerciseName);
+            if (exerciseInWorkout && exerciseInWorkout.sets.length > 0 && onHighlightSet) {
+              onHighlightSet(exerciseName, exerciseInWorkout.sets[0].id);
+            }
+          }, 300);
         }}
       />
 
@@ -1847,9 +1854,16 @@ export function ExerciseCard({
         initialDate={historyFromDate}
         highlightSetId={historyHighlightSetId}
         enableSwipe={false}
-        onNavigateToDate={(date) => {
+        onNavigateToDate={(date, exerciseName) => {
           setShowHistoryFromStats(false);
           setSelectedDate(date);
+          // Подсветить первый подход упражнения после навигации
+          setTimeout(() => {
+            const exerciseInWorkout = useFitnessStore.getState().currentWorkout?.exercises.find(e => e.name === exerciseName);
+            if (exerciseInWorkout && exerciseInWorkout.sets.length > 0 && onHighlightSet) {
+              onHighlightSet(exerciseName, exerciseInWorkout.sets[0].id);
+            }
+          }, 300);
         }}
       />
     </>

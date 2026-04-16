@@ -18,7 +18,7 @@ interface ExerciseHistoryModalProps {
   initialDate?: string; // начальная дата для показа
   highlightSetId?: string; // подсветить конкретный подход
   enableSwipe?: boolean; // разрешить свайп по истории
-  onNavigateToDate?: (date: string) => void; // переход на дату при клике на дату
+  onNavigateToDate?: (date: string, exerciseName: string) => void; // переход на дату при клике на дату
 }
 
 // Форматирование времени из секунд в MM:SS
@@ -108,7 +108,7 @@ export function ExerciseHistoryModal({
   // Обработка клика по дате
   const handleDateClick = () => {
     if (currentWorkout && onNavigateToDate) {
-      onNavigateToDate(currentWorkout.date);
+      onNavigateToDate(currentWorkout.date, exerciseName);
       onOpenChange(false);
     }
   };
