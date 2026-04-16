@@ -32,7 +32,7 @@ export type EquipmentType =
   | 'parallel_bar';
 
 // Типы хвата
-export type GripType = 'wide' | 'narrow' | 'parallel' | 'cross' | 'reverse';
+export type GripType = 'wide' | 'narrow' | 'parallel' | 'cross' | 'reverse' | 'alternate';
 
 // Типы позиции
 export type PositionType = 'sitting' | 'lying' | 'standing';
@@ -86,6 +86,7 @@ export const GRIP_TYPES: Record<GripType, { short: string; full: string }> = {
   parallel: { short: 'пар', full: 'Параллельный' },
   cross: { short: 'пер', full: 'Перекрёстный' },
   reverse: { short: 'обр', full: 'Обратный' },
+  alternate: { short: '1-р', full: 'Поочерёдный' },
 };
 
 // Константы для типов позиции
