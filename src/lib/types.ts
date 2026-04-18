@@ -23,6 +23,7 @@ export type EquipmentType =
   | 'ez_bar' 
   | 'w_bar'
   | 'dumbbells'
+  | 'kettlebell'
   | 'ball'
   | 'rope'
   | 'straight_crossover'
@@ -64,12 +65,8 @@ export interface WorkoutSet {
 
 // Константы для типов снаряда (упорядочены по полному названию)
 export const EQUIPMENT_TYPES: Record<EquipmentType, { short: string; full: string }> = {
-  w_bar: { short: 'w-г', full: 'W-гриф' },
-  ez_bar: { short: 'ez-г', full: 'EZ-гриф' },
-  ez_crossover: { short: 'ez-к', full: 'EZ-гриф для кроссовера' },
-  power_grip: { short: 'p-g', full: 'Power-grip' },
-  v_handle: { short: 'v-р', full: 'V-образная ручка' },
   dumbbells: { short: 'ган', full: 'Гантели' },
+  kettlebell: { short: 'гиря', full: 'Гиря' },
   rope: { short: 'кан', full: 'Канат' },
   ball: { short: 'мяч', full: 'Мяч' },
   parallel_bar: { short: 'п-г', full: 'Параллельный гриф' },
@@ -77,6 +74,11 @@ export const EQUIPMENT_TYPES: Record<EquipmentType, { short: string; full: strin
   trap_bar: { short: 'т-г', full: 'Трэп-гриф' },
   barbell_10: { short: 'ш-10', full: 'Штанга 10 кг' },
   barbell_20: { short: 'ш-20', full: 'Штанга 20 кг' },
+  ez_bar: { short: 'ez-г', full: 'EZ-гриф' },
+  ez_crossover: { short: 'ez-к', full: 'EZ-гриф для кроссовера' },
+  power_grip: { short: 'p-g', full: 'Power-grip' },
+  v_handle: { short: 'v-р', full: 'V-образная ручка' },
+  w_bar: { short: 'w-г', full: 'W-гриф' },
 };
 
 // Константы для типов хвата
