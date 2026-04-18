@@ -72,7 +72,18 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('./sw.js');
+                  navigator.serviceWorker.register('./sw.js').then(function(reg) {
+                    // При обнаружении нового SW — дожидаемся его активации и перезагружаем страницу
+                    reg.addEventListener('updatefound', function() {
+                      var newWorker = reg.installing;
+                      newWorker.addEventListener('statechange', function() {
+                        if (newWorker.state === 'activated') {
+                          // Новый SW активирован — перезагружаем, чтобы загрузить свежий код
+                          window.location.reload();
+                        }
+                      });
+                    });
+                  });
                 });
               }
             `,
