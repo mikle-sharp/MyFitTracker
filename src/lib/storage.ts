@@ -296,6 +296,14 @@ export const getAllExercises = (): string[] => {
     base[type].forEach(ex => allExercises.add(ex));
     allBase[type].forEach(ex => allExercises.add(ex));
   });
+
+  // Добавляем упражнения из тренировок (покрывает случай, когда упражнение
+  // было добавлено до фикса и не попало в базы)
+  getWorkouts().forEach(w => {
+    w.exercises.forEach(e => {
+      if (e.name.trim()) allExercises.add(e.name.trim());
+    });
+  });
   
   return Array.from(allExercises);
 };
@@ -310,6 +318,20 @@ export const getExerciseTypeFromBase = (exerciseName: string): ExerciseType => {
   for (const type of ['chest', 'back', 'legs', 'common'] as ExerciseBaseKey[]) {
     if (base[type].includes(name) || allBase[type].includes(name)) {
       return type;
+    }
+  }
+
+  // Не нашли в базах — ищем в тренировках по exerciseType
+  for (const workout of getWorkouts()) {
+    const exercise = workout.exercises.find(e => e.name.trim() === name);
+    if (exercise) {
+      if (exercise.exerciseType && ['chest', 'back', 'legs', 'common'].includes(exercise.exerciseType)) {
+        return exercise.exerciseType as ExerciseType;
+      }
+      // Если нет exerciseType — определяем по типу тренировки
+      if (workout.type === 'chest' || workout.type === 'back' || workout.type === 'legs') {
+        return workout.type;
+      }
     }
   }
   
