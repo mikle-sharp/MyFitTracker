@@ -68,49 +68,60 @@ const syncExercisesBaseToAllExercises = (): void => {
 };
 
 // Валидация: сканирует все тренировки и добавляет упражнения,
-// которые есть в данных тренировок, но отсутствуют в allExercisesBase.
+// которые есть в данных тренировок, но отсутствуют в базах.
 // Это покрывает случаи: импорт CSV, добавленные до фикса упражнения и т.д.
 const syncWorkoutExercisesToBase = (): void => {
   if (typeof window === 'undefined') return;
+  const base = getExercisesBase();
   const allBase = getAllExercisesBase();
-  let changed = false;
+  let baseChanged = false;
+  let allBaseChanged = false;
 
-  // Собираем все названия упражнений из тренировок
   const workouts = getWorkouts();
   workouts.forEach(workout => {
     workout.exercises.forEach(exercise => {
       const name = exercise.name.trim();
       if (!name) return;
 
-      // Определяем тип упражнения: из поля exerciseType или по типу тренировки
+      // Проверяем, есть ли упражнение в какой-либо категории в любой из баз
+      let foundType: ExerciseBaseKey | null = null;
+      for (const type of ['chest', 'back', 'legs', 'common'] as ExerciseBaseKey[]) {
+        if (base[type].includes(name) || allBase[type].includes(name)) {
+          foundType = type;
+          break;
+        }
+      }
+
+      // Упражнение уже есть в базе — просто убедимся, что оно в обеих
+      if (foundType) {
+        if (!base[foundType].includes(name)) {
+          base[foundType].push(name);
+          baseChanged = true;
+        }
+        if (!allBase[foundType].includes(name)) {
+          allBase[foundType].push(name);
+          allBaseChanged = true;
+        }
+        return;
+      }
+
+      // Упражнения нет ни в одной базе — определяем тип и добавляем в обе
       let targetType: ExerciseBaseKey = 'common';
       if (exercise.exerciseType && ['chest', 'back', 'legs', 'common'].includes(exercise.exerciseType)) {
         targetType = exercise.exerciseType as ExerciseBaseKey;
       } else if (workout.type === 'chest' || workout.type === 'back' || workout.type === 'legs') {
-        // Если exerciseType не указан, проверяем по типу тренировки
-        const workoutTypeKey = workout.type as ExerciseBaseKey;
-        if (allBase[workoutTypeKey]?.includes(name) || getExercisesBase()[workoutTypeKey]?.includes(name)) {
-          targetType = workoutTypeKey;
-        }
+        targetType = workout.type as ExerciseBaseKey;
       }
 
-      // Добавляем в allExercisesBase если нет
-      if (!allBase[targetType].includes(name)) {
-        // Проверяем что упражнения нет в другой категории
-        const existsSomewhere = (['chest', 'back', 'legs', 'common'] as ExerciseBaseKey[]).some(
-          type => allBase[type].includes(name)
-        );
-        if (!existsSomewhere) {
-          allBase[targetType].push(name);
-          changed = true;
-        }
-      }
+      base[targetType].push(name);
+      allBase[targetType].push(name);
+      baseChanged = true;
+      allBaseChanged = true;
     });
   });
 
-  if (changed) {
-    saveAllExercises(allBase);
-  }
+  if (baseChanged) saveExercisesBase(base);
+  if (allBaseChanged) saveAllExercises(allBase);
 };
 
 // Инициализация базы упражнений из файла (при первом запуске)
