@@ -118,6 +118,13 @@ export const addExerciseToBase = (type: ExerciseBaseKey, name: string): void => 
     base[type].push(name);
     saveExercisesBase(base);
   }
+  // Также добавляем в allExercisesBase, чтобы упражнение было доступно
+  // во всех списках (рекорды, удаление, добавление в другие дни)
+  const allBase = getAllExercisesBase();
+  if (!allBase[type].includes(name)) {
+    allBase[type].push(name);
+    saveAllExercises(allBase);
+  }
 };
 
 // Удаление упражнения из базы

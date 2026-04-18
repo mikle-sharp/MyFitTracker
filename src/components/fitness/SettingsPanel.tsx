@@ -29,6 +29,7 @@ export function SettingsPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDefaultStyle, setIsDefaultStyle] = useState(true);
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [exportStatus, setExportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [testDataStatus, setTestDataStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [showTestDataSection, setShowTestDataSection] = useState(false);
   const [tapCount, setTapCount] = useState(0);
@@ -37,6 +38,15 @@ export function SettingsPanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { importData, refreshWorkouts } = useFitnessStore();
 
+  // Форматирование даты для имени файла: dd.mm.yy
+  const getBackupFileName = (extension: string): string => {
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yy = String(now.getFullYear()).slice(-2);
+    return `MyFitTracker_${dd}.${mm}.${yy}.${extension}`;
+  };
+
   // Export handlers
   const handleExportCSV = () => {
     const csv = exportToCSV();
@@ -44,8 +54,11 @@ export function SettingsPanel() {
       const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `fitness-journal-${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = getBackupFileName('csv');
       link.click();
+      setExportStatus({ type: 'success', message: 'Данные экспортированы в CSV' });
+    } else {
+      setExportStatus({ type: 'error', message: 'Нет данных для экспорта' });
     }
   };
 
@@ -54,8 +67,9 @@ export function SettingsPanel() {
     const blob = new Blob([json], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `fitness-journal-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = getBackupFileName('json');
     link.click();
+    setExportStatus({ type: 'success', message: 'Данные экспортированы в JSON' });
   };
 
   // Import handler
@@ -183,6 +197,7 @@ export function SettingsPanel() {
     setIsOpen(open);
     if (open) {
       setImportStatus(null);
+      setExportStatus(null);
       setTestDataStatus(null);
       setShowTestDataSection(false);
       setTapCount(0);
@@ -316,22 +331,22 @@ export function SettingsPanel() {
               </div>
             </div>
 
-            {/* Import status */}
-            {importStatus && (
+            {/* Import/Export status */}
+            {(importStatus || exportStatus) && (
               <div className={cn(
                 'mt-4 p-3 rounded-lg flex items-center gap-2',
-                importStatus.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-red-500/10 border border-red-500/30'
+                (importStatus?.type === 'success' || exportStatus?.type === 'success') ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-red-500/10 border border-red-500/30'
               )}>
-                {importStatus.type === 'success' ? (
+                {(importStatus?.type === 'success' || exportStatus?.type === 'success') ? (
                   <CheckIcon className="w-4 h-4 text-emerald-400" />
                 ) : (
                   <XIcon className="w-4 h-4 text-red-400" />
                 )}
                 <span className={cn(
                   'text-sm',
-                  importStatus.type === 'success' ? 'text-emerald-400' : 'text-red-400'
+                  (importStatus?.type === 'success' || exportStatus?.type === 'success') ? 'text-emerald-400' : 'text-red-400'
                 )}>
-                  {importStatus.message}
+                  {importStatus?.message || exportStatus?.message}
                 </span>
               </div>
             )}
