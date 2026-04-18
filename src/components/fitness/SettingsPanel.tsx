@@ -176,6 +176,18 @@ export function SettingsPanel() {
     const missing = Array.from(workoutNames).filter(n => !baseNames.has(n));
     const extra = Array.from(baseNames).filter(n => !workoutNames.has(n));
 
+    // Дубликаты: упражнение в нескольких категориях
+    const typeMap = new Map<string, string[]>();
+    (['chest', 'back', 'legs', 'common'] as const).forEach(type => {
+      const merged = new Set([...base[type], ...allBase[type]]);
+      merged.forEach(n => {
+        const arr = typeMap.get(n) || [];
+        arr.push(type);
+        typeMap.set(n, arr);
+      });
+    });
+    const duplicates = Array.from(typeMap.entries()).filter(([, types]) => types.length > 1);
+
     const lines: string[] = [];
     lines.push(`В тренировках: ${workoutNames.size} упражнений`);
     lines.push(`В базах: ${baseNames.size} упражнений`);
@@ -188,6 +200,12 @@ export function SettingsPanel() {
     if (extra.length > 0) {
       lines.push(`\nВ базах, но НЕ в тренировках (${extra.length}):`);
       extra.forEach(n => lines.push(`  — ${n}`));
+    }
+    if (duplicates.length > 0) {
+      lines.push(`\nДубликаты (в нескольких категориях) (${duplicates.length}):`);
+      duplicates.forEach(([name, types]) => lines.push(`  — ${name} → [${types.join(', ')}]`));
+    } else {
+      lines.push(`\nДубликатов нет ✓`);
     }
 
     setDebugInfo(lines.join('\n'));

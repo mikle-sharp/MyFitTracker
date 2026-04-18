@@ -69,7 +69,8 @@ const syncExercisesBaseToAllExercises = (): void => {
 
 // Валидация: сканирует все тренировки и добавляет упражнения,
 // которые есть в данных тренировок, но отсутствуют в базах.
-// Это покрывает случаи: импорт CSV, добавленные до фикса упражнения и т.д.
+// Также устраняет дубликаты — если упражнение в нескольких категориях,
+// оставляем его только в той, которая соответствует exerciseType.
 const syncWorkoutExercisesToBase = (): void => {
   if (typeof window === 'undefined') return;
   const base = getExercisesBase();
@@ -78,45 +79,58 @@ const syncWorkoutExercisesToBase = (): void => {
   let allBaseChanged = false;
 
   const workouts = getWorkouts();
+
+  // Собираем правильные типы для каждого упражнения из тренировок
+  const exerciseCorrectType = new Map<string, ExerciseBaseKey>();
+  workouts.forEach(workout => {
+    workout.exercises.forEach(exercise => {
+      const name = exercise.name.trim();
+      if (!name) return;
+      if (exerciseCorrectType.has(name)) return; // уже определили
+
+      if (exercise.exerciseType && ['chest', 'back', 'legs', 'common'].includes(exercise.exerciseType)) {
+        exerciseCorrectType.set(name, exercise.exerciseType as ExerciseBaseKey);
+      } else if (workout.type === 'chest' || workout.type === 'back' || workout.type === 'legs') {
+        exerciseCorrectType.set(name, workout.type as ExerciseBaseKey);
+      } else {
+        exerciseCorrectType.set(name, 'common');
+      }
+    });
+  });
+
+  // Устраняем дубликаты: если упражнение в нескольких категориях,
+  // оставляем только в правильной
+  const allTypes: ExerciseBaseKey[] = ['chest', 'back', 'legs', 'common'];
+  for (const [name, correctType] of exerciseCorrectType) {
+    for (const type of allTypes) {
+      if (type === correctType) continue;
+      if (base[type].includes(name)) {
+        base[type] = base[type].filter(n => n !== name);
+        baseChanged = true;
+      }
+      if (allBase[type].includes(name)) {
+        allBase[type] = allBase[type].filter(n => n !== name);
+        allBaseChanged = true;
+      }
+    }
+  }
+
+  // Добавляем недостающие упражнения
   workouts.forEach(workout => {
     workout.exercises.forEach(exercise => {
       const name = exercise.name.trim();
       if (!name) return;
 
-      // Проверяем, есть ли упражнение в какой-либо категории в любой из баз
-      let foundType: ExerciseBaseKey | null = null;
-      for (const type of ['chest', 'back', 'legs', 'common'] as ExerciseBaseKey[]) {
-        if (base[type].includes(name) || allBase[type].includes(name)) {
-          foundType = type;
-          break;
-        }
-      }
+      const correctType = exerciseCorrectType.get(name) || 'common';
 
-      // Упражнение уже есть в базе — просто убедимся, что оно в обеих
-      if (foundType) {
-        if (!base[foundType].includes(name)) {
-          base[foundType].push(name);
-          baseChanged = true;
-        }
-        if (!allBase[foundType].includes(name)) {
-          allBase[foundType].push(name);
-          allBaseChanged = true;
-        }
-        return;
+      if (!base[correctType].includes(name)) {
+        base[correctType].push(name);
+        baseChanged = true;
       }
-
-      // Упражнения нет ни в одной базе — определяем тип и добавляем в обе
-      let targetType: ExerciseBaseKey = 'common';
-      if (exercise.exerciseType && ['chest', 'back', 'legs', 'common'].includes(exercise.exerciseType)) {
-        targetType = exercise.exerciseType as ExerciseBaseKey;
-      } else if (workout.type === 'chest' || workout.type === 'back' || workout.type === 'legs') {
-        targetType = workout.type as ExerciseBaseKey;
+      if (!allBase[correctType].includes(name)) {
+        allBase[correctType].push(name);
+        allBaseChanged = true;
       }
-
-      base[targetType].push(name);
-      allBase[targetType].push(name);
-      baseChanged = true;
-      allBaseChanged = true;
     });
   });
 
