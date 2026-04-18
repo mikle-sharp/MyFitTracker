@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogClose, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
-import { exportToCSV, exportToJSON, getWorkouts, saveWorkouts, getAppFont, setAppFont } from '@/lib/storage';
+import { exportToCSV, exportToJSON, getWorkouts, saveWorkouts, getAppFont, setAppFont, getExercisesBase, getAllExercisesBase } from '@/lib/storage';
 import { useFitnessStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
@@ -50,6 +50,7 @@ export function SettingsPanel() {
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
   const [selectedFont, setSelectedFont] = useState<FontId>('inter');
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { importData, refreshWorkouts } = useFitnessStore();
 
@@ -148,6 +149,48 @@ export function SettingsPanel() {
     saveWorkouts([]);
     refreshWorkouts();
     setTestDataStatus({ type: 'success', message: 'Данные очищены' });
+  };
+
+  // Диагностика: показать упражнения из тренировок, которых нет в базах
+  const handleDebugBases = () => {
+    const base = getExercisesBase();
+    const allBase = getAllExercisesBase();
+    const workouts = getWorkouts();
+
+    // Собираем все имена из баз
+    const baseNames = new Set<string>();
+    (['chest', 'back', 'legs', 'common'] as const).forEach(type => {
+      base[type].forEach(n => baseNames.add(n));
+      allBase[type].forEach(n => baseNames.add(n));
+    });
+
+    // Собираем все имена из тренировок
+    const workoutNames = new Set<string>();
+    workouts.forEach(w => {
+      w.exercises.forEach(e => {
+        if (e.name.trim()) workoutNames.add(e.name.trim());
+      });
+    });
+
+    // Разница
+    const missing = Array.from(workoutNames).filter(n => !baseNames.has(n));
+    const extra = Array.from(baseNames).filter(n => !workoutNames.has(n));
+
+    const lines: string[] = [];
+    lines.push(`В тренировках: ${workoutNames.size} упражнений`);
+    lines.push(`В базах: ${baseNames.size} упражнений`);
+    if (missing.length > 0) {
+      lines.push(`\nВ тренировках, но НЕ в базах (${missing.length}):`);
+      missing.forEach(n => lines.push(`  — ${n}`));
+    } else {
+      lines.push(`\nВсе упражнения из тренировок есть в базах ✓`);
+    }
+    if (extra.length > 0) {
+      lines.push(`\nВ базах, но НЕ в тренировках (${extra.length}):`);
+      extra.forEach(n => lines.push(`  — ${n}`));
+    }
+
+    setDebugInfo(lines.join('\n'));
   };
 
   // Handle secret tap on header left area
@@ -379,6 +422,13 @@ export function SettingsPanel() {
               <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
                 <div className="flex flex-col gap-4">
                   <Button
+                    onClick={handleDebugBases}
+                    variant="outline"
+                    className="w-full border-zinc-700 text-zinc-300 hover:text-white active:text-white hover:bg-zinc-800 active:bg-zinc-800"
+                  >
+                    Диагностика базы
+                  </Button>
+                  <Button
                     onClick={handleLoadTestData}
                     variant="outline"
                     className="w-full border-zinc-700 text-zinc-300 hover:text-white active:text-white hover:bg-zinc-800 active:bg-zinc-800"
@@ -413,6 +463,10 @@ export function SettingsPanel() {
                       {testDataStatus.message}
                     </span>
                   </div>
+                )}
+
+                {debugInfo && (
+                  <pre className="mt-4 p-3 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-zinc-400 whitespace-pre-wrap overflow-x-auto">{debugInfo}</pre>
                 )}
               </div>
             </div>
