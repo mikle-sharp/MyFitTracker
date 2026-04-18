@@ -30,6 +30,21 @@ export function SettingsPanel() {
   const [isDefaultStyle, setIsDefaultStyle] = useState(true);
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [exportStatus, setExportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Авто-скрытие уведомлений через 3 секунды
+  useEffect(() => {
+    if (importStatus) {
+      const timer = setTimeout(() => setImportStatus(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [importStatus]);
+
+  useEffect(() => {
+    if (exportStatus) {
+      const timer = setTimeout(() => setExportStatus(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [exportStatus]);
   const [testDataStatus, setTestDataStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [showTestDataSection, setShowTestDataSection] = useState(false);
   const [tapCount, setTapCount] = useState(0);
