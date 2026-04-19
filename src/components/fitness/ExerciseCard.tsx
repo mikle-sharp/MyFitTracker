@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Trash2Icon, PlusIcon, CheckIcon, ClockIcon, RefreshCwIcon, UserIcon, WeightIcon, ChevronUpIcon, ChevronDownIcon, XIcon, ZapIcon, Repeat2Icon, TrendingUpIcon, HistoryIcon } from '@/components/icons/Icons';
+import { Trash2Icon, PlusIcon, CheckIcon, ClockIcon, RefreshCwIcon, UserIcon, WeightIcon, ChevronUpIcon, ChevronDownIcon, XIcon, Repeat2Icon, TrendingUpIcon, HistoryIcon, LinkOffIcon, LinkOnIcon } from '@/components/icons/Icons';
 import { Exercise, WorkoutSet, WORKOUT_TYPE_COLORS, WorkoutType, ExerciseType, EquipmentType, GripType, PositionType, EQUIPMENT_TYPES, GRIP_TYPES, POSITION_TYPES, WeightUnit, WEIGHT_UNITS } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,6 +57,10 @@ interface ExerciseCardProps {
   highlightSetIndex?: number;
   // Callback for highlighting set from chart
   onHighlightSet?: (exerciseName: string, setId: string) => void;
+  // Superset props
+  supersetLabel?: string; // название суперсета (напр. "Суперсет 1")
+  supersetChainColor?: string; // цвет иконки цепи в суперсете
+  onSupersetButtonTap?: (exerciseId: string) => void; // тап по кнопке цепи
 }
 
 // Форматирование времени из секунд в MM:SS
@@ -84,7 +88,11 @@ export function ExerciseCard({
   onDragEnd,
   // Highlight props
   highlightSetIndex,
-  onHighlightSet
+  onHighlightSet,
+  // Superset props
+  supersetLabel,
+  supersetChainColor,
+  onSupersetButtonTap,
 }: ExerciseCardProps) {
   // State for adding new set
   const [newReps, setNewReps] = useState('');
@@ -686,9 +694,6 @@ export function ExerciseCard({
         style={{
           borderLeftWidth: '4px',
           borderLeftColor: exerciseColors.border,
-          background: `linear-gradient(to right, ${exerciseColors.border}, transparent) top left / 100% 1px no-repeat,
-                      linear-gradient(to right, ${exerciseColors.border}, transparent) bottom left / 100% 1px no-repeat,
-                      #27272a`,
           userSelect: isDragging ? 'none' : undefined,
           WebkitUserSelect: isDragging ? 'none' : undefined,
           touchAction: isDragging ? 'none' : undefined,
@@ -737,7 +742,7 @@ export function ExerciseCard({
                       size="icon"
                       onClick={() => onMoveUp?.(exercise.id)}
                       disabled={index === 0}
-                      className="h-7 w-7 text-zinc-500 hover:text-white active:text-white hover:bg-zinc-700 active:bg-zinc-700 disabled:opacity-30"
+                      className="h-7 w-7 hover:bg-zinc-700 active:bg-zinc-700 disabled:opacity-30 text-zinc-500 hover:text-white active:text-white"
                     >
                       <ChevronUpIcon className="w-4 h-4" />
                     </Button>
@@ -746,7 +751,7 @@ export function ExerciseCard({
                       size="icon"
                       onClick={() => onMoveDown?.(exercise.id)}
                       disabled={index === totalExercises - 1}
-                      className="h-7 w-7 text-zinc-500 hover:text-white active:text-white hover:bg-zinc-700 active:bg-zinc-700 disabled:opacity-30"
+                      className="h-7 w-7 hover:bg-zinc-700 active:bg-zinc-700 disabled:opacity-30 text-zinc-500 hover:text-white active:text-white"
                     >
                       <ChevronDownIcon className="w-4 h-4" />
                     </Button>
@@ -1518,7 +1523,30 @@ export function ExerciseCard({
                   </div>
                 </div>
               ) : (
-                <div className={cn("flex justify-end", exercise.sets.length > 0 && "mt-4")}>
+                <div className={cn("flex items-center justify-between", exercise.sets.length > 0 && "mt-4")}>
+                  {currentWorkout && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        onClick={() => onSupersetButtonTap?.(exercise.id)}
+                        className={cn(
+                          "w-7 h-7 p-0 shrink-0 -ml-9",
+                          exercise.supersetId
+                            ? "hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent"
+                            : "text-zinc-500 hover:text-white active:text-white hover:!bg-transparent dark:hover:!bg-transparent active:!bg-transparent"
+                        )}
+                        style={exercise.supersetId && supersetChainColor ? { color: supersetChainColor } : undefined}
+                        title={exercise.supersetId ? "Убрать из суперсета" : "Создать суперсет"}
+                      >
+                        {exercise.supersetId ? <LinkOnIcon className="w-4 h-4" /> : <LinkOffIcon className="w-4 h-4" />}
+                      </Button>
+                      {supersetLabel && (
+                        <span className="text-xs font-medium whitespace-nowrap ml-1" style={{ color: supersetChainColor || '#f59e0b' }}>
+                          {supersetLabel}
+                        </span>
+                      )}
+                    </>
+                  )}
                   <Button
                     onClick={handleStartAddingSet}
                     style={{ backgroundColor: '#19a655' }}

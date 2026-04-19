@@ -575,6 +575,71 @@ export const moveExerciseDown = (
   saveWorkouts(workouts);
 };
 
+// Связать упражнения в суперсет
+export function linkExercisesToSuperset(workoutId: string, exerciseIds: string[]): void {
+  const workouts = getWorkouts();
+  const workout = workouts.find(w => w.id === workoutId);
+  if (!workout) return;
+
+  const supersetId = `superset_${Date.now()}`;
+  workout.exercises.forEach(e => {
+    if (exerciseIds.includes(e.id)) {
+      e.supersetId = supersetId;
+    }
+  });
+
+  saveWorkouts(workouts);
+}
+
+// Разорвать весь суперсет (удалить supersetId у всех участников)
+export function unlinkSuperset(workoutId: string, supersetId: string): void {
+  const workouts = getWorkouts();
+  const workout = workouts.find(w => w.id === workoutId);
+  if (!workout) return;
+
+  workout.exercises.forEach(e => {
+    if (e.supersetId === supersetId) {
+      e.supersetId = undefined;
+    }
+  });
+
+  saveWorkouts(workouts);
+}
+
+// Удалить упражнение из суперсета (если остался 1 участник — убрать supersetId)
+export function removeExerciseFromSuperset(workoutId: string, exerciseId: string): void {
+  const workouts = getWorkouts();
+  const workout = workouts.find(w => w.id === workoutId);
+  if (!workout) return;
+
+  const exercise = workout.exercises.find(e => e.id === exerciseId);
+  if (!exercise || !exercise.supersetId) return;
+
+  const supersetId = exercise.supersetId;
+  exercise.supersetId = undefined;
+
+  // Если остался только 1 участник — убрать supersetId и у него
+  const remaining = workout.exercises.filter(e => e.supersetId === supersetId);
+  if (remaining.length <= 1) {
+    remaining.forEach(e => { e.supersetId = undefined; });
+  }
+
+  saveWorkouts(workouts);
+}
+
+// Добавить упражнение в существующий суперсет
+export function addExerciseToSuperset(workoutId: string, exerciseId: string, supersetId: string): void {
+  const workouts = getWorkouts();
+  const workout = workouts.find(w => w.id === workoutId);
+  if (!workout) return;
+
+  const exercise = workout.exercises.find(e => e.id === exerciseId);
+  if (!exercise) return;
+
+  exercise.supersetId = supersetId;
+  saveWorkouts(workouts);
+}
+
 // Добавление подхода к упражнению
 export const addSetToExercise = (
   workoutId: string,

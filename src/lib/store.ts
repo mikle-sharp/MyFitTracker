@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { Workout, WorkoutType, WorkoutSet, Exercise, ExerciseType, EquipmentType, GripType, PositionType, WorkoutTemplate, WeightUnit } from './types';
 import * as storage from './storage';
+import { linkExercisesToSuperset as storageLinkExercisesToSuperset, unlinkSuperset as storageUnlinkSuperset, removeExerciseFromSuperset as storageRemoveExerciseFromSuperset, addExerciseToSuperset as storageAddExerciseToSuperset } from './storage';
+import { getWorkouts } from './storage';
 
 interface FitnessStore {
   // Состояние
@@ -36,6 +38,11 @@ interface FitnessStore {
   deleteTemplate: (templateId: string) => void;
   // Удаление упражнения из предустановок
   deleteExerciseFromPresets: (exerciseName: string) => void;
+  // Суперсеты
+  linkExercisesToSuperset: (workoutId: string, exerciseIds: string[]) => void;
+  unlinkSuperset: (workoutId: string, supersetId: string) => void;
+  removeExerciseFromSuperset: (workoutId: string, exerciseId: string) => void;
+  addToSuperset: (workoutId: string, exerciseId: string, supersetId: string) => void;
 }
 
 // Получить сегодняшнюю дату в формате YYYY-MM-DD
@@ -247,5 +254,23 @@ export const useFitnessStore = create<FitnessStore>((set, get) => ({
   deleteExerciseFromPresets: (exerciseName: string) => {
     storage.deleteExerciseFromPresets(exerciseName);
     refreshState(set, get);
+  },
+
+  // Суперсеты
+  linkExercisesToSuperset: (workoutId: string, exerciseIds: string[]) => {
+    storageLinkExercisesToSuperset(workoutId, exerciseIds);
+    updateWorkoutState(set, workoutId);
+  },
+  unlinkSuperset: (workoutId: string, supersetId: string) => {
+    storageUnlinkSuperset(workoutId, supersetId);
+    updateWorkoutState(set, workoutId);
+  },
+  removeExerciseFromSuperset: (workoutId: string, exerciseId: string) => {
+    storageRemoveExerciseFromSuperset(workoutId, exerciseId);
+    updateWorkoutState(set, workoutId);
+  },
+  addToSuperset: (workoutId: string, exerciseId: string, supersetId: string) => {
+    storageAddExerciseToSuperset(workoutId, exerciseId, supersetId);
+    updateWorkoutState(set, workoutId);
   },
 }));

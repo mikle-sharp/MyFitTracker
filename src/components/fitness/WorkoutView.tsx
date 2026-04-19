@@ -108,6 +108,11 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
   const [selectedDeleteExercises, setSelectedDeleteExercises] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
+  // Superset dialog state
+  const [isSupersetDialogOpen, setIsSupersetDialogOpen] = useState(false);
+  const [supersetDialogSourceId, setSupersetDialogSourceId] = useState<string | null>(null);
+  const [selectedSupersetExercises, setSelectedSupersetExercises] = useState<string[]>([]);
+
   // Drag-and-drop state
   const [dragState, setDragState] = useState<{
     draggedId: string;
@@ -169,9 +174,34 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
     };
   }, [dragState]);
   
-  const { addExercise, removeExercise, replaceExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes, updateWorkoutWeight, getTemplates, saveTemplate, loadTemplate, deleteTemplate, deleteExerciseFromPresets } = useFitnessStore();
+  const { addExercise, removeExercise, replaceExercise, deleteWorkout, moveExerciseUp, moveExerciseDown, updateWorkoutNotes, updateWorkoutWeight, getTemplates, saveTemplate, loadTemplate, deleteTemplate, deleteExerciseFromPresets, linkExercisesToSuperset, removeExerciseFromSuperset } = useFitnessStore();
 
   const colors = WORKOUT_TYPE_COLORS[workout.type];
+
+  // Информация о суперсетах (номер, цвет, название) для каждого упражнения
+  const SUPERSET_COLORS = ['#f59e0b', '#9ca3af', '#cd7f32']; // gold, silver, bronze
+  const supersetGroupInfo = useMemo(() => {
+    const groups = new Map<string, string[]>(); // supersetId -> exerciseIds
+    workout.exercises.forEach(e => {
+      if (e.supersetId) {
+        const group = groups.get(e.supersetId) || [];
+        group.push(e.id);
+        groups.set(e.supersetId, group);
+      }
+    });
+    // Сортируем supersetId по времени создания (они содержат timestamp)
+    const sortedGroupIds = [...groups.keys()].sort();
+    const infoMap = new Map<string, { label: string; color: string; number: number }>();
+    sortedGroupIds.forEach((supersetId, index) => {
+      const number = index + 1;
+      const color = SUPERSET_COLORS[index] || SUPERSET_COLORS[2];
+      const exerciseIds = groups.get(supersetId) || [];
+      exerciseIds.forEach(id => {
+        infoMap.set(id, { label: `Суперсет ${number}`, color, number });
+      });
+    });
+    return infoMap;
+  }, [workout.exercises]);
   
   // Шаблоны для текущего типа тренировки
   const templates = getTemplates(workout.type);
@@ -306,6 +336,38 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
 
   const handleMoveDown = (exerciseId: string) => {
     moveExerciseDown(workout.id, exerciseId);
+  };
+
+  const handleSupersetButtonTap = useCallback((exerciseId: string) => {
+    const exercise = workout.exercises.find(e => e.id === exerciseId);
+    if (!exercise) return;
+
+    // Если упражнение уже в суперсете — убираем из суперсета
+    if (exercise.supersetId) {
+      removeExerciseFromSuperset(workout.id, exerciseId);
+      return;
+    }
+
+    // Открываем диалог создания суперсета
+    setSupersetDialogSourceId(exerciseId);
+    setSelectedSupersetExercises([exerciseId]);
+    setIsSupersetDialogOpen(true);
+  }, [workout, removeExerciseFromSuperset]);
+
+  const handleCreateSuperset = () => {
+    if (selectedSupersetExercises.length < 2) return;
+
+    // Проверяем лимит суперсетов
+    const existingSupersetIds = new Set<string>();
+    workout.exercises.forEach(e => {
+      if (e.supersetId) existingSupersetIds.add(e.supersetId);
+    });
+    if (existingSupersetIds.size >= 3) return;
+
+    linkExercisesToSuperset(workout.id, selectedSupersetExercises);
+    setIsSupersetDialogOpen(false);
+    setSupersetDialogSourceId(null);
+    setSelectedSupersetExercises([]);
   };
 
   const handleDeleteWorkout = () => {
@@ -666,7 +728,7 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
           const draggedIndex = dragState?.draggedIndex ?? 0;
           const currentIndex = dragState?.currentIndex ?? 0;
           const exerciseIndex = index;
-          
+
           // Calculate dragY for dragged element (relative movement from start)
           // Account for scroll changes during drag - this keeps element with finger
           let dragY = 0;
@@ -719,6 +781,9 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
                 onDragEnd={handleDragEnd}
                 highlightSetIndex={highlightExercise?.name === exercise.name ? exercise.sets.findIndex(s => s.id === highlightExercise.setId) : undefined}
                 onHighlightSet={onHighlightSet}
+                supersetLabel={supersetGroupInfo.get(exercise.id)?.label}
+                supersetChainColor={supersetGroupInfo.get(exercise.id)?.color}
+                onSupersetButtonTap={handleSupersetButtonTap}
               />
             </motion.div>
           );
@@ -1486,6 +1551,89 @@ export function WorkoutView({ workout, highlightExercise, onHighlightSet }: Work
             >
               Хорошо
             </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Superset creation dialog */}
+      <Dialog open={isSupersetDialogOpen} onOpenChange={(open) => {
+        setIsSupersetDialogOpen(open);
+        if (!open) {
+          setSupersetDialogSourceId(null);
+          setSelectedSupersetExercises([]);
+        }
+      }}>
+        <DialogContent
+          className="bg-zinc-800 border h-[60vh] !top-[20vh] !translate-y-0 !p-0 !gap-0 flex flex-col"
+          style={{ borderColor: '#f59e0b' }}
+          showCloseButton={false}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-4 shrink-0">
+            <DialogTitle className="text-white font-medium text-base">Создать суперсет</DialogTitle>
+            <DialogClose className="text-zinc-500 hover:text-white active:text-white transition-colors p-1">
+              <XIcon className="w-5 h-5" />
+            </DialogClose>
+          </div>
+
+          <div className="flex flex-col min-h-0 p-4 gap-4 flex-1">
+            {/* Info */}
+            <p className="text-zinc-400 text-sm">
+              Выберите упражнения для суперсета (2-4). Уже связанные упражнения недоступны.
+            </p>
+
+            {/* Exercises list */}
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-1 border border-zinc-700 rounded-lg p-2 bg-zinc-900/50">
+              {workout.exercises.map((ex) => {
+                const isSelected = selectedSupersetExercises.includes(ex.id);
+                const isInSuperset = !!ex.supersetId;
+                const isDisabled = isInSuperset || (selectedSupersetExercises.length >= 4 && !isSelected);
+
+                return (
+                  <button
+                    key={ex.id}
+                    onClick={() => {
+                      if (isDisabled) return;
+                      setSelectedSupersetExercises(prev =>
+                        isSelected ? prev.filter(id => id !== ex.id) : [...prev, ex.id]
+                      );
+                    }}
+                    disabled={isDisabled}
+                    className={cn(
+                      "w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2",
+                      isDisabled
+                        ? "opacity-40 cursor-not-allowed text-zinc-500"
+                        : isSelected
+                          ? "bg-amber-600/30 text-white ring-1 ring-amber-500/50"
+                          : "hover:bg-zinc-700/50 active:bg-zinc-700/50 text-zinc-300 hover:text-white active:text-white"
+                    )}
+                  >
+                    <span className="flex-1">{ex.name}</span>
+                    {isInSuperset && (
+                      <span className="text-xs text-amber-400">
+                        {supersetGroupInfo.get(ex.id)?.label}
+                      </span>
+                    )}
+                    {isSelected && <span className="text-amber-400 text-xs font-bold">✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Bottom */}
+          <div className="flex items-center justify-between px-4 pb-4 shrink-0">
+            <span className="text-xs text-zinc-500">
+              {selectedSupersetExercises.length}/4 выбрано
+            </span>
+            <Button
+              onClick={handleCreateSuperset}
+              disabled={selectedSupersetExercises.length < 2}
+              style={{ backgroundColor: '#f59e0b' }}
+              className="text-black retro-large-text"
+            >
+              Создать суперсет
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

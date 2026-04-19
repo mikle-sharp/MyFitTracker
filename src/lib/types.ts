@@ -105,6 +105,7 @@ export interface Exercise {
   sets: WorkoutSet[];
   isCustom?: boolean; // добавлено пользователем
   exerciseType?: ExerciseType; // тип упражнения для цветовой маркировки
+  supersetId?: string; // идентификатор суперсета для группировки упражнений
 }
 
 // Тренировка
